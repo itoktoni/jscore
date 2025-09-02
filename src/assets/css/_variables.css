@@ -1,0 +1,35 @@
+
+:root {
+    --bg-color: #fff;
+    --bg-secondary-color: #f3f3f6;
+    --color-primary: #2563eb;
+    --color-lightGrey: #d2d6dd;
+    --color-grey: #747681;
+    --color-darkGrey: #3f4144;
+    --color-error: #d43939;
+    --color-success: #28bd14;
+    --grid-maxWidth: 120rem;
+    --grid-gutter: 2rem;
+    --icon-text: 1rem;
+    --font-size: 1.6rem;
+    --font-color: #333;
+    --font-color-secondary:var(--bg-secondary-color);
+
+    --primary-color: #2563eb;
+    --primary-hover: #1d4ed8;
+    --primary-active: #1f4abf;
+    --text-light: #ffffff;
+    --bg-light: #f3f4f6;
+    --bg-white: #ffffff;
+    --border-color: #e5e7eb;
+    --text-dark: #1f2937;
+    --text-muted: #6b7280;
+    --danger-color: #ef4444;
+    --success-color: #22c55e;
+    --notification-unread-bg: #f0f7ff;
+
+  --font-family-sans: -apple-system, "BlinkMacSystemFont", "Avenir",
+    "Avenir Next", "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell",
+    "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  --font-family-mono: monaco, "Consolas", "Lucida Console", monospace;
+}

@@ -1,0 +1,13 @@
+{
+  "appId": "com.example.vanila",
+  "appName": "vanila",
+  "webDir": "dist",
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": false
+    },
+    "CapacitorHttp": {
+      "enabled": true
+    }
+  }
+}

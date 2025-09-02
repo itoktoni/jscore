@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Base configuration - allow most connections -->
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system"/>
+            <certificates src="user"/>
+        </trust-anchors>
+    </base-config>
+
+    <!-- Domain-specific configuration for API server -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">newcore.nexeratech.co.id</domain>
+        <domain includeSubdomains="true">nexeratech.co.id</domain>
+        <trust-anchors>
+            <!-- Trust system CAs -->
+            <certificates src="system"/>
+            <!-- Also trust user-added CAs for debugging -->
+            <certificates src="user"/>
+        </trust-anchors>
+        <!-- Disable certificate pinning for this domain -->
+        <pin-set>
+            <!-- No pins specified = no certificate pinning -->
+        </pin-set>
+    </domain-config>
+
+    <!-- Development servers -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">localhost</domain>
+        <domain includeSubdomains="true">127.0.0.1</domain>
+        <domain includeSubdomains="true">10.0.2.2</domain>
+        <domain includeSubdomains="true">192.168.1.1</domain>
+        <domain includeSubdomains="true">192.168.0.1</domain>
+        <domain includeSubdomains="true">httpbin.org</domain>
+        <domain includeSubdomains="true">google.com</domain>
+    </domain-config>
+
+    <!-- Debug configuration - VERY permissive for development -->
+    <debug-overrides>
+        <trust-anchors>
+            <certificates src="system"/>
+            <certificates src="user"/>
+        </trust-anchors>
+    </debug-overrides>
+</network-security-config>
