@@ -5,62 +5,64 @@
  */
 
 <template>
-  <div class="user-list-container">
+  <div class="card">
     <!-- Header -->
-    <div class="header">
+    <div class="page-header">
       <h2>User Management</h2>
-      <FormButton
-        variant="success"
-        @click="createUser"
-        text="+ Create User"
-      />
     </div>
 
-    <!-- Search and Filters -->
-    <div class="filters-section">
-      <form @submit.prevent="handleSearch" class="search-form">
-        <div class="search-inputs">
-          <FormInput
-            name="search"
-            v-model="searchData.search"
-            placeholder="Search users..."
-            class="search-input-wrapper"
-          />
-
-          <FormSelect
-            name="perPage"
-            v-model="searchData.perPage"
-            :options="perPageOptions"
-            class="per-page-wrapper"
-          />
-
-          <FormButton
-            type="submit"
-            variant="primary"
-            text="Search"
-          />
+    <!-- Card Container -->
+    <div class="form-container">
+      <!-- Search and Filters Row -->
+      <div class="row">
+        <div class="col">
+          <p class="grouped">
+            <label for="per-page-select">Per Page</label>
+            <select name="perPage" id="per-page-select" v-model="searchData.perPage">
+              <option value="10">10 per page</option>
+              <option value="25">25 per page</option>
+              <option value="50">50 per page</option>
+              <option value="100">100 per page</option>
+            </select>
+          </p>
         </div>
-      </form>
-    </div>
 
-    <!-- Loading State -->
-    <div v-if="userStore.loading" class="loading">
-      Loading users...
-    </div>
+        <div class="col">
+          <p class="grouped">
+            <label for="filter-input">Search Users</label>
+            <input
+              type="search"
+              name="search"
+              id="filter-input"
+              placeholder="Search users..."
+              v-model="searchData.search"
+            >
+            <button class="button icon-only" @click="handleSearch">
+              <img src="https://icongr.am/feather/search.svg?size=16" alt="Search">
+            </button>
+          </p>
+        </div>
+      </div>
 
-    <!-- Error State -->
-    <ErrorMessage v-else-if="userStore.error" :message="userStore.error">
-      <FormButton
-        variant="primary"
-        @click="loadUsers"
-        text="Retry"
-        size="small"
-      />
-    </ErrorMessage>
+      <hr class="hr">
 
-    <!-- User List -->
-    <div v-else class="user-list">
-      <div v-if="!userStore.hasUsers" class="no-users">
+      <!-- Loading State -->
+      <div v-if="userStore.loading" class="loading">
+        Loading users...
+      </div>
+
+      <!-- Error State -->
+      <ErrorMessage v-else-if="userStore.error" :message="userStore.error">
+        <FormButton
+          variant="primary"
+          @click="loadUsers"
+          text="Retry"
+          size="small"
+        />
+      </ErrorMessage>
+
+      <!-- No Users State -->
+      <div v-else-if="!userStore.hasUsers" class="no-users">
         <p>No users found.</p>
         <FormButton
           variant="success"
@@ -69,69 +71,84 @@
         />
       </div>
 
-      <div v-else class="users-grid">
-        <div
-          v-for="user in userStore.users"
-          :key="user.id"
-          class="user-card"
-        >
-          <div class="user-info">
-            <div class="user-avatar">
-              {{ getInitials(user.name || user.username) }}
-            </div>
-            <div class="user-details">
-              <h3>{{ user.name || user.username }}</h3>
-              <p class="user-email">{{ user.email }}</p>
-              <p class="user-username">@{{ user.username }}</p>
-              <p v-if="user.created_at" class="user-meta">
-                Created: {{ formatDate(user.created_at) }}
-              </p>
-            </div>
-          </div>
+      <!-- Users Table -->
+      <div v-else>
 
-          <div class="user-actions">
-            <FormButton
-              variant="primary"
-              @click="editUser(user)"
-              text="Edit"
-              size="small"
-            />
-            <FormButton
-              variant="secondary"
-              @click="viewUser(user)"
-              text="View"
-              size="small"
-            />
-            <FormButton
-              variant="danger"
-              @click="confirmDelete(user)"
-              text="Delete"
-              size="small"
-            />
-          </div>
+        <table class="form-containerdata-table striped">
+          <thead>
+            <tr>
+              <th>
+                <input
+                  type="checkbox"
+                  v-model="selectAll"
+                  @change="toggleSelectAll"
+                >
+              </th>
+              <th class="action-header text-center">Actions</th>
+              <th>Name</th>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Created</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="user in userStore.users" :key="user.id">
+              <td>
+                <input
+                  type="checkbox"
+                  v-model="user.selected"
+                  @change="updateSelectAll"
+                >
+              </td>
+              <td class="column-action">
+                <div class="action-table">
+                  <button class="button primary" @click="viewUser(user)" title="View">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                  <button class="button secondary" @click="editUser(user)" title="Edit">
+                    <i class="bi bi-pencil-square"></i>
+                  </button>
+                  <button class="button error" @click="confirmDelete(user)" title="Delete">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </td>
+              <td>
+                <div class="user-name-cell">
+                  <div class="user-avatar">
+                    {{ getInitials(user.name || user.username) }}
+                  </div>
+                  <span>{{ user.name || user.username }}</span>
+                </div>
+              </td>
+              <td>@{{ user.username }}</td>
+              <td>{{ user.email }}</td>
+              <td>{{ formatDate(user.created_at) }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div v-if="userStore.pagination.totalPages > 1" class="pagination">
+          <FormButton
+            @click="changePage(userStore.pagination.currentPage - 1)"
+            :disabled="userStore.pagination.currentPage <= 1"
+            variant="secondary"
+            text="Previous"
+          />
+
+          <span class="page-info">
+            Page {{ userStore.pagination.currentPage }} of {{ userStore.pagination.totalPages }}
+            ({{ userStore.pagination.total }} total users)
+          </span>
+
+          <FormButton
+            @click="changePage(userStore.pagination.currentPage + 1)"
+            :disabled="userStore.pagination.currentPage >= userStore.pagination.totalPages"
+            variant="secondary"
+            text="Next"
+          />
         </div>
-      </div>
-
-      <!-- Pagination -->
-      <div v-if="userStore.pagination.totalPages > 1" class="pagination">
-        <FormButton
-          @click="changePage(userStore.pagination.currentPage - 1)"
-          :disabled="userStore.pagination.currentPage <= 1"
-          variant="secondary"
-          text="Previous"
-        />
-
-        <span class="page-info">
-          Page {{ userStore.pagination.currentPage }} of {{ userStore.pagination.totalPages }}
-          ({{ userStore.pagination.total }} total users)
-        </span>
-
-        <FormButton
-          @click="changePage(userStore.pagination.currentPage + 1)"
-          :disabled="userStore.pagination.currentPage >= userStore.pagination.totalPages"
-          variant="secondary"
-          text="Next"
-        />
       </div>
     </div>
 
@@ -152,16 +169,33 @@
       @edit="editUser"
       @close="showUserDetail = false"
     />
+
+    <!-- Footer -->
+    <footer class="content-footer">
+      <div class="footer-actions">
+        <FormButton
+          variant="danger"
+          @click="deleteSelected"
+          text="Delete Selected"
+          :disabled="!hasSelectedUsers"
+        />
+        <FormButton
+          variant="success"
+          @click="createUser"
+          text="+ Create User"
+        />
+      </div>
+    </footer>
+
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../stores/user'
 import FormInput from '../components/FormInput.vue'
 import FormButton from '../components/FormButton.vue'
-import FormSelect from '../components/FormSelect.vue'
 import ErrorMessage from '../components/ErrorMessage.vue'
 import ConfirmModal from '../components/ConfirmModal.vue'
 import UserDetailModal from '../components/UserDetailModal.vue'
@@ -175,19 +209,14 @@ const showUserDetail = ref(false)
 const selectedUser = ref(null)
 const userToDelete = ref(null)
 
+// Table selection states
+const selectAll = ref(false)
+
 // Search data
 const searchData = reactive({
   search: '',
   perPage: 10
 })
-
-// Options for FormSelect
-const perPageOptions = [
-  { label: '10 per page', value: 10 },
-  { label: '25 per page', value: 25 },
-  { label: '50 per page', value: 50 },
-  { label: '100 per page', value: 100 }
-]
 
 // Methods
 const loadUsers = async (page = 1) => {
@@ -237,6 +266,22 @@ const deleteUser = async () => {
   }
 }
 
+// Table selection methods
+const toggleSelectAll = () => {
+  if (userStore.users) {
+    userStore.users.forEach(user => {
+      user.selected = selectAll.value
+    })
+  }
+}
+
+const updateSelectAll = () => {
+  if (userStore.users) {
+    const selectedUsers = userStore.users.filter(user => user.selected)
+    selectAll.value = selectedUsers.length === userStore.users.length
+  }
+}
+
 const getInitials = (name) => {
   if (!name) return '?'
   return name.split(' ')
@@ -250,243 +295,55 @@ const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
+    day: 'numeric'
   })
+}
+
+// Add data labels for mobile responsiveness
+const addDataLabelsToTable = () => {
+  const table = document.querySelector('.data-table')
+  if (!table) return
+
+  const headers = Array.from(table.querySelectorAll('thead th'))
+  const rows = table.querySelectorAll('tbody tr')
+
+  rows.forEach(row => {
+    const cells = row.querySelectorAll('td')
+    cells.forEach((cell, index) => {
+      if (headers[index]) {
+        const headerText = headers[index].textContent.trim()
+        if (headerText !== '' && !headerText.includes('checkbox')) {
+          cell.setAttribute('data-label', headerText)
+        }
+      }
+    })
+  })
+}
+
+// Footer functionality
+const hasSelectedUsers = computed(() => {
+  if (!userStore.users) return false
+  return userStore.users.some(user => user.selected)
+})
+
+const deleteSelected = async () => {
+  if (!userStore.users) return
+
+  const selectedUsers = userStore.users.filter(user => user.selected)
+  if (selectedUsers.length === 0) return
+
+  // You could show a confirmation modal here or implement bulk delete
+  console.log('Delete selected users:', selectedUsers)
+  // For now, just log - implement actual bulk delete based on your API
 }
 
 // Initialize
 onMounted(() => {
   loadUsers()
+  addDataLabelsToTable()
 })
 </script>
 
 <style scoped>
-.user-list-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-}
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #eee;
-}
-
-.header h2 {
-  margin: 0;
-  color: #333;
-}
-
-.filters-section {
-  margin-bottom: 30px;
-  padding: 20px;
-  background-color: #f8f9fa;
-  border-radius: 8px;
-}
-
-.search-form {
-  display: flex;
-  flex-direction: column;
-}
-
-.search-inputs {
-  display: flex;
-  gap: 10px;
-  align-items: flex-end;
-  flex-wrap: wrap;
-}
-
-.search-input-wrapper {
-  flex: 1;
-  min-width: 200px;
-}
-
-.per-page-wrapper {
-  min-width: 150px;
-}
-
-.loading {
-  text-align: center;
-  padding: 40px;
-  color: #666;
-  font-size: 18px;
-}
-
-.no-users {
-  text-align: center;
-  padding: 60px 20px;
-  color: #666;
-}
-
-.no-users p {
-  font-size: 18px;
-  margin-bottom: 20px;
-}
-
-.users-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 20px;
-  margin-bottom: 30px;
-}
-
-.user-card {
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: box-shadow 0.3s;
-}
-
-.user-card:hover {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-  margin-bottom: 15px;
-}
-
-.user-avatar {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  background-color: #007bff;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  margin-right: 15px;
-  flex-shrink: 0;
-}
-
-.user-details {
-  flex: 1;
-  min-width: 0;
-}
-
-.user-details h3 {
-  margin: 0 0 5px 0;
-  color: #333;
-  font-size: 16px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.user-details p {
-  margin: 2px 0;
-  color: #666;
-  font-size: 14px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.user-email {
-  color: #007bff !important;
-}
-
-.user-meta {
-  font-size: 12px !important;
-  color: #999 !important;
-}
-
-.user-actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 20px;
-  padding: 20px;
-  border-top: 1px solid #eee;
-  flex-wrap: wrap;
-}
-
-.page-info {
-  font-size: 14px;
-  color: #666;
-  text-align: center;
-}
-
-/* Mobile optimizations */
-@media (max-width: 768px) {
-  .user-list-container {
-    padding: 15px;
-  }
-
-  .header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 15px;
-    text-align: center;
-  }
-
-  .search-inputs {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .search-input-wrapper,
-  .per-page-wrapper {
-    min-width: auto;
-  }
-
-  .users-grid {
-    grid-template-columns: 1fr;
-    gap: 15px;
-  }
-
-  .pagination {
-    flex-direction: column;
-    gap: 15px;
-  }
-
-  .user-actions {
-    justify-content: space-between;
-  }
-}
-
-@media (max-width: 480px) {
-  .user-list-container {
-    padding: 10px;
-  }
-
-  .filters-section {
-    padding: 15px;
-  }
-
-  .user-card {
-    padding: 15px;
-  }
-
-  .user-info {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-  }
-
-  .user-avatar {
-    margin-right: 0;
-    align-self: center;
-  }
-
-  .user-details {
-    text-align: center;
-  }
-}
 </style>

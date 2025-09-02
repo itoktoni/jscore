@@ -5,7 +5,6 @@
  */
 
 <template>
-  <div class="system-settings-page">
     <div class="card">
       <div class="row">
         <div class="col">
@@ -83,7 +82,6 @@
         </tbody>
       </table>
     </div>
-  </div>
 </template>
 
 <script setup>

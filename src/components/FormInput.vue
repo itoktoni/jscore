@@ -5,7 +5,7 @@
  */
 
 <template>
-  <div class="form-group">
+  <div :class="formGroupClasses">
     <label v-if="computedLabel" :for="id || name" class="form-label">
       {{ computedLabel }}
       <span v-if="isRequired" class="required-asterisk">*</span>
@@ -33,7 +33,7 @@
 </template>
 
 <script setup>
-import { computed, inject, ref } from 'vue'
+import { computed, inject, ref, onMounted, onUnmounted } from 'vue'
 
 const props = defineProps({
   id: {
@@ -83,6 +83,10 @@ const props = defineProps({
   customValidators: {
     type: Object,
     default: () => ({})
+  },
+  col: {
+    type: [String, Number],
+    default: 6
   }
 })
 
@@ -212,6 +216,15 @@ const validateField = (value, rulesString, fieldName) => {
   return null
 }
 
+const formGroupClasses = computed(() => {
+  const classes = ['form-group']
+
+  // Always apply column class since we have a default
+  classes.push(`col-${props.col}`)
+
+  return classes
+})
+
 const inputClasses = computed(() => ({
   'form-input': true,
   'error': !!computedError.value,
@@ -251,7 +264,9 @@ const computedError = computed(() => {
 
   // Check injected fieldErrors first
   if (fieldErrors && props.name && fieldErrors[props.name]) {
-    return fieldErrors[props.name]
+    const error = fieldErrors[props.name]
+    // Ensure we return a string, not an array or object
+    return typeof error === 'string' ? error : (Array.isArray(error) ? error[0] : String(error))
   }
 
   // Only validate if field has been touched and we have rules
@@ -276,6 +291,7 @@ const isRequired = computed(() => {
 
 const handleInput = (event) => {
   const value = event.target.value
+  console.log('FormInput handleInput, name:', props.name, 'value:', value)
 
   // Mark field as touched when user starts typing
   isTouched.value = true
@@ -286,6 +302,7 @@ const handleInput = (event) => {
   // Also update formData if available
   if (formData && props.name) {
     formData[props.name] = value
+    console.log('Updated formData:', formData)
   }
 
   // Clear field error when user starts typing
@@ -308,17 +325,146 @@ const handleBlur = (event) => {
   if (props.rules) {
     const validationError = validateField(event.target.value, props.rules, computedLabel.value)
     if (validationError && fieldErrors && props.name) {
-      fieldErrors[props.name] = validationError
+      // Ensure we store the error as a string
+      fieldErrors[props.name] = String(validationError)
+    } else if (fieldErrors && props.name) {
+      // Clear error if validation passes
+      delete fieldErrors[props.name]
     }
   }
 
   emit('blur', event)
 }
+
+// Function to trigger validation from external sources
+const triggerValidation = () => {
+  if (props.rules && formData && computedValue.value !== undefined) {
+    isTouched.value = true
+    const validationError = validateField(computedValue.value, props.rules, computedLabel.value)
+    if (validationError && fieldErrors && props.name) {
+      fieldErrors[props.name] = String(validationError)
+    } else if (fieldErrors && props.name) {
+      delete fieldErrors[props.name]
+    }
+  }
+}
+
+// Listen for validation events from FormContainer
+const handleValidateAll = () => {
+  triggerValidation()
+}
+
+// Set up event listeners
+onMounted(() => {
+  if (typeof window !== 'undefined' && document) {
+    document.addEventListener('validate-all', handleValidateAll)
+  }
+})
+
+onUnmounted(() => {
+  if (typeof window !== 'undefined' && document) {
+    document.removeEventListener('validate-all', handleValidateAll)
+  }
+})
 </script>
 
 <style scoped>
 .form-group {
   margin-bottom: 20px;
+}
+
+/* Column support - make components work inline without row wrapper */
+.form-group.col-1 {
+  display: inline-block;
+  width: calc(8.333% - 10px);
+  margin-right: 10px;
+  vertical-align: top;
+}
+
+.form-group.col-2 {
+  display: inline-block;
+  width: calc(16.666% - 10px);
+  margin-right: 10px;
+  vertical-align: top;
+}
+
+.form-group.col-3 {
+  display: inline-block;
+  width: calc(25% - 10px);
+  margin-right: 10px;
+  vertical-align: top;
+}
+
+.form-group.col-4 {
+  display: inline-block;
+  width: calc(33.333% - 10px);
+  margin-right: 10px;
+  vertical-align: top;
+}
+
+.form-group.col-5 {
+  display: inline-block;
+  width: calc(41.666% - 10px);
+  margin-right: 10px;
+  vertical-align: top;
+}
+
+.form-group.col-6 {
+  display: inline-block;
+  width: calc(50% - 10px);
+  margin-right: 10px;
+  vertical-align: top;
+}
+
+.form-group.col-7 {
+  display: inline-block;
+  width: calc(58.333% - 10px);
+  margin-right: 10px;
+  vertical-align: top;
+}
+
+.form-group.col-8 {
+  display: inline-block;
+  width: calc(66.666% - 10px);
+  margin-right: 10px;
+  vertical-align: top;
+}
+
+.form-group.col-9 {
+  display: inline-block;
+  width: calc(75% - 10px);
+  margin-right: 10px;
+  vertical-align: top;
+}
+
+.form-group.col-10 {
+  display: inline-block;
+  width: calc(83.333% - 10px);
+  margin-right: 10px;
+  vertical-align: top;
+}
+
+.form-group.col-11 {
+  display: inline-block;
+  width: calc(91.666% - 10px);
+  margin-right: 10px;
+  vertical-align: top;
+}
+
+.form-group.col-12 {
+  display: block;
+  width: 100%;
+  margin-right: 0;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .form-group[class*="col-"] {
+    display: block !important;
+    width: 100% !important;
+    margin-right: 0 !important;
+    margin-bottom: 15px;
+  }
 }
 
 .form-label {
@@ -336,7 +482,6 @@ const handleBlur = (event) => {
 
 .form-input {
   width: 100%;
-  padding: 14px 12px;
   border: 2px solid #ddd;
   border-radius: 8px;
   font-size: 16px;

@@ -5,7 +5,7 @@
  */
 
 <template>
-  <div class="form-group">
+  <div :class="formGroupClasses">
     <label v-if="computedLabel" :for="computedId" class="form-label">
       {{ computedLabel }}
       <span v-if="isRequired" class="required-asterisk">*</span>
@@ -39,7 +39,7 @@
 </template>
 
 <script setup>
-import { computed, inject } from 'vue'
+import { computed, inject, onMounted, onUnmounted } from 'vue'
 
 const props = defineProps({
   id: {
@@ -93,6 +93,10 @@ const props = defineProps({
   rules: {
     type: String,
     default: ''
+  },
+  col: {
+    type: [String, Number],
+    default: 6
   }
 })
 
@@ -140,7 +144,9 @@ const computedValue = computed(() => {
 const computedError = computed(() => {
   if (props.error) return props.error
   if (fieldErrors && props.name && fieldErrors[props.name]) {
-    return fieldErrors[props.name]
+    const error = fieldErrors[props.name]
+    // Ensure we return a string, not an array or object
+    return typeof error === 'string' ? error : (Array.isArray(error) ? error[0] : String(error))
   }
   return ''
 })
@@ -150,6 +156,15 @@ const isRequired = computed(() => {
   if (props.required) return true
   if (props.rules && props.rules.includes('required')) return true
   return false
+})
+
+const formGroupClasses = computed(() => {
+  const classes = ['form-group']
+  
+  // Always apply column class since we have a default
+  classes.push(`col-${props.col}`)
+  
+  return classes
 })
 
 const selectClasses = computed(() => ({
@@ -186,11 +201,138 @@ const handleChange = (event) => {
 const handleBlur = (event) => {
   emit('blur', event)
 }
+
+// Function to trigger validation from external sources
+const triggerValidation = () => {
+  if (props.rules && formData && computedValue.value !== undefined) {
+    // For select validation, we'd need to implement rule parsing similar to FormInput
+    // For now, just check required validation
+    if (props.rules.includes('required') && !computedValue.value) {
+      if (fieldErrors && props.name) {
+        fieldErrors[props.name] = `${computedLabel.value} is required`
+      }
+    } else if (fieldErrors && props.name) {
+      delete fieldErrors[props.name]
+    }
+  }
+}
+
+// Listen for validation events from FormContainer
+const handleValidateAll = () => {
+  triggerValidation()
+}
+
+// Set up event listeners
+onMounted(() => {
+  if (typeof window !== 'undefined' && document) {
+    document.addEventListener('validate-all', handleValidateAll)
+  }
+})
+
+onUnmounted(() => {
+  if (typeof window !== 'undefined' && document) {
+    document.removeEventListener('validate-all', handleValidateAll)
+  }
+})
 </script>
 
 <style scoped>
 .form-group {
   margin-bottom: 20px;
+}
+
+/* Column support - make components work inline without row wrapper */
+.form-group.col-1 {
+  display: inline-block;
+  width: calc(8.333% - 10px);
+  margin-right: 10px;
+  vertical-align: top;
+}
+
+.form-group.col-2 {
+  display: inline-block;
+  width: calc(16.666% - 10px);
+  margin-right: 10px;
+  vertical-align: top;
+}
+
+.form-group.col-3 {
+  display: inline-block;
+  width: calc(25% - 10px);
+  margin-right: 10px;
+  vertical-align: top;
+}
+
+.form-group.col-4 {
+  display: inline-block;
+  width: calc(33.333% - 10px);
+  margin-right: 10px;
+  vertical-align: top;
+}
+
+.form-group.col-5 {
+  display: inline-block;
+  width: calc(41.666% - 10px);
+  margin-right: 10px;
+  vertical-align: top;
+}
+
+.form-group.col-6 {
+  display: inline-block;
+  width: calc(50% - 10px);
+  margin-right: 10px;
+  vertical-align: top;
+}
+
+.form-group.col-7 {
+  display: inline-block;
+  width: calc(58.333% - 10px);
+  margin-right: 10px;
+  vertical-align: top;
+}
+
+.form-group.col-8 {
+  display: inline-block;
+  width: calc(66.666% - 10px);
+  margin-right: 10px;
+  vertical-align: top;
+}
+
+.form-group.col-9 {
+  display: inline-block;
+  width: calc(75% - 10px);
+  margin-right: 10px;
+  vertical-align: top;
+}
+
+.form-group.col-10 {
+  display: inline-block;
+  width: calc(83.333% - 10px);
+  margin-right: 10px;
+  vertical-align: top;
+}
+
+.form-group.col-11 {
+  display: inline-block;
+  width: calc(91.666% - 10px);
+  margin-right: 10px;
+  vertical-align: top;
+}
+
+.form-group.col-12 {
+  display: block;
+  width: 100%;
+  margin-right: 0;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .form-group[class*="col-"] {
+    display: block !important;
+    width: 100% !important;
+    margin-right: 0 !important;
+    margin-bottom: 15px;
+  }
 }
 
 .form-label {
@@ -208,7 +350,6 @@ const handleBlur = (event) => {
 
 .form-select {
   width: 100%;
-  padding: 14px 12px;
   border: 2px solid #ddd;
   border-radius: 8px;
   font-size: 16px;
@@ -223,7 +364,7 @@ const handleBlur = (event) => {
   background-repeat: no-repeat;
   background-position: right 12px center;
   background-size: 16px 12px;
-  padding-right: 40px;
+  padding-right: 0px;
 }
 
 .form-select:focus {

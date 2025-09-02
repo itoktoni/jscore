@@ -46,7 +46,7 @@
               v-for="(subItem, index) in menu"
               :key="index"
               :to="subItem.route"
-              :class="{ 'active': $route.path === subItem.route }"
+              :class="{ 'active': isRouteActive(subItem.route) }"
             >
               <span>{{ subItem.title }}</span>
               <i class="bi bi-arrow-right"></i>
@@ -99,13 +99,7 @@
         <router-view />
       </div>
 
-      <footer class="content-footer">
-        <div class="grouped">
-          <button class="button error">Kosongkan</button>
-          <button class="button success">Buat</button>
-          <button class="button primary">Sort</button>
-        </div>
-      </footer>
+
     </main>
   </div>
 
@@ -153,7 +147,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 
@@ -230,6 +224,17 @@ const notifications = ref([
 ])
 
 // Methods
+const isRouteActive = (route) => {
+  // For exact match on root paths
+  if (route === '/' || route === '/dashboard') {
+    return router.currentRoute.value.path === route
+  }
+  
+  // For nested routes (like /users, /users/create, /users/:id/edit)
+  // Check if current path starts with the menu route
+  return router.currentRoute.value.path.startsWith(route)
+}
+
 const selectMenu = (menuId) => {
   selectedMenu.value = menuId
   if (window.innerWidth <= 768) {
@@ -287,6 +292,21 @@ const logout = async () => {
   router.push('/login')
 }
 
+// Set the active menu based on current route
+const setActiveMenuFromRoute = () => {
+  const currentPath = router.currentRoute.value.path
+  
+  // Check which main menu should be active based on current route
+  for (const [menuId, subMenuItems] of Object.entries(subMenus.value)) {
+    for (const subItem of subMenuItems) {
+      if (currentPath.startsWith(subItem.route) && subItem.route !== '/') {
+        selectedMenu.value = menuId
+        return
+      }
+    }
+  }
+}
+
 const handleResize = () => {
   if (window.innerWidth > 768) {
     sidebarOpen.value = false
@@ -304,6 +324,13 @@ onMounted(() => {
   window.addEventListener('resize', handleResize)
   document.addEventListener('click', handleClickOutside)
   updateNotificationCount()
+  // Set active menu based on current route
+  setActiveMenuFromRoute()
+})
+
+// Watch for route changes and update active menu
+watch(() => router.currentRoute.value.path, () => {
+  setActiveMenuFromRoute()
 })
 
 onUnmounted(() => {
@@ -316,415 +343,4 @@ onUnmounted(() => {
 /* Import local Chota CSS and Bootstrap Icons */
 @import url('../assets/css/chota.css');
 @import url('https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css');
-
-/* Custom styles for the layout */
-.app-container {
-  display: flex;
-  background-color: var(--bg-secondary-color);
-}
-
-.sidebar-container {
-  display: flex;
-  width: 320px;
-  background-color: var(--color-darkGrey);
-  transition: transform 0.3s ease;
-  position: fixed;
-  left: 0;
-  top: 0;
-  height: 100vh;
-  z-index: 1000;
-  transform: translateX(-100%);
-}
-
-.sidebar-container.open {
-  transform: translateX(0);
-}
-
-.main-sidebar {
-  width: 80px;
-  background-color: var(--text-dark);
-  display: flex;
-  flex-direction: column;
-}
-
-.main-nav {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.nav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 15px 10px;
-  color: var(--color-lightGrey);
-  text-decoration: none;
-  border-bottom: 1px solid var(--color-darkGrey);
-  transition: all 0.3s ease;
-}
-
-.nav-item:hover,
-.nav-item.active {
-  background-color: var(--color-primary);
-  color: var(--text-light);
-}
-
-.nav-item i {
-  font-size: 18px;
-  margin-bottom: 5px;
-}
-
-.nav-item span {
-  font-size: 12px;
-  text-align: center;
-}
-
-.sub-menu-container {
-  width: 240px;
-  background-color: var(--color-darkGrey);
-  padding: 20px;
-  overflow-y: auto;
-}
-
-.logo {
-  display: block;
-  text-align: center;
-  margin-bottom: 30px;
-  text-decoration: none;
-}
-
-.logo h1 {
-  margin: 0;
-  color: var(--text-light);
-}
-
-.sub-menu-list {
-  display: flex;
-  flex-direction: column;
-}
-
-.sub-menu-list a {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 15px;
-  color: var(--color-lightGrey);
-  text-decoration: none;
-  border-radius: 4px;
-  margin-bottom: 5px;
-  transition: all 0.3s ease;
-}
-
-.sub-menu-list a:hover,
-.sub-menu-list a.active {
-  background-color: var(--color-primary);
-  color: var(--text-light);
-}
-
-.main-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  margin-left: 0;
-  transition: margin-left 0.3s ease;
-}
-
-.main-header {
-  background-color: var(--bg-color);
-  padding: 15px 20px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.header-title-wrapper {
-  gap: 15px;
-}
-
-.mobile-menu-button {
-  background: none;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-  color: var(--color-darkGrey);
-}
-
-.header-title {
-  margin: 0;
-  color: var(--color-darkGrey);
-  font-size: 20px;
-}
-
-.user-profile {
-  gap: 15px;
-}
-
-.notification-icon,
-.profile-icon {
-  position: relative;
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 50%;
-  transition: background-color 0.3s ease;
-}
-
-.notification-icon:hover,
-.profile-icon:hover {
-  background-color: var(--bg-secondary-color);
-}
-
-.notification-badge {
-  position: absolute;
-  top: 0;
-  right: 0;
-  background-color: var(--color-error);
-  color: var(--text-light);
-  border-radius: 50%;
-  width: 18px;
-  height: 18px;
-  font-size: 11px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.profile-dropdown {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  background-color: var(--bg-color);
-  border: 1px solid var(--color-lightGrey);
-  border-radius: 4px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  min-width: 150px;
-  z-index: 1001;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(-10px);
-  transition: all 0.3s ease;
-}
-
-.profile-dropdown.active {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-}
-
-.dropdown-item {
-  display: block;
-  padding: 10px 15px;
-  color: var(--font-color);
-  text-decoration: none;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.dropdown-item:hover {
-  background-color: var(--bg-secondary-color);
-}
-
-.dropdown-item:last-child {
-  border-bottom: none;
-}
-
-.content-body {
-  flex: 1;
-  padding: 20px;
-  overflow-y: auto;
-}
-
-.content-footer {
-  background-color: var(--bg-color);
-  padding: 15px 20px;
-  border-top: 1px solid var(--color-lightGrey);
-  display: flex;
-  justify-content: flex-end;
-}
-
-.notification-drawer {
-  position: fixed;
-  right: 0;
-  top: 0;
-  width: 400px;
-  height: 100vh;
-  background-color: var(--bg-color);
-  box-shadow: -4px 0 12px rgba(0,0,0,0.15);
-  z-index: 1002;
-  transform: translateX(100%);
-  transition: transform 0.3s ease;
-  display: flex;
-  flex-direction: column;
-}
-
-.notification-drawer.open {
-  transform: translateX(0);
-}
-
-.notification-header {
-  padding: 20px;
-  border-bottom: 1px solid var(--border-color);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.notification-title {
-  margin: 0;
-  color: var(--color-darkGrey);
-}
-
-.notification-close {
-  background: none;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  color: var(--text-muted);
-}
-
-.notification-list {
-  flex: 1;
-  overflow-y: auto;
-}
-
-.notification-item {
-  display: flex;
-  padding: 15px;
-  border-bottom: 1px solid var(--border-color);
-  transition: background-color 0.3s ease;
-}
-
-.notification-item.unread {
-  background-color: var(--notification-unread-bg);
-  border-left: 3px solid var(--color-primary);
-}
-
-.notification-item:hover {
-  background-color: var(--bg-secondary-color);
-}
-
-.notification-icon-small {
-  margin-right: 15px;
-  color: var(--color-primary);
-}
-
-.notification-content {
-  flex: 1;
-}
-
-.notification-message {
-  margin: 0 0 5px 0;
-  color: var(--font-color);
-  font-size: 14px;
-  line-height: 1.4;
-}
-
-.notification-time {
-  color: var(--text-muted);
-  font-size: 12px;
-  margin-bottom: 8px;
-}
-
-.notification-actions {
-  display: flex;
-  gap: 10px;
-}
-
-.notification-action {
-  background: none;
-  border: none;
-  color: var(--color-primary);
-  font-size: 12px;
-  cursor: pointer;
-  text-decoration: underline;
-}
-
-.notification-footer {
-  padding: 15px 20px;
-  border-top: 1px solid var(--border-color);
-}
-
-.mark-all-read {
-  width: 100%;
-  background-color: var(--color-primary);
-  color: var(--text-light);
-  border: none;
-  padding: 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.mark-all-read:hover {
-  background-color: var(--primary-hover);
-}
-
-.overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 999;
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.3s ease;
-}
-
-.overlay.active {
-  opacity: 1;
-  visibility: visible;
-}
-
-/* Desktop styles */
-@media (min-width: 769px) {
-  .sidebar-container {
-    position: static;
-    transform: translateX(0);
-  }
-
-  .main-content {
-    margin-left: 320px;
-  }
-
-  .mobile-menu-button {
-    display: none;
-  }
-
-  .overlay {
-    display: none;
-  }
-}
-
-/* Mobile styles */
-@media (max-width: 768px) {
-  .main-content {
-    margin-left: 0;
-  }
-
-  .notification-drawer {
-    width: 100%;
-    max-width: 400px;
-  }
-
-  .content-footer {
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-}
-
-@media (max-width: 480px) {
-  .header-title {
-    font-size: 16px;
-  }
-
-  .content-body {
-    padding: 15px;
-  }
-
-  .content-footer {
-    padding: 10px 15px;
-  }
-}
 </style>

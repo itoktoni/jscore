@@ -7,10 +7,17 @@
 <template>
   <div class="register-container">
     <div class="register-card">
-      <h2>Create Account</h2>
-
-      <div class="register-form">
-        <form @submit.prevent="handleRegister">
+      <FormContainer
+        title="Create Account"
+        subtitle="Join us today! Fill in your details below to get started."
+        :initial-data="initialFormData"
+        submit-text="Create Account"
+        loading-text="Creating Account..."
+        submit-variant="success"
+        :submit-handler="handleRegister"
+        :show-footer="false"
+      >
+        <template #default="{ formData, fieldErrors, isSubmitting }">
           <FormInput
             name="username"
             rules="required|min:3|max:20|alpha_num"
@@ -24,58 +31,70 @@
             rules="required|min:6"
             hint="Must be at least 6 characters"
           />
-          <FormInput name="password_confirmation" type="password" rules="required|confirmed" />
+          <FormInput 
+            name="password_confirmation" 
+            type="password" 
+            rules="required|confirmed" 
+          />
 
           <FormButton
             type="submit"
             variant="success"
             :text="isSubmitting ? 'Creating Account...' : 'Create Account'"
-            :disabled="!isFormValid"
+            :disabled="isSubmitting"
             block
+            @click="handleRegisterSubmit"
           />
-        </form>
+        </template>
+      </FormContainer>
 
-        <ErrorMessage :message="globalError" />
-
-        <FormLink
-          text="Already have an account?"
-          link-text="Login here"
-          to="/login"
-        />
-      </div>
+      <FormLink
+        text="Already have an account?"
+        link-text="Login here"
+        to="/login"
+      />
     </div>
   </div>
 </template>
 
 <script setup>
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
-import { useFormValidation } from '../composables/useFormValidation'
+import FormContainer from '../components/FormContainer.vue'
 import FormInput from '../components/FormInput.vue'
 import FormButton from '../components/FormButton.vue'
-import ErrorMessage from '../components/ErrorMessage.vue'
 import FormLink from '../components/FormLink.vue'
 
+const router = useRouter()
 const authStore = useAuthStore()
-const {
-  isSubmitting,
-  globalError,
-  fieldErrors,
-  formData,
-  commonRules,
-  submitForm,
-  isFormValid
-} = useFormValidation()
 
-const handleRegister = async () => {
-  await submitForm(
-    (data) => authStore.register(data),
-    {
-      redirectUrl: '/profile',
-      onSuccess: (response) => {
-        console.log('Registration successful:', response)
-      }
-    }
-  )
+// Initial form data
+const initialFormData = ref({
+  username: '',
+  name: '',
+  email: '',
+  password: '',
+  password_confirmation: ''
+})
+
+const handleRegister = async (data) => {
+  const result = await authStore.register(data)
+  
+  if (result.success) {
+    // Redirect to profile on successful registration
+    router.push('/profile')
+    return result
+  } else {
+    // Return error for FormContainer to handle
+    return result
+  }
+}
+
+// Handle form submission when footer is disabled
+const handleRegisterSubmit = async (event) => {
+  event.preventDefault()
+  // This will be handled by FormContainer internally
 }
 </script>
 

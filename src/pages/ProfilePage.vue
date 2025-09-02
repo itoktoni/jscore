@@ -1,7 +1,7 @@
 /**
  * Profile Page
  *
- * User profile management page with view and edit modes
+ * User profile management page with view and edit modes using FormContainer
  */
 
 <template>
@@ -15,60 +15,57 @@
       />
     </div>
 
-    <div class="profile-content">
-      <!-- View Mode -->
-      <div v-if="!editMode" class="profile-view">
-        <div class="profile-info">
-          <div class="info-item" v-for="(value, key) in displayData" :key="key">
-            <label>{{ formatLabel(key) }}:</label>
-            <span>{{ value || 'Not provided' }}</span>
-          </div>
+    <!-- View Mode -->
+    <div v-if="!editMode" class="card profile-view">
+      <div class="page-header">
+        <h2>Profile Information</h2>
+        <p>Your account details and information</p>
+      </div>
+
+      <div class="profile-info">
+        <div class="info-item" v-for="(value, key) in displayData" :key="key">
+          <label>{{ formatLabel(key) }}:</label>
+          <span>{{ value || 'Not provided' }}</span>
         </div>
-        <div class="profile-actions">
+      </div>
+
+      <footer class="content-footer">
+        <div class="footer-actions">
+          <div></div> <!-- Empty div for spacing -->
           <FormButton
             variant="primary"
             @click="toggleEditMode"
             text="Edit Profile"
           />
         </div>
-      </div>
-
-      <!-- Edit Mode -->
-      <div v-else class="profile-edit">
-        <div class="edit-form">
-          <form @submit.prevent="handleUpdateProfile">
-            <FormInput
-              name="username"
-              hint="Username cannot be changed"
-              disabled
-            />
-            <FormInput name="name" rules="required|min:2" />
-            <FormInput name="email" type="email" rules="required|email" />
-
-            <div class="form-actions">
-              <FormButton
-                type="submit"
-                variant="success"
-                :loading="isSubmitting"
-                :text="isSubmitting ? 'Saving...' : 'Save Changes'"
-                block
-              />
-              <FormButton
-                type="button"
-                variant="secondary"
-                @click="cancelEdit"
-                text="Cancel"
-                block
-              />
-            </div>
-          </form>
-
-          <div v-if="globalError" class="error-message">
-            {{ globalError }}
-          </div>
-        </div>
-      </div>
+      </footer>
     </div>
+
+    <!-- Edit Mode -->
+    <FormContainer
+      v-else
+      title="Edit Profile"
+      subtitle="Update your account information"
+      :initial-data="initialFormData"
+      cancel-text="Cancel"
+      submit-text="Save Changes"
+      loading-text="Saving..."
+      submit-variant="success"
+      :submit-handler="handleUpdateProfile"
+      @cancel="cancelEdit"
+      ref="formContainer"
+    >
+      <template #default="{ formData, fieldErrors, isSubmitting }">
+        <FormInput
+          name="username"
+          hint="Username cannot be changed"
+          disabled
+          col="12"
+        />
+        <FormInput name="name" rules="required|min:2" col="12" />
+        <FormInput name="email" type="email" rules="required|email" col="12" />
+      </template>
+    </FormContainer>
   </div>
 </template>
 
@@ -76,29 +73,15 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
-import { useFormValidation } from '../composables/useFormValidation'
+import FormContainer from '../components/FormContainer.vue'
 import FormInput from '../components/FormInput.vue'
 import FormButton from '../components/FormButton.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
-const {
-  isSubmitting,
-  globalError,
-  fieldErrors,
-  formData,
-  commonRules,
-  resetForm,
-  setFormData,
-  submitForm
-} = useFormValidation()
+const formContainer = ref(null)
 
 const editMode = ref(false)
-
-// Initialize form data
-formData.username = ''
-formData.name = ''
-formData.email = ''
 
 // Computed property to get user data for display
 const displayData = computed(() => {
@@ -111,40 +94,65 @@ const displayData = computed(() => {
   }
 })
 
+// Initial form data for editing
+const initialFormData = ref({
+  username: '',
+  name: '',
+  email: ''
+})
+
 const toggleEditMode = () => {
   editMode.value = true
   // Populate form data with current user data
-  setFormData({
+  const userData = {
     username: authStore.user.username || '',
     name: authStore.user.name || '',
     email: authStore.user.email || ''
-  })
+  }
+  
+  // Update both initialFormData and form container
+  Object.assign(initialFormData.value, userData)
+  
+  // Set form data in FormContainer (will be available after next tick)
+  setTimeout(() => {
+    if (formContainer.value) {
+      formContainer.value.setFormData(userData)
+    }
+  }, 0)
 }
 
 const cancelEdit = () => {
   editMode.value = false
-  resetForm()
+  // Reset form data
+  if (formContainer.value) {
+    formContainer.value.resetForm()
+  }
 }
 
-const handleUpdateProfile = async () => {
-  await submitForm(
-    async (data) => {
-      return await authStore.updateProfile({
-        username: data.username,
-        name: data.name,
-        email: data.email
-      })
-    },
-    {
-      onSuccess: () => {
-        editMode.value = false
-      }
-    }
-  )
+const handleUpdateProfile = async (data) => {
+  const result = await authStore.updateProfile({
+    username: data.username,
+    name: data.name,
+    email: data.email
+  })
+
+  if (result.success) {
+    // Exit edit mode on success
+    editMode.value = false
+    return result
+  } else {
+    // Return error for FormContainer to handle
+    return result
+  }
 }
 
 const formatLabel = (key) => {
   return key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')
+}
+
+const handleLogout = async () => {
+  await authStore.logout()
+  router.push('/login')
 }
 </script>
 

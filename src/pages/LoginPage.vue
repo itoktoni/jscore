@@ -7,52 +7,64 @@
 <template>
   <div class="login-container">
     <div class="login-card">
-      <h2>Login</h2>
+      <FormContainer
+        title="Login"
+        :action="handleLogin"
+        :show-footer="false"
+      >
+        <FormInput col="12" name="username" rules="required|min:3" />
+        <FormInput col="12" name="password" type="password" rules="required|min:4" />
 
-      <div class="login-form">
-        <form @submit.prevent="handleLogin">
-          <FormInput name="username" rules="required|min:3" />
-          <FormInput name="password" type="password" rules="required|min:4" />
-          <FormButton type="submit" variant="primary" block text="Login"/>
-        </form>
-
-        <div v-if="globalError" class="error-message">
-          {{ globalError }}
+        <div class="form-actions">
+          <FormButton col="12" type="submit" variant="primary" text="Login" />
         </div>
+      </FormContainer>
 
-        <div class="register-link">
-          <p>Don't have an account? <router-link to="/register">Register here</router-link></p>
-        </div>
+      <div class="register-link">
+        <p>Don't have an account? <router-link to="/register">Register here</router-link></p>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
-import { useFormValidation } from '../composables/useFormValidation'
+import FormContainer from '../components/FormContainer.vue'
 import FormInput from '../components/FormInput.vue'
 import FormButton from '../components/FormButton.vue'
 
+const router = useRouter()
 const authStore = useAuthStore()
-const {
-  isSubmitting,
-  globalError,
-  fieldErrors,
-  formData,
-  commonRules,
-  submitForm
-} = useFormValidation()
 
-const handleLogin = async () => {
-  await submitForm(
-    async (data) => {
-      return await authStore.login(data.username, data.password)
-    },
-    {
-      redirectUrl: '/profile'
+const handleLogin = async (data) => {
+  console.log('Login attempt with:', data)
+
+  try {
+    const result = await authStore.login(data.username, data.password)
+
+    if (result.success) {
+      console.log('Login successful')
+      // Redirect to profile on successful login
+      router.push('/profile')
+      return { success: true }
+    } else {
+      console.log('Login failed:', result)
+      // Return error for FormContainer to handle
+      return {
+        success: false,
+        error: result.error || 'Login failed',
+        errors: result.errorData?.errors || {}
+      }
     }
-  )
+  } catch (error) {
+    console.log('Login error:', error)
+    return {
+      success: false,
+      error: error.message || 'An unexpected error occurred',
+      errors: {}
+    }
+  }
 }
 </script>
 
@@ -82,102 +94,6 @@ const handleLogin = async () => {
   color: #333;
   font-size: 24px;
   font-weight: 600;
-}
-
-.login-form {
-  display: flex;
-  flex-direction: column;
-}
-
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 8px;
-  color: #555;
-  font-weight: 500;
-  font-size: 14px;
-}
-
-.form-input {
-  width: 100%;
-  padding: 14px 12px;
-  border: 2px solid #ddd;
-  border-radius: 8px;
-  font-size: 16px;
-  transition: all 0.3s ease;
-  box-sizing: border-box;
-  background-color: #fff;
-  -webkit-appearance: none;
-  appearance: none;
-  touch-action: manipulation;
-}
-
-.form-input:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
-}
-
-.form-input.error {
-  border-color: #dc3545;
-  background-color: #fff5f5;
-  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
-}
-
-.field-error {
-  color: #dc3545;
-  font-size: 13px;
-  margin-top: 6px;
-  margin-bottom: 0;
-  font-weight: 500;
-}
-
-.login-button {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  padding: 16px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 16px;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  width: 100%;
-  margin-top: 10px;
-  -webkit-appearance: none;
-  appearance: none;
-  touch-action: manipulation;
-}
-
-.login-button:hover:not(:disabled) {
-  background-color: #0056b3;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
-}
-
-.login-button:active {
-  transform: translateY(0);
-}
-
-.login-button:disabled {
-  background-color: #6c757d;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-.error-message {
-  background-color: #f8d7da;
-  color: #721c24;
-  padding: 12px 16px;
-  border-radius: 8px;
-  margin-top: 15px;
-  border: 1px solid #f5c6cb;
-  font-size: 14px;
-  line-height: 1.4;
 }
 
 .register-link {
@@ -220,39 +136,6 @@ const handleLogin = async () => {
   .login-card h2 {
     font-size: 22px;
     margin-bottom: 25px;
-  }
-
-  .form-input {
-    padding: 16px 14px;
-    font-size: 16px; /* Prevents zoom on iOS */
-    border-radius: 6px;
-  }
-
-  .login-button {
-    padding: 18px 20px;
-    font-size: 16px;
-    border-radius: 6px;
-    margin-top: 15px;
-  }
-
-  .form-group {
-    margin-bottom: 18px;
-  }
-
-  .form-group label {
-    font-size: 13px;
-    margin-bottom: 6px;
-  }
-
-  .field-error {
-    font-size: 12px;
-    margin-top: 4px;
-  }
-
-  .error-message {
-    padding: 10px 12px;
-    font-size: 13px;
-    margin-top: 12px;
   }
 
   .register-link {
