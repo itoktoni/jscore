@@ -156,6 +156,11 @@
     <footer class="content-footer">
       <div class="footer-actions">
         <FormButton
+          variant="secondary"
+          @click="loadUsers"
+          text="Refresh"
+        />
+        <FormButton
           variant="danger"
           @click="deleteSelected"
           text="Delete Selected"
@@ -194,7 +199,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, onBeforeRouteUpdate } from 'vue-router'
 import { useUserStore } from '../stores/user'
 import FormInput from '../components/FormInput.vue'
 import FormButton from '../components/FormButton.vue'
@@ -263,10 +268,27 @@ const confirmDelete = (user) => {
 
 const deleteUser = async () => {
   if (userToDelete.value) {
-    const result = await userStore.deleteUser(userToDelete.value.id)
-    if (result.success) {
+    try {
+      const result = await userStore.deleteUser(userToDelete.value.id)
+      if (result.success) {
+        showDeleteConfirm.value = false
+        userToDelete.value = null
+        // Refresh the user list after successful deletion
+        await loadUsers()
+      } else {
+        // Handle error case - still refresh the list to ensure consistency
+        console.log('Delete user failed:', result.error)
+        showDeleteConfirm.value = false
+        userToDelete.value = null
+        // Refresh the user list even after failed deletion to ensure UI consistency
+        await loadUsers()
+      }
+    } catch (error) {
+      console.error('Error deleting user:', error)
       showDeleteConfirm.value = false
       userToDelete.value = null
+      // Refresh the user list even after error to ensure UI consistency
+      await loadUsers()
     }
   }
 }
@@ -384,9 +406,17 @@ const deleteSelected = async () => {
   const selectedUsers = userStore.users.filter(user => user.selected)
   if (selectedUsers.length === 0) return
 
-  // You could show a confirmation modal here or implement bulk delete
-  console.log('Delete selected users:', selectedUsers)
-  // For now, just log - implement actual bulk delete based on your API
+  try {
+    // Implement bulk delete logic here
+    console.log('Delete selected users:', selectedUsers)
+
+    // For now, just refresh the user list
+    await loadUsers()
+  } catch (error) {
+    console.error('Error deleting selected users:', error)
+    // Refresh the user list even after error to ensure UI consistency
+    await loadUsers()
+  }
 }
 
 // Watch for user data changes
@@ -404,6 +434,14 @@ watch(
   },
   { deep: true }
 )
+
+// Refresh data when route is updated (e.g. when navigating back from user form)
+onBeforeRouteUpdate((to, from) => {
+  if (to.path === '/users') {
+    console.log('Route updated to UserListPage, refreshing data')
+    loadUsers()
+  }
+})
 
 // Initialize
 onMounted(async () => {

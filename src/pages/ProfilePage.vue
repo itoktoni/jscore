@@ -5,18 +5,13 @@
  */
 
 <template>
-  <div class="profile-container">
-    <div class="profile-header">
+  <div class="card">
+    <div class="page-header">
       <h2>Profile</h2>
-      <FormButton
-        variant="danger"
-        @click="handleLogout"
-        text="Logout"
-      />
     </div>
 
     <!-- View Mode -->
-    <div v-if="!editMode" class="card profile-view">
+    <div v-if="!editMode" class="form-container">
       <div class="page-header">
         <h2>Profile Information</h2>
         <p>Your account details and information</p>
