@@ -109,10 +109,10 @@ const toggleEditMode = () => {
     name: authStore.user.name || '',
     email: authStore.user.email || ''
   }
-  
+
   // Update both initialFormData and form container
   Object.assign(initialFormData.value, userData)
-  
+
   // Set form data in FormContainer (will be available after next tick)
   setTimeout(() => {
     if (formContainer.value) {

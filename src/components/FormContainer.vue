@@ -17,33 +17,32 @@
         :fieldErrors="fieldErrors"
         :isSubmitting="isSubmitting"
         :globalError="globalError"
+        :handleSubmit="handleSubmit"
       />
 
       <div v-if="globalError" class="error-message">
         {{ globalError }}
       </div>
-    </form>
 
-    <!-- Footer Actions Slot -->
-    <footer v-if="showFooter" class="content-footer">
-      <slot name="footer" :formData="formData" :fieldErrors="fieldErrors" :isSubmitting="isSubmitting">
-        <!-- Default footer content -->
-        <div class="footer-actions">
-          <FormButton
-            v-if="cancelText"
-            variant="secondary"
-            @click="handleCancel"
-            :text="cancelText"
-          />
-          <FormButton
-            type="submit"
-            :variant="submitVariant"
-            :text="isSubmitting ? loadingText : submitText"
-            :disabled="isSubmitting"
-          />
-        </div>
-      </slot>
-    </footer>
+      <!-- Footer Actions Slot -->
+      <footer v-if="showFooter" class="content-footer">
+        <slot name="footer" :formData="formData" :fieldErrors="fieldErrors" :isSubmitting="isSubmitting" :handleSubmit="handleSubmit">
+          <!-- Default footer content -->
+            <FormButton
+              v-if="cancelText"
+              variant="secondary"
+              @click="handleCancel"
+              :text="cancelText"
+            />
+            <FormButton
+              type="submit"
+              :variant="submitVariant"
+              :text="isSubmitting ? loadingText : submitText"
+              :disabled="isSubmitting"
+            />
+        </slot>
+      </footer>
+    </form>
   </div>
 </template>
 
@@ -140,6 +139,7 @@ provide('isSubmitting', isSubmitting)
 // Handle form submission
 const handleSubmit = async () => {
   console.log('FormContainer handleSubmit called')
+  console.log('Form data:', { ...formData })
   // Clear any previous global errors
   globalError.value = ''
 
@@ -155,7 +155,7 @@ const handleSubmit = async () => {
     if (Object.keys(fieldErrors).length > 0) {
       console.log('Form has validation errors:', fieldErrors)
       globalError.value = 'Please correct the errors below'
-      return { success: false, errors: fieldErrors }
+      return
     }
   }
 
@@ -179,9 +179,7 @@ const handleSubmit = async () => {
         }
         globalError.value = result.error || 'Submission failed'
       }
-
       isSubmitting.value = false
-      console.log('Handler result:', result)
       return result
     } catch (error) {
       isSubmitting.value = false
@@ -256,28 +254,4 @@ defineExpose({
   padding: 0.75rem;
 }
 
-.footer-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem;
-}
-
-/* Mobile responsiveness */
-@media (max-width: 768px) {
-  .form-container {
-    padding: 1rem;
-  }
-
-  .footer-actions {
-    flex-direction: column-reverse;
-    gap: 0.75rem;
-  }
-
-  .footer-actions .btn {
-    width: 100%;
-    justify-content: center;
-  }
-}
 </style>

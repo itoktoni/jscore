@@ -160,15 +160,16 @@ const validateField = (value, rulesString, fieldName) => {
         break
 
       case 'confirmed':
-        if (formData && rule.param) {
+        // Only validate confirmation if both fields exist and have values
+        if (val && formData && rule.param) {
           const confirmValue = formData[rule.param]
-          if (val !== confirmValue) {
+          if (confirmValue !== undefined && val !== confirmValue) {
             return 'Passwords do not match'
           }
-        } else if (formData && props.name.includes('confirmation')) {
+        } else if (val && formData && props.name.includes('confirmation')) {
           const baseField = props.name.replace('_confirmation', '')
           const baseValue = formData[baseField]
-          if (val !== baseValue) {
+          if (baseValue !== undefined && val !== baseValue) {
             return 'Passwords do not match'
           }
         }

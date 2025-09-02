@@ -138,8 +138,10 @@ export const useUserStore = defineStore('user', {
         const userData = userHelpers.createUserFromForm(formData)
         const response = await this._makeApiRequest('POST', API_ROUTES.users.create, userData)
 
-        return this._handleCreateUserSuccess(response)
+        const result = this._handleCreateUserSuccess(response)
+        return { ...result, success: true }
       } catch (error) {
+        console.error('Error creating user:', error)
         this.error = error.message
         return {
           success: false,
@@ -179,8 +181,10 @@ export const useUserStore = defineStore('user', {
         const userData = userHelpers.createUserFromForm(formData)
         const response = await this._makeApiRequest('POST', API_ROUTES.users.update(id), userData)
 
-        return this._handleUpdateUserSuccess(id, response)
+        const result = this._handleUpdateUserSuccess(id, response)
+        return { ...result, success: true }
       } catch (error) {
+        console.error('Error updating user:', error)
         this.error = error.message
         return {
           success: false,

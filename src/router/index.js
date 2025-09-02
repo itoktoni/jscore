@@ -85,10 +85,12 @@ const router = createRouter({
 
 // Navigation guards
 router.beforeEach(async (to, from, next) => {
+  console.log('Routing from:', from.path, 'to:', to.path)
   const authStore = useAuthStore()
 
   // Initialize auth if not already done
   if (!authStore.isAuthenticated && !authStore.token) {
+    console.log('Initializing auth')
     await authStore.initAuth()
   }
 
@@ -98,17 +100,24 @@ router.beforeEach(async (to, from, next) => {
   const isAuthenticated = authStore.isAuthenticated
   const isAdmin = authStore.user && (authStore.user.role === 'admin' || authStore.user.role === 'administrator')
 
+  console.log('Route requires auth:', requiresAuth, 'User authenticated:', isAuthenticated)
+  console.log('Route requires admin:', requiresAdmin, 'User is admin:', isAdmin)
+
   if (requiresAuth && !isAuthenticated) {
     // Route requires authentication but user is not authenticated
+    console.log('Redirecting to login - user not authenticated')
     next('/login')
   } else if (requiresGuest && isAuthenticated) {
     // Route requires guest (not authenticated) but user is authenticated
+    console.log('Redirecting to profile - user already authenticated')
     next('/profile')
   } else if (requiresAdmin && (!isAuthenticated || !isAdmin)) {
     // Route requires admin access but user is not admin
+    console.log('Redirecting to profile - user not admin')
     next('/profile')
   } else {
     // Route is accessible
+    console.log('Allowing navigation to:', to.path)
     next()
   }
 })

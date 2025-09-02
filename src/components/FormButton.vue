@@ -54,7 +54,7 @@ const props = defineProps({
   },
   col: {
     type: [String, Number],
-    default: 12
+    default: null  // Changed from 4 to null to indicate no column width specified
   }
 })
 
@@ -63,15 +63,26 @@ const emit = defineEmits(['click'])
 // Try to inject form validation context for auto-loading state
 const isSubmitting = inject('isSubmitting', null)
 
-const buttonClasses = computed(() => ({
-  'form-button': true,
-  [`form-button--${props.variant}`]: true,
-  [`form-button--${props.size}`]: true,
-  'form-button--block': props.block,
-  'form-button--loading': computedLoading.value,
-  'form-button--disabled': props.disabled,
-  [`col-${props.col}`]: true
-}))
+const buttonClasses = computed(() => {
+  const classes = {
+    'form-button': true,
+    [`form-button--${props.variant}`]: true,
+    [`form-button--${props.size}`]: true,
+    'form-button--block': props.block,
+    'form-button--loading': computedLoading.value,
+    'form-button--disabled': props.disabled
+  }
+
+  // Only add column class if col prop is provided
+  if (props.col !== null && props.col !== undefined) {
+    classes[`col-${props.col}`] = true
+  } else {
+    // Add flexible width class when no column is specified
+    classes['form-button--flexible'] = true
+  }
+
+  return classes
+})
 
 // Auto-detect loading state from form context if submit button
 const computedLoading = computed(() => {
@@ -86,7 +97,11 @@ const handleClick = (event) => {
   // For submit buttons, let the form handle the submission
   if (props.type !== 'submit') {
     event.preventDefault()
+  } else {
+    // For submit buttons, we want the form to handle the submission
+    // Don't prevent default, let the form's submit event handle it
   }
+  console.log('Emitting click event')
   emit('click', event)
 }
 </script>
@@ -107,6 +122,16 @@ const handleClick = (event) => {
   touch-action: manipulation;
   text-decoration: none;
   position: relative;
+  padding: 10px 20px; /* Default padding for all buttons */
+  min-width: fit-content; /* Ensure button is at least as wide as its content */
+}
+
+/* Flexible button - adjusts to content width */
+.form-button--flexible {
+  display: inline-flex;
+  width: auto;
+  margin-right: 10px;
+  vertical-align: top;
 }
 
 /* Column support - make components work inline without row wrapper */
@@ -196,6 +221,14 @@ const handleClick = (event) => {
 /* Mobile responsiveness */
 @media (max-width: 768px) {
   .form-button[class*="col-"] {
+    display: block !important;
+    width: 100% !important;
+    margin-right: 0 !important;
+    margin-bottom: 10px;
+  }
+
+  /* Flexible buttons also become full width on mobile */
+  .form-button--flexible {
     display: block !important;
     width: 100% !important;
     margin-right: 0 !important;

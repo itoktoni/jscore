@@ -185,27 +185,39 @@ const deleteItem = (item) => {
 
 // Add data labels for mobile responsiveness
 const addDataLabelsToTable = () => {
+  console.log('Adding data labels to table...')
   const table = document.querySelector('.data-table')
-  if (!table) return
+  if (!table) {
+    console.warn('Data table not found')
+    return
+  }
 
   const headers = Array.from(table.querySelectorAll('thead th'))
   const rows = table.querySelectorAll('tbody tr')
 
-  rows.forEach(row => {
+  console.log(`Found ${headers.length} headers and ${rows.length} rows`)
+
+  rows.forEach((row, rowIndex) => {
     const cells = row.querySelectorAll('td')
-    cells.forEach((cell, index) => {
-      if (headers[index]) {
-        const headerText = headers[index].textContent.trim()
+    cells.forEach((cell, cellIndex) => {
+      if (headers[cellIndex]) {
+        const headerText = headers[cellIndex].textContent.trim()
         if (headerText !== '' && !headerText.includes('checkbox')) {
           cell.setAttribute('data-label', headerText)
+          console.log(`Added data-label "${headerText}" to cell [${rowIndex}][${cellIndex}]`)
         }
       }
     })
   })
+
+  console.log('Finished adding data labels to table')
 }
 
 onMounted(() => {
-  addDataLabelsToTable()
+  // Add a small delay to ensure DOM is fully rendered
+  setTimeout(() => {
+    addDataLabelsToTable()
+  }, 100)
 })
 </script>
 

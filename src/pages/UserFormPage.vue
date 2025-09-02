@@ -1,80 +1,51 @@
-/**
- * User Form Page
- *
- * Dedicated page for creating and editing users with FormContainer wrapper
- */
-
 <template>
-  <FormContainer
-    :title="isEditing ? 'Edit User' : 'Create New User'"
-    :initial-data="initialFormData"
-    :cancel-text="'← Back to Users'"
-    :submit-text="isEditing ? 'Update User' : 'Create User'"
-    loading-text="Saving..."
-    submit-variant="success"
-    :submit-handler="handleFormSubmit"
-    @cancel="handleCancel"
-    ref="formContainer"
-  >
-    <template #default="{ formData, fieldErrors, isSubmitting }">
-      <!-- Username and name side by side (using default col=6) -->
-      <FormInput
-        name="username"
-        rules="required|min:3|alpha_num"
-        :disabled="isEditing"
-        :hint="isEditing ? 'Username cannot be changed' : ''"
-      />
-      <FormInput name="name" rules="required|min:2" />
+  <div class="card">
+    <FormContainer :title="isEditing ? 'Edit User' : 'Create New User'" :action="handleFormSubmit"
+      :initial-data="initialFormData">
+      <!-- Username and name side by side -->
+      <FormInput name="username" rules="required" :disabled="isEditing" :hint="isEditing ? 'Username cannot be changed' : ''" col="6" />
+      <FormInput name="name" rules="required" col="6" />
 
       <!-- Email takes full width -->
-      <FormInput name="email" type="email" rules="required|email" col="12" />
+      <FormInput name="email" rules="required" type="email" col="12" />
 
-      <!-- Password fields side by side (using default col=6) -->
-      <FormInput
-        name="password"
-        type="password"
-        :rules="!isEditing ? 'required|min:6' : 'min:6'"
+      <!-- Password fields side by side -->
+      <FormInput  name="password" type="password"
         :label="isEditing ? 'New Password (leave blank to keep current)' : 'Password'"
-        :placeholder="isEditing ? 'Enter new password' : 'Enter password'"
-      />
-      <FormInput
-        v-if="!isEditing"
-        name="password_confirmation"
-        type="password"
-        rules="required|confirmed"
-      />
+        :rules="!isEditing ? 'required|min:6' : 'min:6'"
+        :placeholder="isEditing ? 'Enter new password' : 'Enter password'" col="6" />
+      <FormInput v-if="!isEditing" rules="required|confirmed" name="password_confirmation" type="password" col="6" />
 
-      <!-- Role and status side by side (using default col=6) -->
-      <FormSelect
-        name="role"
-        rules="required"
-        :options="roleOptions"
-        option-label="label"
-        option-value="value"
-      />
-      <FormSelect
-        name="status"
-        rules="required"
-        :options="statusOptions"
-        option-label="label"
-        option-value="value"
-      />
-    </template>
-  </FormContainer>
+      <!-- Role and status side by side -->
+      <FormSelect name="role" :options="roleOptions" option-label="label" option-value="value" col="6" />
+      <FormSelect name="status" :options="statusOptions" option-label="label" option-value="value" col="6" />
+
+      <!-- Using the footer slot for buttons -->
+      <template #footer="{ isSubmitting }">
+        <div class="footer-actions">
+          <FormButton type="button" variant="secondary" text="← Back to Users" @click="handleCancel" />
+          <FormButton type="submit" :variant="isEditing ? 'success' : 'primary'"
+            :text="isSubmitting ? 'Saving...' : (isEditing ? 'Update User' : 'Create User')" :disabled="isSubmitting"
+            />
+        </div>
+
+      </template>
+    </FormContainer>
+  </div>
 </template>
 
 <script setup>
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '../stores/user'
 import FormContainer from '../components/FormContainer.vue'
 import FormInput from '../components/FormInput.vue'
 import FormSelect from '../components/FormSelect.vue'
+import FormButton from '../components/FormButton.vue'
 
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
-const formContainer = ref(null)
 
 // Determine if we're editing based on route params
 const isEditing = !!route.params.id
@@ -93,7 +64,7 @@ const statusOptions = [
   { label: 'Suspended', value: 'suspended' }
 ]
 
-// Initial form data - reactive ref instead of computed
+// Initial form data
 const initialFormData = ref({
   username: '',
   name: '',
@@ -121,13 +92,8 @@ const loadUser = async () => {
           password_confirmation: ''
         }
 
-        // Update both initialFormData and form container data
+        // Update initialFormData
         Object.assign(initialFormData.value, userData)
-
-        // Update form data in the FormContainer
-        if (formContainer.value) {
-          formContainer.value.setFormData(userData)
-        }
       } else {
         console.error('User not found')
         router.push('/users')
@@ -140,6 +106,8 @@ const loadUser = async () => {
 }
 
 const handleFormSubmit = async (data) => {
+  console.log('Form submit called with data:', data)
+
   // Prepare data for submission
   const submitData = {
     username: data.username.trim(),
@@ -152,25 +120,37 @@ const handleFormSubmit = async (data) => {
   // Add password fields if provided
   if (data.password && data.password.trim()) {
     submitData.password = data.password
-    if (!isEditing) {
+    // Only add password_confirmation if it exists (when creating new user)
+    if (data.password_confirmation !== undefined) {
       submitData.password_confirmation = data.password_confirmation
     }
   }
 
+  console.log('Submitting data:', submitData)
   let result
-  if (isEditing && userId) {
-    result = await userStore.updateUser(userId, submitData)
-  } else {
-    result = await userStore.createUser(submitData)
-  }
+  try {
+    if (isEditing && userId) {
+      console.log('Updating user:', userId)
+      result = await userStore.updateUser(userId, submitData)
+    } else {
+      console.log('Creating new user')
+      result = await userStore.createUser(submitData)
+    }
 
-  if (result.success) {
-    // Navigate back on success
-    router.push('/users')
-    return result
-  } else {
-    // Return the error result to let the validation composable handle it
-    return result
+    console.log('Submission result:', result)
+    if (result && result.success) {
+      // Navigate back on success
+      console.log('User saved successfully, navigating back to users list')
+      router.push('/users')
+      return { success: true }
+    } else {
+      // Return the error result to let the validation composable handle it
+      console.log('User save failed:', result)
+      return result || { success: false, error: 'Unknown error occurred' }
+    }
+  } catch (error) {
+    console.error('Error during form submission:', error)
+    return { success: false, error: error.message || 'An unexpected error occurred' }
   }
 }
 
@@ -187,5 +167,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Additional styles if needed */
+
+
 </style>
