@@ -38,9 +38,9 @@ class SafeAreaUtil {
   applyMobileSafeArea() {
     // Apply 3rem top padding for mobile devices
     const root = document.documentElement
-    root.style.setProperty('--safe-area-top', '3.5rem')
+    root.style.setProperty('--safe-area-top', '4rem')
     root.style.setProperty('--safe-area-drawer', '5rem')
-    root.style.setProperty('--safe-area-bottom', '4rem')
+    root.style.setProperty('--safe-area-bottom', '4.5rem')
     root.style.setProperty('--safe-area-left', '2rem')
     root.style.setProperty('--safe-area-right', '2rem')
     console.log('Applied mobile safe area with 3rem top padding')

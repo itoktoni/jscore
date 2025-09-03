@@ -102,7 +102,7 @@
     id="notification-drawer"
     :class="{ 'open': showNotifications }"
   >
-    <div class="notification-header">
+    <div class="notification-header safe-area-header">
       <h2 class="notification-title">Notifications</h2>
       <button class="notification-close" @click="closeNotifications">×</button>
     </div>
@@ -126,9 +126,15 @@
         </div>
       </div>
     </div>
-    <div class="notification-footer">
+    <div class="notification-footer safe-area-bottom">
       <button class="mark-all-read" @click="markAllAsRead">Mark all as read</button>
     </div>
+  </div>
+
+  <div class="copyright">
+   <p>
+     &copy; Alphara
+   </p>
   </div>
 
   <div

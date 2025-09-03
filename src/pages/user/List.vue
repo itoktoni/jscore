@@ -14,10 +14,9 @@
     <!-- Card Container -->
     <div class="form-container">
       <!-- Search and Filters Row -->
-      <div class="row">
-        <div class="col">
+        <div class="col-6">
           <p class="grouped">
-            <label for="per-page-select">Per Page</label>
+            <label for="per-page-select">Page</label>
             <select name="perPage" id="per-page-select" v-model="searchData.perPage">
               <option value="10">10 per page</option>
               <option value="25">25 per page</option>
@@ -27,9 +26,9 @@
           </p>
         </div>
 
-        <div class="col">
+        <div class="col-6">
           <p class="grouped">
-            <label for="filter-input">Search Users</label>
+            <label for="filter-input">Search</label>
             <input
               type="search"
               name="search"
@@ -42,12 +41,9 @@
             </button>
           </p>
         </div>
-      </div>
-
-      <hr class="hr">
 
       <!-- Loading State -->
-      <div v-if="userStore.loading" class="loading">
+      <div v-if="userStore.loading" class="col-12 loading">
         Loading users...
       </div>
 
@@ -72,9 +68,9 @@
       </div>
 
       <!-- Users Table -->
-      <div v-else>
+      <div class="col-12" v-else>
 
-        <table class="form-container data-table striped">
+        <table class=" data-table striped">
           <thead>
             <tr>
               <th>

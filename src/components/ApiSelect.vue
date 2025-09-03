@@ -1,5 +1,4 @@
 <template>
-  <div>
     <FormSelect
       v-if="!loading && !error"
       :name="name"
@@ -17,7 +16,6 @@
     <div v-else-if="error" class="error-placeholder">
       {{ errorText }}: {{ error }}
     </div>
-  </div>
 </template>
 
 <script setup>

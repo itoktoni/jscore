@@ -237,116 +237,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.form-group {
-  margin-bottom: 20px;
-}
-
-/* Column support - make components work inline without row wrapper */
-.form-group.col-1 {
-  display: inline-block;
-  width: calc(8.333% - 10px);
-  margin-right: 10px;
-  vertical-align: top;
-}
-
-.form-group.col-2 {
-  display: inline-block;
-  width: calc(16.666% - 10px);
-  margin-right: 10px;
-  vertical-align: top;
-}
-
-.form-group.col-3 {
-  display: inline-block;
-  width: calc(25% - 10px);
-  margin-right: 10px;
-  vertical-align: top;
-}
-
-.form-group.col-4 {
-  display: inline-block;
-  width: calc(33.333% - 10px);
-  margin-right: 10px;
-  vertical-align: top;
-}
-
-.form-group.col-5 {
-  display: inline-block;
-  width: calc(41.666% - 10px);
-  margin-right: 10px;
-  vertical-align: top;
-}
-
-.form-group.col-6 {
-  display: inline-block;
-  width: calc(50% - 10px);
-  margin-right: 10px;
-  vertical-align: top;
-}
-
-.form-group.col-7 {
-  display: inline-block;
-  width: calc(58.333% - 10px);
-  margin-right: 10px;
-  vertical-align: top;
-}
-
-.form-group.col-8 {
-  display: inline-block;
-  width: calc(66.666% - 10px);
-  margin-right: 10px;
-  vertical-align: top;
-}
-
-.form-group.col-9 {
-  display: inline-block;
-  width: calc(75% - 10px);
-  margin-right: 10px;
-  vertical-align: top;
-}
-
-.form-group.col-10 {
-  display: inline-block;
-  width: calc(83.333% - 10px);
-  margin-right: 10px;
-  vertical-align: top;
-}
-
-.form-group.col-11 {
-  display: inline-block;
-  width: calc(91.666% - 10px);
-  margin-right: 10px;
-  vertical-align: top;
-}
-
-.form-group.col-12 {
-  display: block;
-  width: 100%;
-  margin-right: 0;
-}
-
-/* Mobile responsiveness */
-@media (max-width: 768px) {
-  .form-group[class*="col-"] {
-    display: block !important;
-    width: 100% !important;
-    margin-right: 0 !important;
-    margin-bottom: 15px;
-  }
-}
-
-.form-label {
-  display: block;
-  margin-bottom: 8px;
-  color: #555;
-  font-weight: 500;
-  font-size: 14px;
-}
-
-.required-asterisk {
-  color: #dc3545;
-  margin-left: 3px;
-}
 
 .form-select {
   width: 100%;
@@ -373,38 +263,9 @@ onUnmounted(() => {
   box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
 }
 
-.form-select.disabled {
-  background-color: #f8f9fa;
-  color: #6c757d;
-  cursor: not-allowed;
-  border-color: #e9ecef;
-}
-
-.form-select.error {
-  border-color: #dc3545;
-  background-color: #fff5f5;
-  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
-}
-
-.field-error {
-  color: #dc3545;
-  font-size: 13px;
-  margin-top: 6px;
-  margin-bottom: 0;
-  font-weight: 500;
-}
-
-.field-hint {
-  color: #6c757d;
-  font-size: 13px;
-  margin-top: 6px;
-  margin-bottom: 0;
-}
-
 /* Mobile optimizations */
 @media (max-width: 768px) {
   .form-select {
-    padding: 16px 14px;
     font-size: 16px; /* Prevents zoom on iOS */
   }
 
