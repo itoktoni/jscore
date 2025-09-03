@@ -7,6 +7,8 @@ import UserListPage from '../pages/user/List.vue'
 import UserFormCreate from '../pages/user/Create.vue'
 import UserFormEdit from '../pages/user/Edit.vue'
 import SystemSettingsPage from '../pages/SystemSettingsPage.vue'
+import TestSafeArea from '../components/TestSafeArea.vue'
+import TestSafeAreaPage from '../pages/TestSafeAreaPage.vue'
 
 const routes = [
   {
@@ -71,6 +73,22 @@ const routes = [
     meta: {
       requiresAuth: true, // Only accessible when authenticated
       requiresAdmin: true // Only accessible for admin users
+    }
+  },
+  {
+    path: '/test-safe-area',
+    name: 'TestSafeArea',
+    component: TestSafeArea,
+    meta: {
+      requiresAuth: true // Only accessible when authenticated
+    }
+  },
+  {
+    path: '/test-safe-area-page',
+    name: 'TestSafeAreaPage',
+    component: TestSafeAreaPage,
+    meta: {
+      requiresAuth: true // Only accessible when authenticated
     }
   },
   {

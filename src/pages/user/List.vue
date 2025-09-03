@@ -163,13 +163,13 @@
         <FormButton
           variant="danger"
           @click="deleteSelected"
-          text="Delete Selected"
+          text="Delete"
           :disabled="!hasSelectedUsers"
         />
         <FormButton
           variant="success"
           @click="createUser"
-          text="+ Create User"
+          text="+ Create"
         />
       </div>
     </footer>

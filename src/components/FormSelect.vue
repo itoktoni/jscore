@@ -160,10 +160,10 @@ const isRequired = computed(() => {
 
 const formGroupClasses = computed(() => {
   const classes = ['form-group']
-  
+
   // Always apply column class since we have a default
   classes.push(`col-${props.col}`)
-  
+
   return classes
 })
 
@@ -405,7 +405,6 @@ onUnmounted(() => {
 @media (max-width: 768px) {
   .form-select {
     padding: 16px 14px;
-    padding-right: 40px;
     font-size: 16px; /* Prevents zoom on iOS */
   }
 

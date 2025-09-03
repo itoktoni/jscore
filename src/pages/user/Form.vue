@@ -154,11 +154,11 @@ const handleCancel = () => {
 
     <template #footer="{ isSubmitting }">
       <div class="footer-actions">
-        <FormButton type="button" variant="secondary" text="← Back to Users" @click="handleCancel" />
+        <FormButton type="button" variant="secondary" text="← Back" @click="handleCancel" />
         <FormButton
           type="submit"
           :variant="isEditing ? 'success' : 'primary'"
-          :text="isSubmitting ? 'Saving...' : (isEditing ? 'Update User' : 'Create User')"
+          :text="isSubmitting ? 'Saving...' : (isEditing ? 'Update' : 'Create')"
           :disabled="isSubmitting"
         />
       </div>

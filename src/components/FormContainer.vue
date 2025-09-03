@@ -19,7 +19,7 @@
       </div>
 
       <!-- Footer Actions Slot -->
-      <footer v-if="showFooter" class="content-footer">
+      <footer v-if="showFooter" class="content-footer safe-area-bottom">
         <slot name="footer" :formData="formData" :fieldErrors="fieldErrors" :isSubmitting="isSubmitting" :handleSubmit="handleSubmit">
           <!-- Default footer content -->
             <FormButton
@@ -242,7 +242,6 @@ defineExpose({
   background-color: var(--bg-white, #fff);
   border-radius: 0.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  padding: 1rem;
 }
 
 .error-message {

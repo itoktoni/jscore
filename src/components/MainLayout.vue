@@ -1,15 +1,9 @@
-/**
- * Main Layout Component
- *
- * Admin dashboard layout with sidebar navigation using Chota CSS framework
- */
-
 <template>
   <div class="app-container is-full-screen">
     <!-- Sidebar Container for both columns -->
     <div id="sidebar-container" class="sidebar-container" :class="{ 'open': sidebarOpen }">
       <!-- Column 1: Main Sidebar -->
-      <aside class="main-sidebar">
+      <aside class="main-sidebar safe-area-drawer">
         <ul class="main-nav">
           <li v-for="(item, index) in mainNavItems" :key="index">
             <a href="#"
@@ -47,6 +41,7 @@
               :key="index"
               :to="subItem.route"
               :class="{ 'active': isRouteActive(subItem.route) }"
+              @click="handleSubmenuClick"
             >
               <span>{{ subItem.title }}</span>
               <i class="bi bi-arrow-right"></i>
@@ -58,18 +53,18 @@
 
     <!-- Column 3: Main Content -->
     <main class="main-content">
-      <header class="main-header">
+      <header class="safe-area-header main-header">
         <div class="header-title-wrapper is-vertical-align">
           <button
             id="mobile-menu-button"
-            class="mobile-menu-button"
+            class="mobile-menu-button safe-area-left"
             @click="toggleSidebar"
           >
             <i class="bi bi-sliders"></i>
           </button>
           <h1 class="header-title">OBSESIMAN REPORT</h1>
         </div>
-        <div class="user-profile is-vertical-align">
+        <div class="user-profile is-vertical-align safe-area-right">
           <div
             class="notification-icon"
             id="notification-icon"
@@ -98,8 +93,6 @@
         <!-- Router View for Page Content -->
         <router-view />
       </div>
-
-
     </main>
   </div>
 
@@ -141,7 +134,7 @@
   <div
     id="overlay"
     class="overlay"
-    :class="{ 'active': sidebarOpen || showNotifications }"
+    :class="{ 'active': sidebarOpen }"
     @click="closeOverlays"
   ></div>
 </template>
@@ -166,7 +159,8 @@ const mainNavItems = ref([
   { id: 'home', title: 'Home', icon: 'bi bi-house' },
   { id: 'aplikasi', title: 'Aplikasi', icon: 'bi bi-house' },
   { id: 'laporan', title: 'Laporan', icon: 'bi bi-house' },
-  { id: 'system', title: 'System', icon: 'bi bi-house' }
+  { id: 'system', title: 'System', icon: 'bi bi-house' },
+  { id: 'test', title: 'Test', icon: 'bi bi-bug' }
 ])
 
 const subMenus = ref({
@@ -193,6 +187,10 @@ const subMenus = ref({
     { title: 'Permission', route: '/system/permissions' },
     { title: 'Setting Website', route: '/system/settings' },
     { title: 'User', route: '/users' }
+  ],
+  test: [
+    { title: 'Safe Area Test', route: '/test-safe-area' },
+    { title: 'Safe Area Page Test', route: '/test-safe-area-page' }
   ]
 })
 
@@ -229,7 +227,7 @@ const isRouteActive = (route) => {
   if (route === '/' || route === '/dashboard') {
     return router.currentRoute.value.path === route
   }
-  
+
   // For nested routes (like /users, /users/create, /users/:id/edit)
   // Check if current path starts with the menu route
   return router.currentRoute.value.path.startsWith(route)
@@ -237,6 +235,12 @@ const isRouteActive = (route) => {
 
 const selectMenu = (menuId) => {
   selectedMenu.value = menuId
+  // Don't close sidebar when selecting main menu items
+  // The sidebar should only close when clicking submenu items or overlay
+}
+
+const handleSubmenuClick = () => {
+  // Close sidebar on mobile when clicking submenu items
   if (window.innerWidth <= 768) {
     sidebarOpen.value = false
   }
@@ -260,8 +264,13 @@ const closeNotifications = () => {
   showNotifications.value = false
 }
 
-const closeOverlays = () => {
-  sidebarOpen.value = false
+const closeOverlays = (event) => {
+  // Close sidebar when clicking on the overlay
+  if (event.target.id === 'overlay') {
+    sidebarOpen.value = false
+  }
+
+  // Close notifications and profile dropdown when clicking anywhere outside
   showNotifications.value = false
   showProfileDropdown.value = false
 }
@@ -295,7 +304,7 @@ const logout = async () => {
 // Set the active menu based on current route
 const setActiveMenuFromRoute = () => {
   const currentPath = router.currentRoute.value.path
-  
+
   // Check which main menu should be active based on current route
   for (const [menuId, subMenuItems] of Object.entries(subMenus.value)) {
     for (const subItem of subMenuItems) {
@@ -314,8 +323,14 @@ const handleResize = () => {
 }
 
 const handleClickOutside = (event) => {
+  // Close profile dropdown when clicking outside
   if (!event.target.closest('.profile-icon')) {
     showProfileDropdown.value = false
+  }
+
+  // Close sidebar when clicking outside on desktop
+  if (window.innerWidth > 768 && !event.target.closest('#sidebar-container')) {
+    sidebarOpen.value = false
   }
 }
 
@@ -343,4 +358,5 @@ onUnmounted(() => {
 /* Import local Chota CSS and Bootstrap Icons */
 @import url('../assets/css/chota.css');
 @import url('https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css');
+@import url('../assets/css/safe-area.css');
 </style>
