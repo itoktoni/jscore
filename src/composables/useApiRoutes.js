@@ -11,11 +11,25 @@ export function useApiRoutes() {
       create: '/api-user/create',
       update: (id) => `/api-user/update/${id}`,
       delete: (id) => `/api-user/delete/${id}`,
-      show: (id) => `/api-user/update/${id}`
+      show: (id) => `/api-user/${id}`
+    },
+    roles: '/roles',
+    statuses: '/statuses'
+  }
+
+  // Helper function to get the full URL for an endpoint
+  const get = (endpoint) => {
+    // For function-based endpoints (like users.update), we return the function
+    if (typeof endpoint === 'function') {
+      return endpoint
     }
+
+    // For string endpoints, we return the string
+    return endpoint
   }
 
   return {
-    API_ROUTES
+    API_ROUTES,
+    get
   }
 }

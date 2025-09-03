@@ -1,9 +1,3 @@
-/**
- * FormContainer Component
- *
- * Reusable form wrapper that provides validation context, form structure, and handles submission
- */
-
 <template>
   <div class="card">
     <div v-if="title" class="page-header">
@@ -107,7 +101,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['submit', 'cancel', 'change'])
+const emit = defineEmits(['submit', 'success', 'error', 'cancel', 'change'])
 
 // Use form validation composable
 const {
@@ -168,29 +162,36 @@ const handleSubmit = async () => {
     try {
       const result = await handler({ ...formData })
 
-      if (result && result.success === false) {
+      if (result && result.success !== false) {
+        // Handle success
+        isSubmitting.value = false
+        emit('success', result)
+        return result
+      } else {
         // Handle submission errors
-        if (result.errors) {
+        if (result && result.errors) {
           // Map API errors to form fields
           Object.keys(result.errors).forEach(fieldName => {
             const error = result.errors[fieldName]
             fieldErrors[fieldName] = typeof error === 'string' ? error : (Array.isArray(error) ? error[0] : String(error))
           })
         }
-        globalError.value = result.error || 'Submission failed'
+        globalError.value = result?.error || 'Submission failed'
+        emit('error', result)
+        isSubmitting.value = false
+        return result
       }
-      isSubmitting.value = false
-      return result
     } catch (error) {
       isSubmitting.value = false
       globalError.value = error.message || 'An error occurred'
       console.log('Handler error:', error)
+      emit('error', error)
       return { success: false, error: error.message }
     }
   } else {
     console.log('Emitting submit event with data:', { ...formData })
-    emit('submit', { ...formData })
-    return { success: true }
+    const result = emit('submit', { ...formData })
+    return { success: true, data: result }
   }
 }
 
@@ -253,5 +254,4 @@ defineExpose({
   margin-top: 1rem;
   padding: 0.75rem;
 }
-
 </style>

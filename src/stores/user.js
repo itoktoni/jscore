@@ -88,13 +88,29 @@ export const useUserStore = defineStore('user', {
     },
 
     // Get single user by ID
-    async getUserById(id) {
+    async fetchUserById(id) {
       this.loading = true
       this.error = null
 
+      console.log('Fetching user with ID:', id) // Debug log
+
       try {
         const response = await this._makeApiRequest('GET', API_ROUTES.users.show(id))
+        console.log('API Response for user:', response) // Debug log
+
+        // Check if response exists
+        if (!response) {
+          throw new Error('No response received from API')
+        }
+
+        // Check if response has data
+        if (!response.data) {
+          throw new Error('No data in API response')
+        }
+
         const userData = response.data.data || response.data
+
+        console.log('User data extracted:', userData) // Debug log
 
         this.selectedUser = userData
 
@@ -104,10 +120,18 @@ export const useUserStore = defineStore('user', {
           this.users[userIndex] = userData
         }
 
-        return { success: true, data: userData }
+        const result = { success: true, data: userData }
+        console.log('Returning result:', result) // Debug log
+        return result
       } catch (error) {
+        console.error('Error fetching user:', error) // Debug log
+        console.error('Error details:', {
+          message: error.message,
+          stack: error.stack,
+          response: error.response
+        })
+
         this.error = error.message
-        console.error('Error fetching user:', error)
         return {
           success: false,
           error: error.message,
@@ -141,7 +165,6 @@ export const useUserStore = defineStore('user', {
         const result = this._handleCreateUserSuccess(response)
         return { ...result, success: true }
       } catch (error) {
-        console.error('Error creating user:', error)
         this.error = error.message
         return {
           success: false,
@@ -184,7 +207,6 @@ export const useUserStore = defineStore('user', {
         const result = this._handleUpdateUserSuccess(id, response)
         return { ...result, success: true }
       } catch (error) {
-        console.error('Error updating user:', error)
         this.error = error.message
         return {
           success: false,

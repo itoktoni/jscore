@@ -211,13 +211,20 @@ export function useFormValidation() {
    * Reset form data and errors
    */
   const resetForm = () => {
+    // Clear all form data
     Object.keys(formData).forEach(key => {
-      formData[key] = ''
-    })
+      delete formData[key];
+    });
+
+    // Clear all field errors
     Object.keys(fieldErrors).forEach(key => {
-      delete fieldErrors[key]
-    })
-    globalError.value = ''
+      delete fieldErrors[key];
+    });
+
+    // Clear global error
+    globalError.value = '';
+
+    console.log('Form reset completed');
   }
 
   /**
@@ -225,9 +232,17 @@ export function useFormValidation() {
    * @param {Object} data - Data to set
    */
   const setFormData = (data) => {
-    Object.keys(data).forEach(key => {
-      formData[key] = data[key]
-    })
+    // Clear all existing keys first
+    Object.keys(formData).forEach(key => {
+      delete formData[key];
+    });
+
+    // Set new data
+    if (data && typeof data === 'object') {
+      Object.keys(data).forEach(key => {
+        formData[key] = data[key];
+      });
+    }
   }
 
   /**

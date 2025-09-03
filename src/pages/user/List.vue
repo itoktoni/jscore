@@ -102,13 +102,13 @@
               </td>
               <td class="column-action">
                 <div class="action-table">
-                  <button class="button primary" @click="viewUser(user)" title="View">
+                  <button class="button primary" @click.stop="viewUser(user)" title="View">
                     <i class="bi bi-eye"></i>
                   </button>
-                  <button class="button secondary" @click="editUser(user)" title="Edit">
+                  <button class="button secondary" @click.stop="editUser(user)" title="Edit">
                     <i class="bi bi-pencil-square"></i>
                   </button>
-                  <button class="button error" @click="confirmDelete(user)" title="Delete">
+                  <button class="button error" @click.stop="confirmDelete(user)" title="Delete">
                     <i class="bi bi-trash"></i>
                   </button>
                 </div>
@@ -185,7 +185,7 @@
     />
 
     <!-- User Detail Modal -->
-    <UserDetailModal
+    <Show
       v-if="showUserDetail"
       :user="selectedUser"
       @edit="editUser"
@@ -200,12 +200,12 @@
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRouter, onBeforeRouteUpdate } from 'vue-router'
-import { useUserStore } from '../stores/user'
-import FormInput from '../components/FormInput.vue'
-import FormButton from '../components/FormButton.vue'
-import ErrorMessage from '../components/ErrorMessage.vue'
-import ConfirmModal from '../components/ConfirmModal.vue'
-import UserDetailModal from '../components/UserDetailModal.vue'
+import { useUserStore } from '../../stores/user'
+import FormInput from '../../components/FormInput.vue'
+import FormButton from '../../components/FormButton.vue'
+import ErrorMessage from '../../components/ErrorMessage.vue'
+import ConfirmModal from '../../components/ConfirmModal.vue'
+import Show from './Show.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -224,6 +224,24 @@ const searchData = reactive({
   search: '',
   perPage: 10
 })
+
+// Test functions for debugging
+const testEditUser = () => {
+  console.log('=== Test Edit User Function ===')
+  // Use the first user in the list for testing
+  if (userStore.users && userStore.users.length > 0) {
+    const testUser = userStore.users[0]
+    console.log('Testing with user:', testUser)
+    editUser(testUser)
+  } else {
+    console.log('No users available for testing')
+  }
+}
+
+const testCreateUser = () => {
+  console.log('=== Test Create User Function ===')
+  createUser()
+}
 
 // Methods
 const loadUsers = async (page = 1) => {
@@ -247,7 +265,6 @@ const changePage = async (page) => {
 }
 
 const createUser = () => {
-  console.log('Create User button clicked')
   router.push('/users/create')
 }
 
@@ -277,14 +294,12 @@ const deleteUser = async () => {
         await loadUsers()
       } else {
         // Handle error case - still refresh the list to ensure consistency
-        console.log('Delete user failed:', result.error)
         showDeleteConfirm.value = false
         userToDelete.value = null
         // Refresh the user list even after failed deletion to ensure UI consistency
         await loadUsers()
       }
     } catch (error) {
-      console.error('Error deleting user:', error)
       showDeleteConfirm.value = false
       userToDelete.value = null
       // Refresh the user list even after error to ensure UI consistency
@@ -328,17 +343,12 @@ const formatDate = (dateString) => {
 
 // Add data labels for mobile responsiveness
 const addDataLabelsToTable = () => {
-  console.log('addDataLabelsToTable function called')
   const table = document.querySelector('.data-table')
-  console.log('Table element found:', table)
   if (!table) {
-    console.warn('Data table not found - check if the DOM is fully loaded')
     // Try again after a longer delay
     setTimeout(() => {
       const retryTable = document.querySelector('.data-table')
-      console.log('Retried table lookup:', retryTable)
       if (!retryTable) {
-        console.error('Data table still not found after retry')
         return
       }
       processTable(retryTable)
@@ -353,8 +363,6 @@ const processTable = (table) => {
   const headers = Array.from(table.querySelectorAll('thead th'))
   const rows = table.querySelectorAll('tbody tr')
 
-  console.log(`Found ${headers.length} headers and ${rows.length} rows`)
-
   rows.forEach((row, rowIndex) => {
     const cells = row.querySelectorAll('td')
     cells.forEach((cell, cellIndex) => {
@@ -362,25 +370,19 @@ const processTable = (table) => {
         const headerText = headers[cellIndex].textContent.trim()
         if (headerText !== '' && !headerText.includes('checkbox')) {
           cell.setAttribute('data-label', headerText)
-          console.log(`Added data-label "${headerText}" to cell [${rowIndex}][${cellIndex}]`)
         } else {
-          console.log(`Skipped cell [${rowIndex}][${cellIndex}] - header: "${headerText}"`)
         }
       } else {
-        console.log(`No header found for cell [${rowIndex}][${cellIndex}]`)
       }
     })
   })
 
-  console.log('Finished adding data labels to table')
 }
 
 // Debug function to check if data labels are present
 const checkDataLabels = () => {
-  console.log('Checking for data labels...')
   const table = document.querySelector('.data-table')
   if (!table) {
-    console.warn('Data table not found')
     return
   }
 
@@ -389,7 +391,6 @@ const checkDataLabels = () => {
     const cells = row.querySelectorAll('td')
     cells.forEach((cell, cellIndex) => {
       const dataLabel = cell.getAttribute('data-label')
-      console.log(`Cell [${rowIndex}][${cellIndex}] data-label:`, dataLabel)
     })
   })
 }
@@ -408,12 +409,10 @@ const deleteSelected = async () => {
 
   try {
     // Implement bulk delete logic here
-    console.log('Delete selected users:', selectedUsers)
 
     // For now, just refresh the user list
     await loadUsers()
   } catch (error) {
-    console.error('Error deleting selected users:', error)
     // Refresh the user list even after error to ensure UI consistency
     await loadUsers()
   }
@@ -423,11 +422,9 @@ const deleteSelected = async () => {
 watch(
   () => userStore.users,
   (newUsers) => {
-    console.log('User data changed, new user count:', newUsers ? newUsers.length : 0)
     if (newUsers && newUsers.length > 0) {
       // Add a small delay to ensure DOM is updated with new data
       setTimeout(() => {
-        console.log('Calling addDataLabelsToTable after user data change')
         addDataLabelsToTable()
       }, 100)
     }
@@ -438,22 +435,20 @@ watch(
 // Refresh data when route is updated (e.g. when navigating back from user form)
 onBeforeRouteUpdate((to, from) => {
   if (to.path === '/users') {
-    console.log('Route updated to UserListPage, refreshing data')
     loadUsers()
   }
 })
 
 // Initialize
 onMounted(async () => {
-  console.log('UserListPage mounted')
   await loadUsers()
   // Add a small delay to ensure DOM is fully rendered
-  console.log('Setting timeout to add data labels')
   setTimeout(() => {
-    console.log('Calling addDataLabelsToTable')
     addDataLabelsToTable()
   }, 100)
 })
+
+
 </script>
 
 <style scoped>
