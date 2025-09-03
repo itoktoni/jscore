@@ -7,6 +7,7 @@
       :on-submit="handleSubmit"
       :on-success="handleSuccess"
       :on-error="handleError"
+      :on-cancel="handleCancel"
     />
   </div>
 </template>

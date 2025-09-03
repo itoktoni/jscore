@@ -5,7 +5,7 @@ export default {
 </script>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import FormContainer from '../../components/FormContainer.vue'
 import FormInput from '../../components/FormInput.vue'
 import FormButton from '../../components/FormButton.vue'
@@ -24,6 +24,10 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
+  initialData: {
+    type: Object,
+    default: () => ({})
+  },
   onSubmit: {
     type: Function,
     required: true
@@ -41,6 +45,22 @@ const props = defineProps({
     required: true
   }
 })
+
+// Watch for initialData changes and update the form
+watch(
+  () => props.initialData,
+  (newData) => {
+    if (newData && Object.keys(newData).length > 0) {
+      // Wait a tick to ensure FormContainer is ready
+      setTimeout(() => {
+        if (formContainerRef.value && formContainerRef.value.setFormData) {
+          formContainerRef.value.setFormData(newData)
+        }
+      }, 0)
+    }
+  },
+  { immediate: true, deep: true }
+)
 
 // Expose resetForm method to parent components
 defineExpose({
@@ -97,6 +117,7 @@ const handleCancel = () => {
   <FormContainer
     ref="formContainerRef"
     :title="title"
+    :initial-data="initialData"
     :action="handleSubmit"
     @success="handleSuccess"
     @error="handleError"
