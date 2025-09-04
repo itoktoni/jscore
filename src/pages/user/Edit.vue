@@ -6,6 +6,8 @@
       :initial-data="initialFormData"
       :on-submit="handleSubmit"
       :on-success="handleSuccess"
+      :on-error="handleError"
+      :on-cancel="handleCancel"
     />
   </div>
 </template>
@@ -14,11 +16,13 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '../../stores/user'
+import { useSwalNotification } from '../../composables/useSwalNotification'
 import Form from './Form.vue'
 
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
+const { showSuccess } = useSwalNotification()
 
 const userId = route.params.id
 const initialFormData = ref({
@@ -61,8 +65,11 @@ const handleSubmit = async (data) => {
 }
 
 const handleSuccess = (response) => {
+  // Show success notification manually
+  showSuccess('Success', 'User updated successfully!')
+
   // Navigate back to user list on success
-  router.push({ name: 'UserManagement' })
+  router.push({ name: 'UserList' })
 }
 
 const handleError = (error) => {
@@ -72,7 +79,7 @@ const handleError = (error) => {
 
 const handleCancel = () => {
   // Always navigate to the user list
-  router.push({ name: 'UserManagement' })
+  router.push({ name: 'UserList' })
 }
 </script>
 

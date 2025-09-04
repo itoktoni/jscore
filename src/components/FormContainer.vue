@@ -94,20 +94,6 @@ const props = defineProps({
   validateOnSubmit: {
     type: Boolean,
     default: true
-  },
-
-  // Success notification
-  successMessage: {
-    type: String,
-    default: 'Form submitted successfully!'
-  },
-  showSuccessNotification: {
-    type: Boolean,
-    default: true
-  },
-  successNotificationTimer: {
-    type: Number,
-    default: 3000
   }
 })
 
@@ -168,19 +154,14 @@ const handleFieldValidationClear = (event) => {
 
 // Handle form submission
 const handleSubmit = async () => {
-  console.log('FormContainer handleSubmit called')
-  console.log('Form data:', { ...formData.value })
-
   // Clear any previous global errors
   globalError.value = ''
 
   if (props.validateOnSubmit) {
-    console.log('Validating form fields')
     await validateFields()
 
     // Check if there are any validation errors
     if (Object.keys(fieldErrors.value).length > 0) {
-      console.log('Form has validation errors:', fieldErrors.value)
       globalError.value = 'Please correct the errors below'
 
       // Show SweetAlert for validation errors
@@ -197,10 +178,8 @@ const handleSubmit = async () => {
 
   // Use submitHandler or action prop if available, otherwise emit
   const handler = props.submitHandler || props.action
-  console.log('Handler function:', handler)
 
   if (handler) {
-    console.log('Calling handler with data:', { ...formData.value })
     isSubmitting.value = true
     try {
       const result = await handler({ ...formData.value })
@@ -210,17 +189,8 @@ const handleSubmit = async () => {
         isSubmitting.value = false
         emit('success', result)
 
-        // Show success notification if enabled
-        if (props.showSuccessNotification) {
-          Swal.fire({
-            title: 'Success',
-            text: props.successMessage,
-            icon: 'success',
-            timer: props.successNotificationTimer,
-            showConfirmButton: false,
-            timerProgressBar: true
-          })
-        }
+        // Success notification is now handled manually in the page components
+        // Removed automatic Swal.fire notification
 
         return result
       } else {
@@ -251,7 +221,6 @@ const handleSubmit = async () => {
     } catch (error) {
       isSubmitting.value = false
       globalError.value = error.message || 'An error occurred'
-      console.log('Handler error:', error)
 
       // Show SweetAlert for unexpected errors
       Swal.fire({
@@ -265,7 +234,6 @@ const handleSubmit = async () => {
       return { success: false, error: error.message }
     }
   } else {
-    console.log('Emitting submit event with data:', { ...formData.value })
     const result = emit('submit', { ...formData.value })
     return { success: true, data: result }
   }

@@ -14,31 +14,28 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../../stores/user'
+import { useSwalNotification } from '../../composables/useSwalNotification'
 import Form from './Form.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
+const { showSuccess } = useSwalNotification()
 const formRef = ref(null)
 
 const handleSubmit = async (data) => {
-  console.log('Form submit called with data:', data)
-  // Directly submit all form data to the API
   return await userStore.createUser(data)
 }
 
 const handleSuccess = async (response) => {
-  console.log('Form submit success:', response)
 
-  // Reset form using the simplified approach
-  if (formRef.value) {
+  showSuccess('Success', 'User created successfully!')
+
+  if (formRef.value)
+  {
     formRef.value.resetForm()
   }
 
-  // Navigate back to user list on success using route name
-  router.push({ name: 'UserManagement' })
+  router.push({ name: 'CreateUser' })
 }
 
 </script>
-
-<style scoped>
-</style>

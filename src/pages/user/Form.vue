@@ -5,18 +5,13 @@ export default {
 </script>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref } from 'vue'
 import FormContainer from '../../components/FormContainer.vue'
 import FormInput from '../../components/FormInput.vue'
-import FormButton from '../../components/FormButton.vue'
 import ApiSelect from '../../components/ApiSelect.vue'
-import { useFormValidation } from '../../composables/useFormValidation.js'
 
 // Define ref for FormContainer
 const formContainerRef = ref(null)
-
-// Use form validation composable
-const { resetForm: resetValidationForm } = useFormValidation()
 
 // Define props
 const props = defineProps({
@@ -43,67 +38,21 @@ const props = defineProps({
   onError: {
     type: Function,
     default: (error) => {
-      console.log('Form error:', error)
+      // Removed console.log statement
     }
   },
   onCancel: {
     type: Function,
     default: () => {
-      console.log('Form cancel triggered')
+      // Removed console.log statement
     }
-  },
-  // Success notification props
-  showSuccessNotification: {
-    type: Boolean,
-    default: true
-  },
-  successMessage: {
-    type: String,
-    default: 'Form submitted successfully!'
-  },
-  successNotificationTimer: {
-    type: Number,
-    default: 3000
   }
 })
-
-// Watch for initialData changes and update the form
-watch(
-  () => props.initialData,
-  (newData) => {
-    if (newData && Object.keys(newData).length > 0) {
-      // Wait a tick to ensure FormContainer is ready
-      setTimeout(() => {
-        if (formContainerRef.value && formContainerRef.value.setFormData) {
-          formContainerRef.value.setFormData(newData)
-        }
-      }, 0)
-    }
-  },
-  { immediate: true, deep: true }
-)
 
 // Expose FormContainer methods directly to parent components
 defineExpose({
   resetForm: () => formContainerRef.value?.resetForm()
 })
-
-// Form event handlers
-const handleSubmit = (data) => {
-  return props.onSubmit(data)
-}
-
-const handleSuccess = (response) => {
-  props.onSuccess(response)
-}
-
-const handleError = (error) => {
-  props.onError(error)
-}
-
-const handleCancel = () => {
-  props.onCancel()
-}
 </script>
 
 <template>
@@ -111,12 +60,9 @@ const handleCancel = () => {
     ref="formContainerRef"
     :title="title"
     :initial-data="initialData"
-    :action="handleSubmit"
-    :show-success-notification="showSuccessNotification"
-    :success-message="successMessage"
-    :success-notification-timer="successNotificationTimer"
-    @success="handleSuccess"
-    @error="handleError"
+    :action="onSubmit"
+    @success="onSuccess"
+    @error="onError"
   >
     <FormInput name="username" rules="required" :disabled="isEditing" :hint="isEditing ? 'Username cannot be changed' : ''" col="6" />
     <FormInput name="name" rules="required" col="6" />
@@ -152,17 +98,15 @@ const handleCancel = () => {
 
     <template #footer="{ isSubmitting }">
       <div class="footer-actions">
-        <FormButton type="button" variant="secondary" text="← Back" @click="handleCancel" />
-        <FormButton
+        <button type="button" class="button secondary" @click="onCancel">← Back</button>
+        <button
           type="submit"
-          :variant="isEditing ? 'success' : 'primary'"
-          :text="isSubmitting ? 'Saving...' : (isEditing ? 'Update' : 'Create')"
+          :class="['button', isEditing ? 'success' : 'primary']"
           :disabled="isSubmitting"
-        />
+        >
+          {{ isSubmitting ? 'Saving...' : (isEditing ? 'Update' : 'Create') }}
+        </button>
       </div>
     </template>
   </FormContainer>
 </template>
-
-<style scoped>
-</style>
