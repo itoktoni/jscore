@@ -31,10 +31,10 @@
             rules="required|min:6"
             hint="Must be at least 6 characters"
           />
-          <FormInput 
-            name="password_confirmation" 
-            type="password" 
-            rules="required|confirmed" 
+          <FormInput
+            name="password_confirmation"
+            type="password"
+            rules="required|confirmed"
           />
 
           <FormButton
@@ -60,11 +60,11 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '../stores/auth'
-import FormContainer from '../components/FormContainer.vue'
-import FormInput from '../components/FormInput.vue'
-import FormButton from '../components/FormButton.vue'
-import FormLink from '../components/FormLink.vue'
+import { useAuthStore } from '../../stores/auth'
+import FormContainer from '../../components/FormContainer.vue'
+import FormInput from '../../components/FormInput.vue'
+import FormButton from '../../components/FormButton.vue'
+import FormLink from '../../components/FormLink.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -80,7 +80,7 @@ const initialFormData = ref({
 
 const handleRegister = async (data) => {
   const result = await authStore.register(data)
-  
+
   if (result.success) {
     // Redirect to profile on successful registration
     router.push('/profile')

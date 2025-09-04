@@ -67,10 +67,10 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '../stores/auth'
-import FormContainer from '../components/FormContainer.vue'
-import FormInput from '../components/FormInput.vue'
-import FormButton from '../components/FormButton.vue'
+import { useAuthStore } from '../../stores/auth'
+import FormContainer from '../../components/FormContainer.vue'
+import FormInput from '../../components/FormInput.vue'
+import FormButton from '../../components/FormButton.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
