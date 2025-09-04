@@ -230,8 +230,8 @@ defineExpose({
 </script>
 
 <template>
-  <form @submit.prevent="handleFilterSubmit" ref="filterForm">
-    <table class="filter data-table">
+  <form @submit.prevent="handleFilterSubmit" class="row col-12" ref="filterForm">
+    <table class="filter data-table col-12">
       <slot name="default-filters"></slot>
 
       <tr>
