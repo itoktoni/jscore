@@ -77,15 +77,9 @@ onMounted(async () => {
 
 async function handleSubmit(data) {
   try {
-    // Prepare user data for API (remove password_confirmation if empty)
-    const { password_confirmation, ...userData } = data
-    // Only include password fields if they have values
-    if (!userData.password) {
-      delete userData.password
-    }
 
     // Make API request to update user
-    const response = await http.post(USER_API_ROUTES.update(userId), userData)
+    const response = await http.post(USER_API_ROUTES.update(userId), data)
 
     // Handle response structure properly
     const resultData = response.data.data || response.data

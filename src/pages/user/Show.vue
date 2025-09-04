@@ -1,49 +1,31 @@
 <template>
-  <div class="modal-overlay" @click="closeModal">
-    <div class="modal-content" @click.stop>
-      <div class="modal-header">
-        <h3>User Details</h3>
-        <button class="close-button" @click="closeModal">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div v-if="user" class="user-details">
-          <div class="user-avatar-large">
-            {{ getInitials(user.name || user.username) }}
-          </div>
-          <div class="user-info">
-            <p><strong>Name:</strong> {{ user.name || 'N/A' }}</p>
-            <p><strong>Username:</strong> @{{ user.username }}</p>
-            <p><strong>Email:</strong> {{ user.email || 'N/A' }}</p>
-            <p><strong>Role:</strong> {{ user.role || 'user' }}</p>
-            <p><strong>Status:</strong> {{ user.status || 'active' }}</p>
-            <p><strong>Created:</strong> {{ formatDate(user.created_at) }}</p>
-            <p><strong>Last Updated:</strong> {{ formatDate(user.updated_at) }}</p>
-          </div>
-        </div>
-        <div v-else class="loading">
-          Loading user details...
-        </div>
-      </div>
-      <div class="modal-footer">
-        <FormButton
-          variant="secondary"
-          text="Close"
-          @click="closeModal"
-        />
-        <FormButton
-          variant="primary"
-          text="Edit User"
-          @click="editUser"
-        />
-      </div>
-    </div>
-  </div>
+  <ModalShow
+    :data="user"
+    title="User Details"
+    :fields="userFields"
+    :show-avatar="true"
+    @close="closeModal"
+  >
+    <template #footer>
+      <FormButton
+        variant="secondary"
+        text="Close"
+        @click="closeModal"
+      />
+      <FormButton
+        variant="primary"
+        text="Edit User"
+        @click="editUser"
+      />
+    </template>
+  </ModalShow>
 </template>
 
 <script setup>
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { USER_ROUTES } from '../../router/userRoutes'
+import ModalShow from '../../components/ModalShow.vue'
 import FormButton from '../../components/FormButton.vue'
 
 // Define props
@@ -59,6 +41,17 @@ const emit = defineEmits(['close', 'edit'])
 
 const router = useRouter()
 
+// Define fields to display
+const userFields = [
+  { key: 'name', label: 'Name' },
+  { key: 'username', label: 'Username' },
+  { key: 'email', label: 'Email' },
+  { key: 'role', label: 'Role' },
+  { key: 'status', label: 'Status' },
+  { key: 'created_at', label: 'Created' },
+  { key: 'updated_at', label: 'Last Updated' }
+]
+
 // Methods
 const closeModal = () => {
   emit('close')
@@ -69,23 +62,6 @@ const editUser = () => {
     closeModal()
     router.push({ name: USER_ROUTES.EDIT_USER, params: { id: props.user.id } })
   }
-}
-
-const getInitials = (name) => {
-  if (!name) return '?'
-  return name.split(' ')
-    .map(word => word.charAt(0).toUpperCase())
-    .slice(0, 2)
-    .join('')
-}
-
-const formatDate = (dateString) => {
-  if (!dateString) return 'N/A'
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  })
 }
 </script>
 
