@@ -5,7 +5,7 @@
         Showing {{ pagination.from }} to {{ pagination.to }} of {{ pagination.total }} {{ entityName }}
       </p>
 
-      <p class="select-all">
+      <p v-if="showSelectAll" class="select-all">
         <input
           type="checkbox"
           :checked="selectAll"
@@ -19,62 +19,80 @@
       <table class="data-table striped">
         <thead>
           <tr>
-            <th>
-              <input
-                type="checkbox"
-                :checked="selectAll"
-                @change="$emit('toggle-select-all')"
-              >
-            </th>
-            <th class="action-header text-center">Actions</th>
-            <th v-for="column in columns" :key="column.key">{{ column.label }}</th>
+            <slot name="header"></slot>
           </tr>
         </thead>
         <tbody>
           <tr v-for="(item, index) in items" :key="item.id">
-            <td data-label="Select">
-              <input
-                type="checkbox"
-                :checked="item.selected"
-                @change="$emit('update-select-all')"
-              >
-            </td>
-            <td class="column-action" data-label="Actions">
-              <div class="action-table">
-                <slot
-                  name="actions"
-                  :item="item"
-                  :index="index"
-                ></slot>
-              </div>
-            </td>
-            <td
-              v-for="column in columns"
-              :key="column.key"
-              :data-label="column.label"
-            >
-              <div v-if="column.type === 'status'">
-                <span :class="item[column.key] ? 'status-active' : 'status-inactive'">
-                  {{ item[column.key] ? 'Active' : 'Inactive' }}
-                </span>
-              </div>
-              <div v-else-if="column.type === 'price'">
-                ${{ item[column.key] }}
-              </div>
-              <div v-else-if="column.type === 'number'">
-                {{ (pagination.currentPage - 1) * pagination.perPage + index + 1 }}
-              </div>
-              <div v-else-if="column.type === 'custom'">
-                <slot
-                  :name="column.key"
-                  :item="item"
-                  :index="index"
-                ></slot>
-              </div>
-              <div v-else>
-                {{ item[column.key] }}
-              </div>
-            </td>
+            <slot :item="item" :index="index">
+              <!-- Default rendering if no slot content is provided -->
+              <td v-if="showCheckbox" data-label="Select">
+                <input
+                  type="checkbox"
+                  :checked="item.selected"
+                  @change="$emit('update-select-all')"
+                >
+              </td>
+              <td v-if="showActions" class="column-action" data-label="Actions">
+                <div class="action-table">
+                  <slot
+                    name="actions"
+                    :item="item"
+                    :index="index"
+                  ></slot>
+                </div>
+              </td>
+              <template v-for="column in columns" :key="column.key">
+                <td
+                  v-if="column.type === 'custom'"
+                  :data-label="column.label"
+                >
+                  <slot
+                    :name="column.key"
+                    :item="item"
+                    :index="index"
+                  ></slot>
+                </td>
+                <td
+                  v-else-if="column.type === 'status'"
+                  :data-label="column.label"
+                  class="table-cell table-cell--status"
+                >
+                  <div class="table-cell__content">
+                    <span :class="item[column.key] ? 'status-active' : 'status-inactive'">
+                      {{ item[column.key] ? 'Active' : 'Inactive' }}
+                    </span>
+                  </div>
+                </td>
+                <td
+                  v-else-if="column.type === 'price'"
+                  :data-label="column.label"
+                  class="table-cell table-cell--price"
+                >
+                  <div class="table-cell__content">
+                    <span>${{ item[column.key] }}</span>
+                  </div>
+                </td>
+                <td
+                  v-else-if="column.type === 'number'"
+                  :data-label="column.label"
+                  class="table-cell table-cell--number"
+                >
+                  <div class="table-cell__content">
+                    <span>{{ (pagination.currentPage - 1) * pagination.perPage + index + 1 }}</span>
+                  </div>
+                </td>
+                <td
+                  v-else
+                  :data-label="column.label"
+                  class="table-cell"
+                >
+                  <div class="table-cell__content">
+                    <span>{{ item[column.key] }}</span>
+                  </div>
+                </td>
+              </template>
+            </slot>
           </tr>
         </tbody>
       </table>
@@ -96,7 +114,7 @@ const props = defineProps({
   },
   selectAll: {
     type: Boolean,
-    required: true
+    default: false
   },
   columns: {
     type: Array,
@@ -106,6 +124,18 @@ const props = defineProps({
   entityName: {
     type: String,
     default: 'items'
+  },
+  showCheckbox: {
+    type: Boolean,
+    default: true
+  },
+  showActions: {
+    type: Boolean,
+    default: true
+  },
+  showSelectAll: {
+    type: Boolean,
+    default: true
   }
 })
 
@@ -129,6 +159,15 @@ const emit = defineEmits([
   margin-top: 1rem;
   color: #666;
   position: relative;
+}
+
+.table-cell {
+  padding: 0.5rem;
+}
+
+.table-cell__content {
+  display: flex;
+  align-items: center;
 }
 
 .status-active {

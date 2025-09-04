@@ -9,8 +9,9 @@ A reusable Vue component for displaying tabular data with pagination and selecti
 - Row selection (single and bulk)
 - Custom cell rendering with slots
 - Responsive design with horizontal scrolling
-- Status display with color coding
 - Sequential numbering
+- Built-in support for common field types (status, price, number)
+- Optional checkboxes and action columns
 
 ## Usage
 
@@ -28,16 +29,17 @@ A reusable Vue component for displaying tabular data with pagination and selecti
     @update-select-all="updateSelectAll"
   >
     <template #actions="{ item }">
-      <button @click="handleView(item)">View</button>
-      <button @click="handleEdit(item)">Edit</button>
-      <button @click="handlePrint(item)">Print</button>
-      <button @click="handleDelete(item)">Delete</button>
+      <TableAction variant="primary" icon="bi bi-eye" title="View" @click="handleView(item)" />
+      <TableAction variant="secondary" icon="bi bi-pencil-square" title="Edit" @click="handleEdit(item)" />
+      <TableAction variant="info" icon="bi bi-printer" title="Print" @click="handlePrint(item)" />
+      <TableAction variant="danger" icon="bi bi-trash" title="Delete" @click="handleDelete(item)" />
     </template>
   </TableComponent>
 </template>
 
 <script setup>
 import TableComponent from '@/components/TableComponent.vue'
+import TableAction from '@/components/TableAction.vue'
 
 // Define table columns
 const tableColumns = [
@@ -51,14 +53,28 @@ const tableColumns = [
 </script>
 ```
 
-### Column Types
+### Usage Without Checkboxes or Actions
 
-The component supports several column types:
-
-- `number`: Sequential numbering based on pagination
-- `status`: Boolean value displayed as "Active"/"Inactive" with color coding
-- `price`: Numeric value prefixed with "$"
-- `custom`: Custom rendering using slots
+```vue
+<template>
+  <TableComponent
+    :items="items"
+    :pagination="pagination"
+    :columns="tableColumns"
+    entity-name="items"
+    :show-checkbox="false"
+    :show-actions="false"
+    :show-select-all="false"
+  >
+    <template #header>
+      <th>ID</th>
+      <th>Name</th>
+      <th>Description</th>
+      <th>Status</th>
+    </template>
+  </TableComponent>
+</template>
+```
 
 ### Custom Cell Rendering
 
@@ -75,19 +91,19 @@ For custom cell rendering, use named slots that match the column key:
   @update-select-all="updateSelectAll"
 >
   <template #actions="{ item }">
-    <button @click="handleView(item)">View</button>
-    <button @click="handleEdit(item)">Edit</button>
-    <button @click="handlePrint(item)">Print</button>
-    <button @click="handleDelete(item)">Delete</button>
+    <TableAction variant="primary" icon="bi bi-eye" title="View" @click="handleView(item)" />
+    <TableAction variant="secondary" icon="bi bi-pencil-square" title="Edit" @click="handleEdit(item)" />
+    <TableAction variant="info" icon="bi bi-printer" title="Print" @click="handlePrint(item)" />
+    <TableAction variant="danger" icon="bi bi-trash" title="Delete" @click="handleDelete(item)" />
   </template>
 
-  <template #name="{ item }">
-    <div class="user-name-cell">
-      <span>{{ item.name || item.username }}</span>
+  <template #name="{ item, index }">
+    <div class="custom-name">
+      <strong>{{ index + 1 }}.</strong> {{ item.name || item.username }}
     </div>
   </template>
 
-  <template #status="{ item }">
+  <template #active="{ item }">
     <span :class="item.active ? 'status-active' : 'status-inactive'">
       {{ item.active ? 'Active' : 'Inactive' }}
     </span>
@@ -95,15 +111,27 @@ For custom cell rendering, use named slots that match the column key:
 </TableComponent>
 ```
 
+### Column Types
+
+The component supports several column types:
+
+- `number`: Sequential numbering based on pagination
+- `status`: Boolean value displayed as "Active"/"Inactive" with color coding
+- `price`: Numeric value prefixed with "$"
+- `custom`: Custom rendering using slots
+
 ### Props
 
-| Prop | Type | Required | Description |
-|------|------|----------|-------------|
-| items | Array | Yes | Array of items to display in the table |
-| pagination | Object | Yes | Pagination object with currentPage, perPage, total, from, to |
-| selectAll | Boolean | Yes | Whether all items are selected |
-| columns | Array | Yes | Array of column definitions |
-| entityName | String | No | Name of the entity for display in pagination info (default: "items") |
+| Prop | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| items | Array | Yes | - | Array of items to display in the table |
+| pagination | Object | Yes | - | Pagination object with currentPage, perPage, total, from, to |
+| selectAll | Boolean | No | false | Whether all items are selected |
+| columns | Array | Yes | [] | Array of column definitions |
+| entityName | String | No | "items" | Name of the entity for display in pagination info |
+| showCheckbox | Boolean | No | true | Whether to show the checkbox column |
+| showActions | Boolean | No | true | Whether to show the actions column |
+| showSelectAll | Boolean | No | true | Whether to show the select all checkbox in the info bar |
 
 ### Column Definition
 
@@ -126,9 +154,22 @@ Each column in the columns array should have the following properties:
 
 | Slot | Props | Description |
 |------|-------|-------------|
+| header | None | Slot for manually defining table headers |
 | actions | { item, index } | Slot for rendering action buttons for each row |
-| [column.key] | { item, index } | Custom slots for rendering specific column cells |
+| [column.key] | { item, index, column } | Custom slots for rendering specific column cells |
+
+## Manual Table Implementation
+
+For cases where you need more control over the table rendering, you can manually create tables using `v-for` loops:
+
+### Manual Table with Actions
+See `src/components/ManualTableWithActions.vue` for an example of a manually created table with selection and actions.
+
+### Simple Manual Table
+See `src/components/ManualTableSimple.vue` for an example of a simple manually created table without selection or actions.
 
 ## Example Implementation
 
-See `src/pages/user/List.vue` and `src/pages/product/List.vue` for complete examples of how to use this component.
+See `src/pages/user/List.vue` for a complete example of how to use this component with actions and checkboxes.
+See `src/components/TableComponentExample.vue` for an example of how to use this component without actions or checkboxes.
+See `src/components/ManualTableExample.vue` for an example of how to manually create tables with foreach loops.

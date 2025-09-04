@@ -63,41 +63,72 @@
           :items="items"
           :pagination="pagination"
           :select-all="selectAll"
-          :columns="tableColumns"
+          :columns="[]"
           entity-name="users"
           @toggle-select-all="toggleSelectAll"
           @update-select-all="updateSelectAll"
         >
-          <template #actions="{ item }">
-            <button class="button primary" @click.stop="handleView(item)" title="View">
-              <i class="bi bi-eye"></i>
-            </button>
-            <button class="button secondary" @click.stop="handleEdit(item, USER_ROUTES.EDIT_USER)" title="Edit">
-              <i class="bi bi-pencil-square"></i>
-            </button>
-            <button class="button info" @click.stop="handlePrint(item)" title="Print">
-              <i class="bi bi-printer"></i>
-            </button>
-            <button class="button error" @click.stop="confirmDelete(item)" title="Delete">
-              <i class="bi bi-trash"></i>
-            </button>
+          <template #header>
+            <th>
+              <input
+                type="checkbox"
+                :checked="selectAll"
+                @change="toggleSelectAll"
+              >
+            </th>
+            <th class="action-header text-center">Actions</th>
+            <th>No.</th>
+            <th>Name</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Status</th>
           </template>
 
-          <template #name="{ item }">
-            <div class="user-name-cell">
-              <span>{{ item.name || item.username }}</span>
-            </div>
-          </template>
-          <template #username="{ item }">
-            @{{ item.username }}
-          </template>
-          <template #role="{ item }">
-            {{ item.system_role_name || 'User' }}
-          </template>
-          <template #status="{ item }">
-            <span :class="item.active ? 'status-active' : 'status-inactive'">
-              {{ item.active ? 'Active' : 'Inactive' }}
-            </span>
+          <template #default="{ item, index }">
+            <td data-label="Select">
+              <input
+                type="checkbox"
+                :checked="item.selected"
+                @change="() => updateSelectAll(item)"
+              >
+            </td>
+            <td class="column-action" data-label="Actions">
+              <div class="action-table">
+                <TableAction
+                  variant="primary"
+                  icon="bi bi-eye"
+                  title="View"
+                  @click="handleView(item)"
+                />
+                <TableAction
+                  variant="secondary"
+                  icon="bi bi-pencil-square"
+                  title="Edit"
+                  @click="handleEdit(item, USER_ROUTES.EDIT_USER)"
+                />
+                <TableAction
+                  variant="info"
+                  icon="bi bi-printer"
+                  title="Print"
+                  @click="handlePrint(item)"
+                />
+                <TableAction
+                  variant="danger"
+                  icon="bi bi-trash"
+                  title="Delete"
+                  @click="confirmDelete(item)"
+                />
+              </div>
+            </td>
+            <td data-label="No.">{{ (pagination.currentPage - 1) * pagination.perPage + index + 1 }}</td>
+            <td data-label="Name">{{ item.name || item.username || 'N/A' }}</td>
+            <td data-label="Username">@{{ item.username }}</td>
+            <td data-label="Email">{{ item.email }}</td>
+            <td data-label="Status">
+              <span :class="item.active ? 'status-active' : 'status-inactive'">
+                {{ item.active ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
           </template>
         </TableComponent>
 
@@ -141,6 +172,8 @@ import LoadingData from '../../components/LoadingData.vue'
 import PaginationComponent from '../../components/PaginationComponent.vue'
 import FilterComponent from '../../components/FilterComponent.vue'
 import TableComponent from '../../components/TableComponent.vue'
+import TableCell from '../../components/TableCell.vue'
+import TableAction from '../../components/TableAction.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -183,13 +216,12 @@ const searchOptions = [
   { value: 'role', label: 'Role' }
 ]
 
-// Define table columns
+// Define table columns (excluding role column)
 const tableColumns = [
   { key: 'no', label: 'No.', type: 'number' },
   { key: 'name', label: 'Name', type: 'custom' },
   { key: 'username', label: 'Username', type: 'custom' },
   { key: 'email', label: 'Email' },
-  { key: 'system_role_name', label: 'Role', type: 'custom' },
   { key: 'active', label: 'Status', type: 'status' }
 ]
 

@@ -168,6 +168,9 @@ export function useGlobalList(apiRoutes, usePaginationComposable, useAlertCompos
 
   // Table selection methods
   function toggleSelectAll() {
+    // Toggle the selectAll state first
+    selectAll.value = !selectAll.value
+
     if (items.value) {
       items.value.forEach(item => {
         item.selected = selectAll.value
@@ -175,10 +178,15 @@ export function useGlobalList(apiRoutes, usePaginationComposable, useAlertCompos
     }
   }
 
-  function updateSelectAll() {
+  function updateSelectAll(item) {
+    if (item) {
+      // Toggle the item's selected state
+      item.selected = !item.selected
+    }
+
     if (items.value) {
       const selectedItems = items.value.filter(item => item.selected)
-      selectAll.value = selectedItems.length === items.value.length
+      selectAll.value = selectedItems.length === items.value.length && items.value.length > 0
     }
   }
 
