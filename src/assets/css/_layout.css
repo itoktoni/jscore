@@ -148,7 +148,7 @@ html {
 
 /* Column 2: Sub Menu */
 .sub-menu-container {
-    width: 230px;
+    width: 270px;
     background-color: var(--bg-white);
     border-right: 1px solid var(--border-color);
     padding: 0.7rem;

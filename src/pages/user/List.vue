@@ -43,8 +43,8 @@
         </div>
 
       <!-- Loading State -->
-      <div v-if="userStore.loading" class="col-12 loading">
-        Loading users...
+      <div class="col-12" v-if="userStore.loading">
+            <LoadingData/>
       </div>
 
       <!-- Error State -->
@@ -111,9 +111,6 @@
               </td>
               <td>
                 <div class="user-name-cell">
-                  <div class="user-avatar">
-                    {{ getInitials(user.name || user.username) }}
-                  </div>
                   <span>{{ user.name || user.username }}</span>
                 </div>
               </td>
@@ -188,8 +185,6 @@
       @close="showUserDetail = false"
     />
 
-
-
   </div>
 </template>
 
@@ -202,6 +197,7 @@ import FormButton from '../../components/FormButton.vue'
 import ErrorMessage from '../../components/ErrorMessage.vue'
 import ConfirmModal from '../../components/ConfirmModal.vue'
 import Show from './Show.vue'
+import LoadingData from '../../components/LoadingData.vue'
 
 const router = useRouter()
 const userStore = useUserStore()

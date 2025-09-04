@@ -266,6 +266,7 @@ onUnmounted(() => {
 /* Mobile optimizations */
 @media (max-width: 768px) {
   .form-select {
+    padding: 1rem;
     font-size: 16px; /* Prevents zoom on iOS */
   }
 
