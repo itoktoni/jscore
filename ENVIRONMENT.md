@@ -12,6 +12,7 @@ This project supports different environments through environment variables.
 
 - `VITE_API_URL` - The base URL for API requests
 - `VITE_APP_ENV` - The application environment (development, production)
+- `VITE_APP_NAME` - The application name displayed in the browser title
 
 ## Usage
 
@@ -23,6 +24,7 @@ To use the local development environment with `http://newcore.test`:
    ```
    VITE_API_URL=http://newcore.test
    VITE_APP_ENV=development
+   VITE_APP_NAME=OBSESIMAN REPORT
    ```
 
 2. Run the development server:
@@ -41,6 +43,7 @@ For production builds, the `.env.production` file will be used:
 ```
 VITE_API_URL=https://newcore.nexeratech.co.id
 VITE_APP_ENV=production
+VITE_APP_NAME=OBSESIMAN REPORT
 ```
 
 Run the production build:
@@ -57,6 +60,7 @@ To create a custom environment:
    ```
    VITE_API_URL=https://staging.newcore.example.com
    VITE_APP_ENV=staging
+   VITE_APP_NAME=OBSESIMAN REPORT
    ```
 3. Run with your custom environment:
    ```bash

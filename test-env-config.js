@@ -30,7 +30,7 @@ readEnvFile('.env.production');
 // Check if required environment variables are set
 console.log('Environment Variables Check:\n');
 
-// Simulate checking for VITE_API_URL in different environments
+// Simulate checking for VITE_API_URL and VITE_APP_NAME in different environments
 const envFiles = ['.env', '.env.development', '.env.production'];
 const expectedUrls = {
     '.env.development': 'http://newcore.test',
@@ -42,19 +42,35 @@ envFiles.forEach(file => {
         const filePath = path.join(__dirname, file);
         if (fs.existsSync(filePath)) {
             const content = fs.readFileSync(filePath, 'utf8');
+
+            // Check for VITE_API_URL
             if (content.includes('VITE_API_URL')) {
                 console.log(`✓ ${file} contains VITE_API_URL`);
 
                 // Check if it matches expected URL
                 if (expectedUrls[file]) {
                     if (content.includes(expectedUrls[file])) {
-                        console.log(`✓ ${file} has correct VITE_API_URL: ${expectedUrls[file]}\n`);
+                        console.log(`✓ ${file} has correct VITE_API_URL: ${expectedUrls[file]}`);
                     } else {
-                        console.log(`✗ ${file} does not have expected VITE_API_URL. Expected: ${expectedUrls[file]}\n`);
+                        console.log(`✗ ${file} does not have expected VITE_API_URL. Expected: ${expectedUrls[file]}`);
                     }
                 }
             } else {
-                console.log(`✗ ${file} does not contain VITE_API_URL\n`);
+                console.log(`✗ ${file} does not contain VITE_API_URL`);
+            }
+
+            // Check for VITE_APP_NAME
+            if (content.includes('VITE_APP_NAME')) {
+                console.log(`✓ ${file} contains VITE_APP_NAME`);
+
+                // Check if it has the correct app name
+                if (content.includes('OBSESIMAN REPORT')) {
+                    console.log(`✓ ${file} has correct VITE_APP_NAME: OBSESIMAN REPORT\n`);
+                } else {
+                    console.log(`✗ ${file} does not have expected VITE_APP_NAME. Expected: OBSESIMAN REPORT\n`);
+                }
+            } else {
+                console.log(`✗ ${file} does not contain VITE_APP_NAME\n`);
             }
         }
     } catch (error) {

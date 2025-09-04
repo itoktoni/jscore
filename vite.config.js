@@ -13,6 +13,9 @@ export default defineConfig(({ mode }) => {
       minify: false,
       emptyOutDir: true,
     },
+    define: {
+      'process.env': env
+    },
     server: {
       proxy: {
         '/api': {
