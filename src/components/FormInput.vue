@@ -358,13 +358,13 @@ const handleValidateAll = () => {
 // Set up event listeners
 onMounted(() => {
   if (typeof window !== 'undefined' && document) {
-    document.addEventListener('validate-all', handleValidateAll)
+    document.addEventListener('validate-submit', handleValidateAll)
   }
 })
 
 onUnmounted(() => {
   if (typeof window !== 'undefined' && document) {
-    document.removeEventListener('validate-all', handleValidateAll)
+    document.removeEventListener('validate-submit', handleValidateAll)
   }
 })
 </script>
@@ -372,6 +372,7 @@ onUnmounted(() => {
 <style scoped>
 
 .form-input {
+  min-height: 4rem;
   width: 100%;
   border: 2px solid #ddd;
   border-radius: 8px;
@@ -389,5 +390,4 @@ onUnmounted(() => {
   border-color: #007bff;
   box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
 }
-
 </style>

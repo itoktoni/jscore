@@ -10,9 +10,13 @@ import FormContainer from '../../components/FormContainer.vue'
 import FormInput from '../../components/FormInput.vue'
 import FormButton from '../../components/FormButton.vue'
 import ApiSelect from '../../components/ApiSelect.vue'
+import { useFormValidation } from '../../composables/useFormValidation.js'
 
 // Define ref for FormContainer
 const formContainerRef = ref(null)
+
+// Use form validation composable
+const { resetForm: resetValidationForm } = useFormValidation()
 
 // Define props
 const props = defineProps({
@@ -66,31 +70,9 @@ watch(
 defineExpose({
   resetForm: () => {
     console.log('Form resetForm called')
-    // Reset the form to its initial state using forEach to set all fields to empty strings
-    try {
-      // Add a small delay to ensure any pending operations complete
-      setTimeout(() => {
-        if (formContainerRef.value && formContainerRef.value.formData) {
-          // Set all form fields to empty strings
-          Object.keys(formContainerRef.value.formData).forEach(key => {
-            formContainerRef.value.formData[key] = ''
-          })
-
-          // Clear field errors
-          if (formContainerRef.value.fieldErrors) {
-            Object.keys(formContainerRef.value.fieldErrors).forEach(key => {
-              delete formContainerRef.value.fieldErrors[key]
-            })
-          }
-
-          // Clear global error
-          if (formContainerRef.value.globalError) {
-            formContainerRef.value.globalError.value = ''
-          }
-        }
-      }, 10)
-    } catch (error) {
-      console.error('Error in formContainer reset:', error)
+    // Use the simplified resetForm from composable
+    if (formContainerRef.value && typeof formContainerRef.value.resetForm === 'function') {
+      formContainerRef.value.resetForm()
     }
   }
 })
@@ -146,6 +128,8 @@ const handleCancel = () => {
     <ApiSelect
       name="role"
       endpoint="roles"
+      rules="required"
+      searchable
       option-label="name"
       option-value="id"
       col="6"

@@ -196,7 +196,8 @@ const subMenus = ref({
   ],
   test: [
     { title: 'Safe Area Test', route: '/test-safe-area' },
-    { title: 'Safe Area Page Test', route: '/test-safe-area-page' }
+    { title: 'Safe Area Page Test', route: '/test-safe-area-page' },
+    { title: 'FormSelect Test', route: '/test-form-select' }
   ]
 })
 

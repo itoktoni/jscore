@@ -9,6 +9,8 @@
       :label="label"
       :placeholder="placeholder"
       :disabled="disabled"
+      :searchable="searchable"
+      :search-placeholder="searchPlaceholder"
     />
     <div v-else-if="loading" class="loading-placeholder">
       {{ loadingText }}
@@ -72,6 +74,15 @@ const props = defineProps({
   errorText: {
     type: String,
     default: 'Error loading data'
+  },
+  // Pass through searchable props to FormSelect
+  searchable: {
+    type: Boolean,
+    default: false
+  },
+  searchPlaceholder: {
+    type: String,
+    default: 'Search...'
   }
 })
 

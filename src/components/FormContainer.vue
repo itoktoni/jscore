@@ -14,10 +14,6 @@
         :handleSubmit="handleSubmit"
       />
 
-      <div v-if="globalError" class="error-message">
-        {{ globalError }}
-      </div>
-
       <!-- Footer Actions Slot -->
       <footer v-if="showFooter" class="content-footer safe-area-bottom">
         <slot name="footer" :formData="formData" :fieldErrors="fieldErrors" :isSubmitting="isSubmitting" :handleSubmit="handleSubmit">
@@ -41,8 +37,8 @@
 </template>
 
 <script setup>
-import { provide, watch } from 'vue'
-import { useFormValidation } from '../composables/useFormValidation'
+import { provide, watch, ref, onMounted, onUnmounted } from 'vue'
+import Swal from 'sweetalert2'
 import FormButton from './FormButton.vue'
 
 const props = defineProps({
@@ -101,54 +97,86 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['submit', 'success', 'error', 'cancel', 'change'])
+const emit = defineEmits(['submit', 'success', 'error', 'cancel'])
 
-// Use form validation composable
-const {
-  isSubmitting,
-  globalError,
-  fieldErrors,
-  formData,
-  resetForm,
-  setFormData,
-  submitForm
-} = useFormValidation()
+// Form state
+const formData = ref({ ...props.initialData })
+const fieldErrors = ref({})
+const isSubmitting = ref(false)
+const globalError = ref('')
 
 // Initialize form data with props - watch for changes
 watch(
   () => props.initialData,
   (newData) => {
     if (newData && Object.keys(newData).length > 0) {
-      setFormData(newData)
+      formData.value = { ...newData }
     }
   },
   { immediate: true, deep: true }
 )
 
 // Provide form context to child components
-provide('formData', formData)
+provide('formData', formData.value)
 provide('fieldErrors', fieldErrors)
 provide('isSubmitting', isSubmitting)
+
+// Simple validation function - to be called on submit
+const validateFields = () => {
+  // Clear existing errors first
+  fieldErrors.value = {}
+
+  // Dispatch validation event for child components to listen to
+  const validationEvent = new CustomEvent('validate-submit', { bubbles: true })
+  if (typeof window !== 'undefined' && document) {
+    document.dispatchEvent(validationEvent)
+  }
+
+  // Give components time to respond
+  return new Promise(resolve => setTimeout(resolve, 100))
+}
+
+// Handle field validation error events
+const handleFieldValidationError = (event) => {
+  const { fieldName, error } = event.detail
+  if (fieldName && error) {
+    fieldErrors.value[fieldName] = error
+  }
+}
+
+// Handle field validation clear events
+const handleFieldValidationClear = (event) => {
+  const { fieldName } = event.detail
+  if (fieldName && fieldErrors.value[fieldName]) {
+    delete fieldErrors.value[fieldName]
+  }
+}
 
 // Handle form submission
 const handleSubmit = async () => {
   console.log('FormContainer handleSubmit called')
-  console.log('Form data:', { ...formData })
+  console.log('Form data:', { ...formData.value })
+
   // Clear any previous global errors
   globalError.value = ''
 
   if (props.validateOnSubmit) {
     console.log('Validating form fields')
-    // Trigger validation on all fields first
-    validateAllFields()
-
-    // Wait for validation to complete
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await validateFields()
 
     // Check if there are any validation errors
-    if (Object.keys(fieldErrors).length > 0) {
-      console.log('Form has validation errors:', fieldErrors)
+    if (Object.keys(fieldErrors.value).length > 0) {
+      console.log('Form has validation errors:', fieldErrors.value)
       globalError.value = 'Please correct the errors below'
+
+      // Show SweetAlert for validation errors
+      Swal.fire({
+        title: 'Validation Error',
+        text: 'Please correct the errors below',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      })
+
       return
     }
   }
@@ -156,11 +184,12 @@ const handleSubmit = async () => {
   // Use submitHandler or action prop if available, otherwise emit
   const handler = props.submitHandler || props.action
   console.log('Handler function:', handler)
+
   if (handler) {
-    console.log('Calling handler with data:', { ...formData })
+    console.log('Calling handler with data:', { ...formData.value })
     isSubmitting.value = true
     try {
-      const result = await handler({ ...formData })
+      const result = await handler({ ...formData.value })
 
       if (result && result.success !== false) {
         // Handle success
@@ -173,10 +202,19 @@ const handleSubmit = async () => {
           // Map API errors to form fields
           Object.keys(result.errors).forEach(fieldName => {
             const error = result.errors[fieldName]
-            fieldErrors[fieldName] = typeof error === 'string' ? error : (Array.isArray(error) ? error[0] : String(error))
+            fieldErrors.value[fieldName] = typeof error === 'string' ? error : (Array.isArray(error) ? error[0] : String(error))
           })
         }
         globalError.value = result?.error || 'Submission failed'
+
+        // Show SweetAlert for submission errors
+        Swal.fire({
+          title: 'Submission Error',
+          text: result?.error || 'Submission failed',
+          icon: 'error',
+          confirmButtonText: 'OK'
+        })
+
         emit('error', result)
         isSubmitting.value = false
         return result
@@ -185,44 +223,34 @@ const handleSubmit = async () => {
       isSubmitting.value = false
       globalError.value = error.message || 'An error occurred'
       console.log('Handler error:', error)
+
+      // Show SweetAlert for unexpected errors
+      Swal.fire({
+        title: 'Error',
+        text: error.message || 'An error occurred',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      })
+
       emit('error', error)
       return { success: false, error: error.message }
     }
   } else {
-    console.log('Emitting submit event with data:', { ...formData })
-    const result = emit('submit', { ...formData })
+    console.log('Emitting submit event with data:', { ...formData.value })
+    const result = emit('submit', { ...formData.value })
     return { success: true, data: result }
   }
 }
 
-// Method to manually trigger validation on all fields
-const validateAllFields = () => {
-  // Clear existing errors first
-  Object.keys(fieldErrors).forEach(key => {
-    delete fieldErrors[key]
-  })
-
-  // We need to trigger validation by dispatching an event that child components can listen to
-  const validationEvent = new CustomEvent('validate-all', { bubbles: true })
-
-  // Dispatch the event after a short delay to ensure all components are ready
-  setTimeout(() => {
-    if (typeof window !== 'undefined' && document) {
-      document.dispatchEvent(validationEvent)
-    }
-
-    // Wait a bit more for validation to complete
-    setTimeout(() => {
-      // Check if validation found any errors
-      if (Object.keys(fieldErrors).length > 0) {
-        globalError.value = 'Please correct the errors below'
-      }
-    }, 50)
-  }, 10)
-}
-
 const handleCancel = () => {
   emit('cancel')
+}
+
+// Simple reset function
+const resetForm = () => {
+  formData.value = { ...props.initialData }
+  fieldErrors.value = {}
+  globalError.value = ''
 }
 
 // Expose methods for parent components
@@ -230,11 +258,25 @@ defineExpose({
   formData,
   fieldErrors,
   resetForm,
-  setFormData,
   isSubmitting,
-  globalError,
-  validateAllFields
+  globalError
 })
+
+// Set up event listeners
+onMounted(() => {
+  if (typeof window !== 'undefined' && document) {
+    document.addEventListener('field-validation-error', handleFieldValidationError)
+    document.addEventListener('field-validation-clear', handleFieldValidationClear)
+  }
+})
+
+onUnmounted(() => {
+  if (typeof window !== 'undefined' && document) {
+    document.removeEventListener('field-validation-error', handleFieldValidationError)
+    document.removeEventListener('field-validation-clear', handleFieldValidationClear)
+  }
+})
+
 </script>
 
 <style scoped>

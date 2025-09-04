@@ -31,13 +31,13 @@ const handleSubmit = async (data) => {
 const handleSuccess = async (response) => {
   console.log('Form submit success:', response)
 
-  // Add a small delay to ensure any pending operations complete
-  setTimeout(() => {
-    formRef.value?.resetForm?.()
-  }, 10)
+  // Reset form using the simplified approach
+  if (formRef.value && typeof formRef.value.resetForm === 'function') {
+    formRef.value.resetForm()
+  }
 
   // Navigate back to user list on success
-  router.push('/users/create')
+  router.push('/users')
 }
 
 const handleError = (error) => {
