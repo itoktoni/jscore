@@ -1,9 +1,3 @@
-<template>
-  <div>
-    <slot :data="modelData" :loading="loading" :error="error"></slot>
-  </div>
-</template>
-
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useApiRoutes } from '../composables/useApiRoutes'
@@ -23,13 +17,14 @@ const modelData = ref([])
 const loading = ref(false)
 const error = ref(null)
 
-const apiRoutes = useApiRoutes()
-
 const fetchData = async () => {
   loading.value = true
   error.value = null
 
   try {
+    // Initialize api routes inside the function to avoid circular dependency
+    const apiRoutes = useApiRoutes()
+
     // Fetch data from the API endpoint
     const response = await fetch(apiRoutes.get(props.endpoint))
 

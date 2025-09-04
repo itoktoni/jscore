@@ -192,6 +192,7 @@
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRouter, onBeforeRouteUpdate } from 'vue-router'
 import { useUserStore } from '../../stores/user'
+import { USER_ROUTES } from '../../router/userRoutes'
 import FormInput from '../../components/FormInput.vue'
 import FormButton from '../../components/FormButton.vue'
 import ErrorMessage from '../../components/ErrorMessage.vue'
@@ -257,12 +258,12 @@ const changePage = async (page) => {
 }
 
 const createUser = () => {
-  router.push({ name: 'CreateUser' })
+  router.push({ name: USER_ROUTES.CREATE_USER })
 }
 
 const editUser = (user) => {
   if (showUserDetail.value) showUserDetail.value = false
-  router.push({ name: 'EditUser', params: { id: user.id } })
+  router.push({ name: USER_ROUTES.EDIT_USER, params: { id: user.id } })
 }
 
 const viewUser = (user) => {
@@ -439,6 +440,5 @@ onMounted(async () => {
     addDataLabelsToTable()
   }, 100)
 })
-
 
 </script>

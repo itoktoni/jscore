@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { Capacitor } from '@capacitor/core'
 
-class ApiService {
+class Http {
   constructor() {
     // Use environment variable if available, otherwise fallback to default
     const apiUrl = import.meta.env.VITE_API_URL || 'https://newcore.nexeratech.co.id';
@@ -44,5 +44,5 @@ class ApiService {
   }
 }
 
-export const apiService = new ApiService()
-export default apiService
+export const http = new Http()
+export default http

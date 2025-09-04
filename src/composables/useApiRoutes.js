@@ -4,15 +4,11 @@
  * Centralized API endpoint configuration for the application
  */
 
+import { USER_API_ROUTES } from '../router/userRoutes'
+
 export function useApiRoutes() {
   const API_ROUTES = {
-    users: {
-      list: '/api-user/data',
-      create: '/api-user/create',
-      update: (id) => `/api-user/update/${id}`,
-      delete: (id) => `/api-user/delete/${id}`,
-      show: (id) => `/api-user/${id}`
-    },
+    users: USER_API_ROUTES,
     roles: '/roles',
     statuses: '/statuses'
   }

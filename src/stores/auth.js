@@ -1,6 +1,9 @@
 import { defineStore } from 'pinia'
 import { Preferences } from '@capacitor/preferences'
-import { apiService } from './api'
+import { http } from './http'
+import { useResponse } from '../composables/useResponse'
+
+const { responseSuccess, responseError } = useResponse()
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -30,7 +33,7 @@ export const useAuthStore = defineStore('auth', {
   actions: {
     async login(username, password) {
       try {
-        const response = await apiService.post('/login', {
+        const response = await http.post('/login', {
           username,
           password
         })
@@ -47,8 +50,8 @@ export const useAuthStore = defineStore('auth', {
         this.user = user
         this.isAuthenticated = true
 
-        apiService.setAuthToken(token)
-        return { success: true }
+        http.setAuthToken(token)
+        return responseSuccess({ message: 'Login successful' })
       } catch (error) {
         // Better error handling for Laravel-style validation responses
         let errorMessage = error.message || 'Login failed'
@@ -67,12 +70,17 @@ export const useAuthStore = defineStore('auth', {
           errorMessage = 'Invalid username or password'
         }
 
-        return {
-          success: false,
-          error: errorMessage,
-          errors: fieldErrors,
-          errorData: error.response?.data
-        }
+        return responseError({
+          ...error,
+          message: errorMessage,
+          response: {
+            ...error.response,
+            data: {
+              ...error.response?.data,
+              errors: fieldErrors
+            }
+          }
+        })
       }
     },
 
@@ -81,7 +89,8 @@ export const useAuthStore = defineStore('auth', {
       this.token = null
       this.user = null
       this.isAuthenticated = false
-      apiService.removeAuthToken()
+      http.removeAuthToken()
+      return responseSuccess({ message: 'Logout successful' })
     },
 
     async initAuth() {
@@ -89,28 +98,36 @@ export const useAuthStore = defineStore('auth', {
       if (token) {
         this.token = token
         this.isAuthenticated = true
-        apiService.setAuthToken(token)
+        http.setAuthToken(token)
 
         // Load user profile data
         try {
           await this.loadProfile()
+          return responseSuccess({ message: 'Authentication initialized' })
         } catch (error) {
           // If profile loading fails, logout
           await this.logout()
+          return responseError(error)
         }
       }
+      return responseSuccess({ message: 'No authentication token found' })
     },
 
     async loadProfile() {
-      const response = await apiService.get('/profile')
-      this.user = response.data.data || response.data
+      try {
+        const response = await http.get('/profile')
+        this.user = response.data.data || response.data
+        return responseSuccess(this.user)
+      } catch (error) {
+        return responseError(error)
+      }
     },
 
     async updateProfile(profileData) {
       try {
-        const response = await apiService.post('/profile', profileData)
+        const response = await http.post('/profile', profileData)
         this.user = response.data.data || response.data
-        return { success: true }
+        return responseSuccess({ message: 'Profile updated successfully' })
       } catch (error) {
         // Better error handling for profile update
         let errorMessage = error.message || 'Profile update failed'
@@ -125,12 +142,17 @@ export const useAuthStore = defineStore('auth', {
           errorMessage = error.response.data.message
         }
 
-        return {
-          success: false,
-          error: errorMessage,
-          errors: fieldErrors,
-          errorData: error.response?.data
-        }
+        return responseError({
+          ...error,
+          message: errorMessage,
+          response: {
+            ...error.response,
+            data: {
+              ...error.response?.data,
+              errors: fieldErrors
+            }
+          }
+        })
       }
     }
   }

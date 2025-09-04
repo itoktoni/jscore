@@ -23,7 +23,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import FormSelect from './FormSelect.vue'
-import apiService from '../stores/api'
+import http from '../stores/http'
 
 const props = defineProps({
   name: {
@@ -99,7 +99,7 @@ const fetchData = async () => {
     const url = props.endpoint.startsWith('/') ? props.endpoint : `/${props.endpoint}`
 
     // Fetch data from the API endpoint using the same apiService as the rest of the application
-    const response = await apiService.get(url)
+    const response = await http.get(url)
 
     const data = response.data
 

@@ -1,71 +1,20 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
-import LoginPage from '../pages/auth/LoginPage.vue'
-import RegisterPage from '../pages/auth/RegisterPage.vue'
-import ProfilePage from '../pages/auth/ProfilePage.vue'
-import UserListPage from '../pages/user/List.vue'
-import UserFormCreate from '../pages/user/Create.vue'
-import UserFormEdit from '../pages/user/Edit.vue'
 import SystemSettingsPage from '../pages/SystemSettingsPage.vue'
 import TestSafeArea from '../components/TestSafeArea.vue'
 import TestSafeAreaPage from '../pages/TestSafeAreaPage.vue'
+import { userRoutes } from './userRoutes'
+import { authRoutes } from './authRoutes'
 
 const routes = [
   {
     path: '/',
     redirect: '/profile'
   },
-  {
-    path: '/login',
-    name: 'Login',
-    component: LoginPage,
-    meta: {
-      requiresGuest: true // Only accessible when not authenticated
-    }
-  },
-  {
-    path: '/register',
-    name: 'Register',
-    component: RegisterPage,
-    meta: {
-      requiresGuest: true // Only accessible when not authenticated
-    }
-  },
-  {
-    path: '/profile',
-    name: 'Profile',
-    component: ProfilePage,
-    meta: {
-      requiresAuth: true // Only accessible when authenticated
-    }
-  },
-  {
-    path: '/users',
-    name: 'UserList',
-    component: UserListPage,
-    meta: {
-      requiresAuth: true, // Only accessible when authenticated
-      requiresAdmin: true // Only accessible for admin users
-    }
-  },
-  {
-    path: '/users/create',
-    name: 'CreateUser',
-    component: UserFormCreate,
-    meta: {
-      requiresAuth: true, // Only accessible when authenticated
-      requiresAdmin: true // Only accessible for admin users
-    }
-  },
-  {
-    path: '/users/:id/edit',
-    name: 'EditUser',
-    component: UserFormEdit,
-    meta: {
-      requiresAuth: true, // Only accessible when authenticated
-      requiresAdmin: true // Only accessible for admin users
-    }
-  },
+  // Authentication routes
+  ...authRoutes,
+  // User routes
+  ...userRoutes,
   {
     path: '/system/settings',
     name: 'SystemSettings',

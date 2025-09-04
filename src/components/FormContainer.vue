@@ -38,8 +38,10 @@
 
 <script setup>
 import { provide, watch, ref, onMounted, onUnmounted } from 'vue'
-import Swal from 'sweetalert2'
+import { useAlert } from '../composables/useAlert'
 import FormButton from './FormButton.vue'
+
+const { alertError, alertValidationError } = useAlert()
 
 const props = defineProps({
   // Form header
@@ -164,13 +166,8 @@ const handleSubmit = async () => {
     if (Object.keys(fieldErrors.value).length > 0) {
       globalError.value = 'Please correct the errors below'
 
-      // Show SweetAlert for validation errors
-      Swal.fire({
-        title: 'Validation Error',
-        text: 'Please correct the errors below',
-        icon: 'error',
-        confirmButtonText: 'OK'
-      })
+      // Show alert for validation errors
+      alertValidationError('Validation Error', 'Please correct the errors below')
 
       return
     }
@@ -206,13 +203,8 @@ const handleSubmit = async () => {
         }
         globalError.value = result?.error || result?.errorData?.message || 'Submission failed'
 
-        // Show SweetAlert for submission errors
-        Swal.fire({
-          title: 'Submission Error',
-          text: result?.error || result?.errorData?.message || 'Submission failed',
-          icon: 'error',
-          confirmButtonText: 'OK'
-        })
+        // Show alert for submission errors
+        alertError('Submission Error', result?.error || result?.errorData?.message || 'Submission failed')
 
         emit('error', result)
         isSubmitting.value = false
@@ -222,13 +214,8 @@ const handleSubmit = async () => {
       isSubmitting.value = false
       globalError.value = error.message || 'An error occurred'
 
-      // Show SweetAlert for unexpected errors
-      Swal.fire({
-        title: 'Error',
-        text: error.message || 'An error occurred',
-        icon: 'error',
-        confirmButtonText: 'OK'
-      })
+      // Show alert for unexpected errors
+      alertError('Error', error.message || 'An error occurred')
 
       emit('error', error)
       return { success: false, error: error.message }

@@ -2,7 +2,7 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import { Capacitor } from '@capacitor/core'
 import { SplashScreen } from '@capacitor/splash-screen'
-import Swal from 'sweetalert2'
+import { useAlert } from './composables/useAlert'
 
 // Import CSS files
 import App from './App.vue'
@@ -51,11 +51,7 @@ if (Capacitor.isNativePlatform()) {
 // Global error handler
 app.config.errorHandler = (error, instance, info) => {
   console.error('Global error:', error, info)
-  // Show SweetAlert for global errors
-  Swal.fire({
-    title: 'Error',
-    text: error.message || 'An unexpected error occurred',
-    icon: 'error',
-    confirmButtonText: 'OK'
-  })
+  // Show alert for global errors
+  const { alertError } = useAlert()
+  alertError('Error', error.message || 'An unexpected error occurred')
 }

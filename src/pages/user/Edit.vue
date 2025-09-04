@@ -14,7 +14,7 @@
       <FormInput name="password" type="password" label="New Password (leave blank to keep current)" rules="min:6" placeholder="Enter new password" col="6" />
       <FormInput rules="confirmed:password" name="password_confirmation" type="password" col="6" />
 
-      <ApiSelect name="role" endpoint="roles" rules="required" searchable option-label="name" option-value="id" col="6" label="Role" />
+      <FormSelectApi name="role" endpoint="roles" rules="required" searchable option-label="name" option-value="id" col="6" label="Role" />
 
       <template #footer="{ isSubmitting }">
         <div class="footer-actions">
@@ -29,59 +29,82 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useUserStore } from '../../stores/user'
-import { useSwalNotification } from '../../composables/useSwalNotification'
+// Removed useUserStore import
+import { useAlert } from '../../composables/useAlert'
+import { useResponse } from '../../composables/useResponse'
+import { UserModel } from '../../models'
+import { USER_ROUTES, USER_API_ROUTES } from '../../router/userRoutes'
+import { http } from '../../stores/http'
 import FormContainer from '../../components/FormContainer.vue'
 import FormInput from '../../components/FormInput.vue'
 import FormButton from '../../components/FormButton.vue'
-import ApiSelect from '../../components/ApiSelect.vue'
+import FormSelectApi from '../../components/FormSelectApi.vue'
 
 const route = useRoute()
 const router = useRouter()
-const userStore = useUserStore()
-const { showSuccess, showError } = useSwalNotification()
+// Removed userStore reference
+const { alertSuccess, alertError } = useAlert()
+const { responseSuccess, responseError } = useResponse()
 
 const userId = route.params.id
-const initialFormData = ref({})
+const initialFormData = ref(UserModel.createEmpty())
 
 // Load user data on mount
 onMounted(async () => {
   if (userId) {
     try {
-      const result = await userStore.fetchUserById(userId)
-      if (result && result.success && result.data) {
+      // Directly fetch user data using http client
+      const response = await http.get(USER_API_ROUTES.show(userId))
+
+      // Handle the response structure properly
+      // API returns data in response.data.data or response.data
+      const userData = response.data.data || response.data
+
+      if (userData) {
         // Load data directly from API response
-        initialFormData.value = result.data
+        initialFormData.value = userData
         // Clear password fields for security
         initialFormData.value.password = ''
         initialFormData.value.password_confirmation = ''
       }
     } catch (error) {
+      console.error('Error loading user:', error)
       // Error loading user
-      router.push({ name: 'UserList' })
+      router.push({ name: USER_ROUTES.USER_LIST })
     }
   }
 })
 
-const handleSubmit = async (data) =>
-{
-  return await userStore.updateUser(userId, data)
+async function handleSubmit(data) {
+  try {
+    // Prepare user data for API (remove password_confirmation if empty)
+    const { password_confirmation, ...userData } = data
+    // Only include password fields if they have values
+    if (!userData.password) {
+      delete userData.password
+    }
+
+    // Make API request to update user
+    const response = await http.post(USER_API_ROUTES.update(userId), userData)
+
+    // Handle response structure properly
+    const resultData = response.data.data || response.data
+    return responseSuccess(resultData)
+  } catch (error) {
+    return responseError(error)
+  }
 }
 
-const handleSuccess = (response) =>
-{
-  showSuccess('Success', 'User updated successfully!')
-
-  router.push({ name: 'UserList' })
+function handleSuccess(response) {
+  alertSuccess('Success', 'User updated successfully!')
+  router.push({ name: USER_ROUTES.USER_LIST })
 }
 
-const handleError = (error) =>
-{
-  showError('Error', 'Failed to update user')
+function handleError(error) {
+  alertError('Error', 'Failed to update user')
 }
 
-const handleCancel = () =>
-{
-  router.push({ name: 'UserList' })
+function handleCancel() {
+  router.push({ name: USER_ROUTES.USER_LIST })
 }
 </script>

@@ -10,11 +10,12 @@
  */
 
 import { defineStore } from 'pinia'
-import { apiService } from './api'
+import { http } from './http'
 import { useApiRoutes } from '../composables/useApiRoutes'
+import { useResponse } from '../composables/useResponse'
 
-// Initialize composables
-const { API_ROUTES } = useApiRoutes()
+// Initialize response composable
+const { responseSuccess, responseError } = useResponse()
 
 // User helper functions (moved from useUserHelpers.js)
 const userHelpers = {
@@ -111,6 +112,9 @@ export const useUserStore = defineStore('user', {
       this.loading = true
       this.error = null
 
+      // Initialize api routes inside the function to avoid circular dependency
+      const { API_ROUTES } = useApiRoutes()
+
       try {
         const response = await this._makeApiRequest('GET', API_ROUTES.users.list, {
           params: {
@@ -123,11 +127,7 @@ export const useUserStore = defineStore('user', {
         return this._handleApiResponse(response, page, perPage)
       } catch (error) {
         this.error = error.message
-        return {
-          success: false,
-          error: error.message,
-          errorData: error.response?.data
-        }
+        return responseError(error)
       } finally {
         this.loading = false
       }
@@ -147,13 +147,16 @@ export const useUserStore = defineStore('user', {
         this.users = response.data || []
       }
 
-      return { success: true, data: this.users }
+      return responseSuccess(this.users)
     },
 
     // Get single user by ID
     async fetchUserById(id) {
       this.loading = true
       this.error = null
+
+      // Initialize api routes inside the function to avoid circular dependency
+      const { API_ROUTES } = useApiRoutes()
 
       console.log('Fetching user with ID:', id) // Debug log
 
@@ -185,7 +188,7 @@ export const useUserStore = defineStore('user', {
 
         const result = { success: true, data: userData }
         console.log('Returning result:', result) // Debug log
-        return result
+        return responseSuccess(result)
       } catch (error) {
         console.error('Error fetching user:', error) // Debug log
         console.error('Error details:', {
@@ -195,11 +198,7 @@ export const useUserStore = defineStore('user', {
         })
 
         this.error = error.message
-        return {
-          success: false,
-          error: error.message,
-          errorData: error.response?.data
-        }
+        return responseError(error)
       } finally {
         this.loading = false
       }
@@ -210,41 +209,36 @@ export const useUserStore = defineStore('user', {
       this.loading = true
       this.error = null
 
+      // Initialize api routes inside the function to avoid circular dependency
+      const { API_ROUTES } = useApiRoutes()
+
       // Validate form data
       const validation = userHelpers.validateUserData(formData)
       if (!validation.isValid) {
         this.loading = false
-        return {
-          success: false,
-          error: 'Validation failed',
+        return responseError({
+          message: 'Validation failed',
           errorData: { errors: validation.errors }
-        }
+        })
       }
 
       try {
         const userData = userHelpers.createUserFromForm(formData)
         const response = await this._makeApiRequest('POST', API_ROUTES.users.create, userData)
 
-        const result = this._handleCreateUserSuccess(response)
-        return { ...result, success: true }
+        // Add new user to the list
+        if (response.data) {
+          const newUser = response.data.data || response.data
+          this.users.unshift(newUser)
+        }
+
+        return responseSuccess({ message: 'User created successfully' })
       } catch (error) {
         this.error = error.message
-        return {
-          success: false,
-          error: error.message,
-          errorData: error.response?.data
-        }
+        return responseError(error)
       } finally {
         this.loading = false
       }
-    },
-
-    // Handle successful API user creation
-    _handleCreateUserSuccess(response) {
-      const newUser = response.data.data || response.data
-      this.users.unshift(newUser)
-      this.pagination.total += 1
-      return { success: true, data: newUser }
     },
 
     // Update existing user
@@ -252,49 +246,40 @@ export const useUserStore = defineStore('user', {
       this.loading = true
       this.error = null
 
+      // Initialize api routes inside the function to avoid circular dependency
+      const { API_ROUTES } = useApiRoutes()
+
       // Validate form data
       const validation = userHelpers.validateUserData(formData)
       if (!validation.isValid) {
         this.loading = false
-        return {
-          success: false,
-          error: 'Validation failed',
+        return responseError({
+          message: 'Validation failed',
           errorData: { errors: validation.errors }
-        }
+        })
       }
 
       try {
         const userData = userHelpers.createUserFromForm(formData)
-        const response = await this._makeApiRequest('POST', API_ROUTES.users.update(id), userData)
+        const response = await this._makeApiRequest('PUT', API_ROUTES.users.update(id), userData)
 
-        const result = this._handleUpdateUserSuccess(id, response)
-        return { ...result, success: true }
+        // Update user in the list
+        if (response.data) {
+          const updatedUser = response.data.data || response.data
+          const userIndex = this.users.findIndex(user => user.id === id)
+          if (userIndex !== -1) {
+            this.users[userIndex] = updatedUser
+          }
+          this.selectedUser = updatedUser
+        }
+
+        return responseSuccess({ message: 'User updated successfully' })
       } catch (error) {
         this.error = error.message
-        return {
-          success: false,
-          error: error.message,
-          errorData: error.response?.data
-        }
+        return responseError(error)
       } finally {
         this.loading = false
       }
-    },
-
-    // Handle successful API user update
-    _handleUpdateUserSuccess(id, response) {
-      const updatedUser = response.data.data || response.data
-
-      const userIndex = this.users.findIndex(user => user.id === id)
-      if (userIndex !== -1) {
-        this.users[userIndex] = updatedUser
-      }
-
-      if (this.selectedUser && this.selectedUser.id === id) {
-        this.selectedUser = updatedUser
-      }
-
-      return { success: true, data: updatedUser }
     },
 
     // Delete user
@@ -302,70 +287,83 @@ export const useUserStore = defineStore('user', {
       this.loading = true
       this.error = null
 
+      // Initialize api routes inside the function to avoid circular dependency
+      const { API_ROUTES } = useApiRoutes()
+
       try {
         await this._makeApiRequest('DELETE', API_ROUTES.users.delete(id))
-        return this._handleDeleteUserSuccess(id)
+
+        // Remove user from the list
+        this.users = this.users.filter(user => user.id !== id)
+
+        // Clear selected user if it was the one being deleted
+        if (this.selectedUser && this.selectedUser.id === id) {
+          this.selectedUser = null
+        }
+
+        return responseSuccess({ message: 'User deleted successfully' })
       } catch (error) {
         this.error = error.message
-        return {
-          success: false,
-          error: error.message,
-          errorData: error.response?.data
-        }
+        return responseError(error)
       } finally {
         this.loading = false
       }
     },
 
-    // Handle successful API user deletion
-    _handleDeleteUserSuccess(id) {
-      this.users = this.users.filter(user => user.id !== id)
-      this.pagination.total -= 1
-
-      if (this.selectedUser && this.selectedUser.id === id) {
-        this.selectedUser = null
-      }
-
-      return { success: true }
-    },
-
-    // Generic API request handler
-    async _makeApiRequest(method, url, data = null, config = {}) {
-      switch (method.toUpperCase()) {
-        case 'GET':
-          return await apiService.get(url, config)
-        case 'POST':
-          return await apiService.post(url, data, config)
-        case 'PUT':
-          return await apiService.put(url, data, config)
-        case 'DELETE':
-          return await apiService.delete(url, config)
-        default:
-          throw new Error(`Unsupported HTTP method: ${method}`)
-      }
-    },
-
     // Search users
     async searchUsers(searchTerm, page = 1, perPage = 10) {
-      return await this.fetchUsers(page, perPage, { search: searchTerm })
-    },
-
-    // Clear error
-    clearError() {
+      this.loading = true
       this.error = null
+
+      // Initialize api routes inside the function to avoid circular dependency
+      const { API_ROUTES } = useApiRoutes()
+
+      try {
+        const response = await this._makeApiRequest('GET', API_ROUTES.users.list, {
+          params: {
+            search: searchTerm,
+            page,
+            per_page: perPage
+          }
+        })
+
+        return this._handleApiResponse(response, page, perPage)
+      } catch (error) {
+        this.error = error.message
+        return responseError(error)
+      } finally {
+        this.loading = false
+      }
     },
 
-    // Set selected user
-    setSelectedUser(user) {
-      this.selectedUser = user
+    // Make API request with error handling
+    async _makeApiRequest(method, url, data = null) {
+      try {
+        let response
+        switch (method.toUpperCase()) {
+          case 'GET':
+            response = await http.get(url)
+            break
+          case 'POST':
+            response = await http.post(url, data)
+            break
+          case 'PUT':
+            response = await http.put(url, data)
+            break
+          case 'DELETE':
+            response = await http.delete(url)
+            break
+          default:
+            throw new Error(`Unsupported HTTP method: ${method}`)
+        }
+        return response
+      } catch (error) {
+        console.error(`API request failed: ${method} ${url}`, error)
+        throw error
+      }
     },
 
-    // Clear selected user
-    clearSelectedUser() {
-      this.selectedUser = null
-    },
-
-    // Reset store
+    // Reset store state
     reset() {
       this.users = []
       this.selectedUser = null
