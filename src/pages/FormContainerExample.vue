@@ -98,28 +98,25 @@ import { inject } from 'vue'
 const isSubmitting = inject('isSubmitting', ref(false))
 
 const handleDefaultSubmit = async (data) => {
-  console.log('Default form submitted:', data)
   // Simulate API call
   await new Promise(resolve => setTimeout(resolve, 1000))
   return { success: true }
 }
 
 const handleCustomSubmit = async (data) => {
-  console.log('Custom form submitted:', data)
   // Simulate API call
   await new Promise(resolve => setTimeout(resolve, 1000))
   return { success: true }
 }
 
 const handleNoFooterSubmit = async (data) => {
-  console.log('No footer form submitted:', data)
   // Simulate API call
   await new Promise(resolve => setTimeout(resolve, 1000))
   return { success: true }
 }
 
 const handleReset = () => {
-  console.log('Reset button clicked')
+  // Reset button clicked
 }
 </script>
 

@@ -1,14 +1,28 @@
 <template>
   <div class="card">
-    <Form
+    <FormContainer
       title="Edit User"
-      :is-editing="true"
       :initial-data="initialFormData"
-      :on-submit="handleSubmit"
-      :on-success="handleSuccess"
-      :on-error="handleError"
-      :on-cancel="handleCancel"
-    />
+      :action="handleSubmit"
+      @success="handleSuccess"
+      @error="handleError"
+    >
+      <FormInput name="username" rules="required" disabled hint="Username cannot be changed" col="6" />
+      <FormInput name="name" rules="required" col="6" />
+      <FormInput name="email" rules="required" type="email" col="12" />
+
+      <FormInput name="password" type="password" label="New Password (leave blank to keep current)" rules="min:6" placeholder="Enter new password" col="6" />
+      <FormInput rules="confirmed:password" name="password_confirmation" type="password" col="6" />
+
+      <ApiSelect name="role" endpoint="roles" rules="required" searchable option-label="name" option-value="id" col="6" label="Role" />
+
+      <template #footer="{ isSubmitting }">
+        <div class="footer-actions">
+          <FormButton type="button" variant="secondary" @click="handleCancel" text="← Back" />
+          <FormButton type="submit" variant="success" :text="isSubmitting ? 'Saving...' : 'Update'" :disabled="isSubmitting" />
+        </div>
+      </template>
+    </FormContainer>
   </div>
 </template>
 
@@ -17,23 +31,18 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '../../stores/user'
 import { useSwalNotification } from '../../composables/useSwalNotification'
-import Form from './Form.vue'
+import FormContainer from '../../components/FormContainer.vue'
+import FormInput from '../../components/FormInput.vue'
+import FormButton from '../../components/FormButton.vue'
+import ApiSelect from '../../components/ApiSelect.vue'
 
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
-const { showSuccess } = useSwalNotification()
+const { showSuccess, showError } = useSwalNotification()
 
 const userId = route.params.id
-const initialFormData = ref({
-  username: '',
-  name: '',
-  email: '',
-  password: '',
-  password_confirmation: '',
-  role: 'user',
-  status: 'active'
-})
+const initialFormData = ref({})
 
 // Load user data on mount
 onMounted(async () => {
@@ -41,47 +50,38 @@ onMounted(async () => {
     try {
       const result = await userStore.fetchUserById(userId)
       if (result && result.success && result.data) {
-        const user = result.data
-        initialFormData.value = {
-          username: user.username || '',
-          name: user.name || '',
-          email: user.email || '',
-          password: '',
-          password_confirmation: '',
-          role: user.role || 'user',
-          status: user.status || 'active'
-        }
+        // Load data directly from API response
+        initialFormData.value = result.data
+        // Clear password fields for security
+        initialFormData.value.password = ''
+        initialFormData.value.password_confirmation = ''
       }
     } catch (error) {
-      console.error('Error loading user:', error)
-      router.push({ name: 'UserManagement' })
+      // Error loading user
+      router.push({ name: 'UserList' })
     }
   }
 })
 
-const handleSubmit = async (data) => {
-  // Directly submit all form data to the API
+const handleSubmit = async (data) =>
+{
   return await userStore.updateUser(userId, data)
 }
 
-const handleSuccess = (response) => {
-  // Show success notification manually
+const handleSuccess = (response) =>
+{
   showSuccess('Success', 'User updated successfully!')
 
-  // Navigate back to user list on success
   router.push({ name: 'UserList' })
 }
 
-const handleError = (error) => {
-  // Log error for debugging
-  console.error('Update user error:', error)
+const handleError = (error) =>
+{
+  showError('Error', 'Failed to update user')
 }
 
-const handleCancel = () => {
-  // Always navigate to the user list
+const handleCancel = () =>
+{
   router.push({ name: 'UserList' })
 }
 </script>
-
-<style scoped>
-</style>

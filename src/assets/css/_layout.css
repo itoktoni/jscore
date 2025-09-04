@@ -528,18 +528,17 @@ thead, tbody, tfoot, tr, td, th {
     left: 0;
     width: 100%;
     background-color: var(--bg-white);
-    padding: 1rem 1.5rem;
+    padding: 1rem 0.5rem;
     border-top: 1px solid var(--border-color);
     display: flex;
     justify-content: flex-end;
-    gap: 0.5rem;
     box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .content-footer .footer-actions{
     display: flex;
-    justify-content: flex-end;
     gap: 0.5rem;
+    justify-content: flex-end;
     box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.05);
 }
 
@@ -788,6 +787,7 @@ thead, tbody, tfoot, tr, td, th {
 
     .content-footer .footer-actions{
         margin-bottom: -10px;
+        gap: 1rem;
     }
 
     /* Profile dropdown on mobile */

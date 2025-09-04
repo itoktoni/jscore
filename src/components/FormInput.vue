@@ -283,7 +283,6 @@ const isRequired = computed(() => {
 
 const handleInput = (event) => {
   const value = event.target.value
-  console.log('FormInput handleInput, name:', props.name, 'value:', value)
 
   // Emit v-model update
   emit('update:modelValue', value)
@@ -291,7 +290,6 @@ const handleInput = (event) => {
   // Also update formData if available
   if (formData && props.name) {
     formData.value[props.name] = value
-    console.log('Updated formData:', formData.value)
   }
 
   // Clear field error when user starts typing (but only if there was an error before)
