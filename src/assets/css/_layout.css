@@ -494,6 +494,15 @@ thead, tbody, tfoot, tr, td, th {
     vertical-align: middle;
 }
 
+.no-users{
+    padding-top: 2rem;
+    width: 100%;
+}
+
+.text-center{
+    text-align: center;
+}
+
 .data-table th {
     font-weight: 600;
     background-color: var(--bg-light);

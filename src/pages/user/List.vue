@@ -85,8 +85,7 @@
 
       <!-- No Users State -->
       <div v-else-if="!hasItems() && !loading" class="no-users">
-        <p>No users found.</p>
-        <FormButton variant="success" @click="createUser" text="Create First User" />
+        <p class="text-center">No users found.</p>
       </div>
 
       <!-- Users Table -->
@@ -100,56 +99,59 @@
 
         </div>
 
-        <table class="data-table striped">
-          <thead>
-            <tr>
-              <th>
-                <input type="checkbox" v-model="selectAll" @change="toggleSelectAll">
-              </th>
-              <th class="action-header text-center">Actions</th>
-              <th>No.</th>
-              <th>Name</th>
-              <th>Username</th>
-              <th>Email</th>
-              <th>Role</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="user in users" :key="user.id">
-              <td data-label="Select">
-                <input type="checkbox" v-model="user.selected" @change="updateSelectAll">
-              </td>
-              <td class="column-action" data-label="Actions">
-                <div class="action-table">
-                  <button class="button primary" @click.stop="viewUser(user)" title="View">
-                    <i class="bi bi-eye"></i>
-                  </button>
-                  <button class="button secondary" @click.stop="editUser(user)" title="Edit">
-                    <i class="bi bi-pencil-square"></i>
-                  </button>
-                  <button class="button error" @click.stop="confirmDelete(user)" title="Delete">
-                    <i class="bi bi-trash"></i>
-                  </button>
-                </div>
-              </td>
-              <td></td>
-              <td data-label="Name">
-                <div class="user-name-cell">
-                  <span>{{ user.name || user.username }}</span>
-                </div>
-              </td>
-              <td data-label="Username">@{{ user.username }}</td>
-              <td data-label="Email">{{ user.email }}</td>
-              <td data-label="Role">{{ user.system_role_name || 'User' }}</td>
-              <td data-label="Status">
-                <span :class="user.active ? 'status-active' : 'status-inactive'">
-                  {{ user.active ? 'Active' : 'Inactive' }}
-                </span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <!-- Table wrapper for horizontal scrolling -->
+        <div class="table-wrapper">
+          <table class="data-table striped">
+            <thead>
+              <tr>
+                <th>
+                  <input type="checkbox" v-model="selectAll" @change="toggleSelectAll">
+                </th>
+                <th class="action-header text-center">Actions</th>
+                <th>No.</th>
+                <th>Name</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(user, index) in users" :key="user.id">
+                <td data-label="Select">
+                  <input type="checkbox" v-model="user.selected" @change="updateSelectAll">
+                </td>
+                <td class="column-action" data-label="Actions">
+                  <div class="action-table">
+                    <button class="button primary" @click.stop="viewUser(user)" title="View">
+                      <i class="bi bi-eye"></i>
+                    </button>
+                    <button class="button secondary" @click.stop="editUser(user)" title="Edit">
+                      <i class="bi bi-pencil-square"></i>
+                    </button>
+                    <button class="button error" @click.stop="confirmDelete(user)" title="Delete">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </td>
+                <td data-label="No.">{{ (pagination.currentPage - 1) * pagination.perPage + index + 1 }}</td>
+                <td data-label="Name">
+                  <div class="user-name-cell">
+                    <span>{{ user.name || user.username }}</span>
+                  </div>
+                </td>
+                <td data-label="Username">@{{ user.username }}</td>
+                <td data-label="Email">{{ user.email }}</td>
+                <td data-label="Role">{{ user.system_role_name || 'User' }}</td>
+                <td data-label="Status">
+                  <span :class="user.active ? 'status-active' : 'status-inactive'">
+                    {{ user.active ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
         <!-- Pagination Component -->
         <PaginationComponent :current-page="pagination.currentPage" :total-pages="pagination.totalPages"
@@ -172,7 +174,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRouter, onBeforeRouteUpdate, useRoute } from 'vue-router'
 import { USER_ROUTES } from '../../router/userRoutes'
 import { USER_API_ROUTES } from '../../router/userRoutes'
@@ -242,6 +244,19 @@ function buildFilterQuery() {
   }
 
   return filterQuery
+}
+
+// Populate form fields from URL query parameters
+function populateFormFromQuery() {
+  if (!filterForm.value) return
+
+  const formElements = filterForm.value.elements
+  for (let i = 0; i < formElements.length; i++) {
+    const element = formElements[i]
+    if (element.name && route.query[element.name]) {
+      element.value = route.query[element.name]
+    }
+  }
 }
 
 async function handleFilterSubmit() {
@@ -455,13 +470,54 @@ const hasSelectedUsers = computed(() => {
   return users.value.some(user => user.selected)
 })
 
+// Watch for route changes to populate form fields
+watch(() => route.query, () => {
+  // Update searchData from route query
+  searchData.search = route.query.search || ''
+  searchData.searchType = route.query.filter || ''
+  searchData.perPage = route.query.per_page || 10
+
+  // Populate form fields after DOM update
+  setTimeout(() => {
+    populateFormFromQuery()
+  }, 0)
+}, { immediate: true })
+
 // Refresh data when route is updated (e.g. when navigating back from user form)
 onBeforeRouteUpdate((to, from) => {
   if (to.path === '/users') {
     const page = parseInt(to.query.page) || 1
+
+    // Reset form fields if no query parameters
+    if (Object.keys(to.query).length === 0) {
+      resetFormFields()
+    }
+
     loadUsers(page)
   }
 })
+
+// Reset form fields to empty values
+function resetFormFields() {
+  if (!filterForm.value) return
+
+  const formElements = filterForm.value.elements
+  for (let i = 0; i < formElements.length; i++) {
+    const element = formElements[i]
+    if (element.name && element.type !== 'submit' && element.type !== 'button') {
+      if (element.type === 'checkbox' || element.type === 'radio') {
+        element.checked = false
+      } else {
+        element.value = ''
+      }
+    }
+  }
+
+  // Reset searchData
+  searchData.search = ''
+  searchData.searchType = ''
+  searchData.perPage = 10
+}
 
 // Initialize
 onMounted(async () => {
@@ -472,12 +528,24 @@ onMounted(async () => {
 
   searchData.search = search
   searchData.searchType = filter // Map filter parameter back to searchType
+  searchData.perPage = route.query.per_page || 10
+
+  // If no query parameters, reset form fields
+  if (Object.keys(route.query).length === 0) {
+    resetFormFields()
+  } else {
+    // Populate form fields
+    setTimeout(() => {
+      populateFormFromQuery()
+    }, 0)
+  }
 
   // Apply filters from URL query parameters
   const filterQuery = { ...route.query }
   delete filterQuery.page
   delete filterQuery.search
   delete filterQuery.filter
+  delete filterQuery.per_page
 
   if (search.trim()) {
     // Ensure filter parameter is included in the query
@@ -550,6 +618,12 @@ async function loadUsers(page = 1, filterQuery = {}) {
   min-width: 150px;
 }
 
+/* Add wrapper for table with horizontal scrolling */
+.table-wrapper {
+  overflow-x: auto;
+  width: 100%;
+}
+
 .table-info {
   border-top: 1px solid lightgray;
   font-size: 1.5rem;
@@ -617,32 +691,26 @@ async function loadUsers(page = 1, filterQuery = {}) {
   }
 
   .filter .grouped{
-    width: 97%;
+    width: 100%;
   }
 
   .filter .grouped select,
   .filter .grouped input {
-    width: 97%;
+    width: 100%;
   }
 
   .filter td::before{
-    width: 45%;
+    width: 35%;
     text-align: right;
   }
 
   .filter tr {
     display: flex;
-    gap: 0;
     flex-direction: column;
   }
 
   .filter tr td {
-    margin: 0;
     min-width: 100%;
-  }
-
-  .filter .button.icon-only{
-    margin-right: 7px;
   }
 }
 </style>

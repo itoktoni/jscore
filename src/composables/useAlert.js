@@ -4,6 +4,16 @@ import Swal from 'sweetalert2'
  * Composable for handling SweetAlert notifications
  */
 export function useAlert() {
+  // Custom Swal configuration with project-specific styling
+  const customSwalConfig = {
+    confirmButtonColor: '#2563eb', // var(--color-primary)
+    cancelButtonColor: '#747681',  // var(--color-grey)
+    customClass: {
+      confirmButton: 'button primary',
+      cancelButton: 'button secondary'
+    }
+  }
+
   /**
    * Show a success notification with timer
    * @param {string} title - The title of the notification
@@ -31,7 +41,8 @@ export function useAlert() {
       title,
       text,
       icon: 'error',
-      confirmButtonText: 'OK'
+      confirmButtonText: 'OK',
+      ...customSwalConfig
     })
   }
 
@@ -45,7 +56,8 @@ export function useAlert() {
       title,
       text,
       icon: 'error',
-      confirmButtonText: 'OK'
+      confirmButtonText: 'OK',
+      ...customSwalConfig
     })
   }
 
@@ -63,7 +75,8 @@ export function useAlert() {
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: confirmText,
-      cancelButtonText: cancelText
+      cancelButtonText: cancelText,
+      ...customSwalConfig
     })
   }
 
