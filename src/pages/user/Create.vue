@@ -52,25 +52,29 @@ const initialFormData = ref({
   role: ''
 })
 
-const handleSubmit = async (data) => {
+const handleSubmit = async (data) =>
+{
   return await userStore.createUser(data)
 }
 
 const handleSuccess = async (response) => {
   showSuccess('Success', 'User created successfully!')
 
-  if (formRef.value) {
+  if (formRef.value)
+  {
     formRef.value.resetForm()
   }
 
   router.push({ name: 'CreateUser' })
 }
 
-const handleError = (error) => {
+const handleError = (error) =>
+{
   showError('Error', 'Failed to create user')
 }
 
-const handleCancel = () => {
+const handleCancel = () =>
+{
   router.push({ name: 'UserList' })
 }
 </script>

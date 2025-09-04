@@ -537,7 +537,6 @@ thead, tbody, tfoot, tr, td, th {
 
 .content-footer .footer-actions{
     display: flex;
-    gap: 0.5rem;
     justify-content: flex-end;
     box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.05);
 }
