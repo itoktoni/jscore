@@ -14,7 +14,8 @@ export const USER_API_ROUTES = {
   list: '/api-user/data',
   create: '/api-user/create',
   update: (id) => `/api-user/update/${id}`,
-  delete: (id) => `/api-user/delete/${id}`,
+  delete: (id) => `/api-user/delete/?code=${id}`,
+  remove: '/api-user/delete',
   show: (id) => `/api-user/${id}`
 }
 
