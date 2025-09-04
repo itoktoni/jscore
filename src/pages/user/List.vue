@@ -172,7 +172,6 @@ import LoadingData from '../../components/LoadingData.vue'
 import PaginationComponent from '../../components/PaginationComponent.vue'
 import FilterComponent from '../../components/FilterComponent.vue'
 import TableComponent from '../../components/TableComponent.vue'
-import TableCell from '../../components/TableCell.vue'
 import TableAction from '../../components/TableAction.vue'
 
 const router = useRouter()
@@ -214,15 +213,6 @@ const searchOptions = [
   { value: 'username', label: 'Username' },
   { value: 'email', label: 'Email' },
   { value: 'role', label: 'Role' }
-]
-
-// Define table columns (excluding role column)
-const tableColumns = [
-  { key: 'no', label: 'No.', type: 'number' },
-  { key: 'name', label: 'Name', type: 'custom' },
-  { key: 'username', label: 'Username', type: 'custom' },
-  { key: 'email', label: 'Email' },
-  { key: 'active', label: 'Status', type: 'status' }
 ]
 
 // Delete selected users function (specific to user list)
