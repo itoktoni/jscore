@@ -1,32 +1,23 @@
 <template>
-  <ModalShow
-    :data="user"
+  <GlobalModal
+    :is-visible="true"
+    mode="view"
     title="User Details"
+    :data="user"
     :fields="userFields"
-    :show-avatar="true"
+    :show-avatar="false"
+    show-edit-button
+    edit-button-text="Edit User"
     @close="closeModal"
-  >
-    <template #footer>
-      <FormButton
-        variant="secondary"
-        text="Close"
-        @click="closeModal"
-      />
-      <FormButton
-        variant="primary"
-        text="Edit User"
-        @click="editUser"
-      />
-    </template>
-  </ModalShow>
+    @edit="editUser"
+  />
 </template>
 
 <script setup>
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { USER_ROUTES } from '../../router/userRoutes'
-import ModalShow from '../../components/ModalShow.vue'
-import FormButton from '../../components/FormButton.vue'
+import GlobalModal from '../../components/GlobalModal.vue'
 
 // Define props
 const props = defineProps({
