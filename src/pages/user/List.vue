@@ -8,45 +8,68 @@
     <!-- Card Container -->
     <div class="form-container">
       <!-- Search and Filters Row -->
+      <form @submit.prevent="handleFilterSubmit" ref="filterForm">
+        <table class="filter data-table">
 
-      <table class="filter data-table">
-        <tr>
-          <td data-label="Data Per Page">
-            <p class="grouped">
-              <label class="hide-mobile" for="">Page</label>
-              <select name="perPage" :class="12" v-model="searchData.perPage" @change="handlePerPageChange"
-                class="per-page">
-                <option value="10">10</option>
-                <option value="25">25</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
-              </select>
-            </p>
-          </td>
-          <td data-label="Filters">
-            <p class="grouped">
-              <label class="hide-mobile" for="">Filters</label>
-              <select name="search" v-model="searchData.searchType">
-                <option v-for="option in searchOptions" :key="option.value" :value="option.value">
-                  {{ option.label }}
-                </option>
-              </select>
-            </p>
-          </td>
-          <td data-label="Search">
-            <p class="grouped">
-              <label class="hide-mobile" for="">Search</label>
-              <input type="search" name="search" id="filter-input" placeholder="Search users..."
-                v-model="searchData.search" @keyup.enter="handleSearch">
-              <button class="button icon-only" @click="handleSearch">
-                <img src="https://icongr.am/feather/search.svg?size=16" alt="Search">
-              </button>
-            </p>
-          </td>
+          <tr>
+            <td class="col-4" data-label="Name">
+              <p class="grouped">
+                <label class="hide-mobile" for="">Name</label>
+                <input type="text" name="name" placeholder="Filter by name...">
+              </p>
+            </td>
+            <td class="col-4" data-label="Username">
+              <p class="grouped">
+                <label class="hide-mobile" for="">Username</label>
+                <input type="text" name="username" placeholder="Filter by username...">
+              </p>
+            </td>
+            <td class="col-4" data-label="System Role">
+              <p class="grouped">
+                <label class="hide-mobile" for="">Role</label>
+                <input type="text" name="system_role_name" placeholder="Filter by role...">
+              </p>
+            </td>
+          </tr>
 
-        </tr>
+           <tr>
+            <td class="col-2" data-label="Per Page">
+              <p class="grouped">
+                <label class="hide-mobile" for="">Page</label>
+                <select name="per_page" v-model="searchData.perPage" @change="handlePerPageChange"
+                  class="per-page">
+                  <option value="10">10</option>
+                  <option value="25">25</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                </select>
+              </p>
+            </td>
+            <td class="col-4" data-label="Filters">
+              <p class="grouped">
+                <label class="hide-mobile" for="">Filters</label>
+                <select name="searchType" v-model="searchData.searchType">
+                  <option v-for="option in searchOptions" :key="option.value" :value="option.value">
+                    {{ option.label }}
+                  </option>
+                </select>
+              </p>
+            </td>
+            <td class="col-6" data-label="Search">
+              <p class="grouped">
+                <label class="hide-mobile" for="">Search</label>
+                <input type="search" name="search" id="filter-input" placeholder="Search users..."
+                  v-model="searchData.search" @keyup.enter="handleSearch">
+                <button class="button icon-only" @click="handleSearch">
+                  Filter
+                </button>
+              </p>
+            </td>
+            <!-- Additional filter fields -->
+          </tr>
 
-      </table>
+        </table>
+      </form>
 
       <hr>
 
@@ -165,6 +188,7 @@ import PaginationComponent from '../../components/PaginationComponent.vue'
 
 const router = useRouter()
 const route = useRoute()
+const filterForm = ref(null)
 const { alertConfirm, alertSuccess, alertError } = useAlert()
 const {
   items: users,
@@ -187,7 +211,7 @@ const selectAll = ref(false)
 // Search data
 const searchData = reactive({
   search: '',
-  searchType: '', // Add searchType to the reactive data
+  searchType: '', // This will be mapped to 'filter' when sending to server
   perPage: 10
 })
 
@@ -201,10 +225,86 @@ const searchOptions = [
 ]
 
 // Methods
+function buildFilterQuery() {
+  const formData = new FormData(filterForm.value)
+  const filterQuery = {}
+
+  for (const [key, value] of formData.entries()) {
+    // Skip empty values and the main search field
+    if (value !== '' && key !== 'search' && key !== 'searchType' && key !== 'per_page') {
+      filterQuery[key] = value
+    }
+  }
+
+  // Map searchType to filter parameter
+  if (searchData.searchType) {
+    filterQuery.filter = searchData.searchType
+  }
+
+  return filterQuery
+}
+
+async function handleFilterSubmit() {
+  const filterQuery = buildFilterQuery()
+  const page = 1 // Reset to first page when applying filters
+
+  // Build query parameters
+  const query = {
+    ...route.query,
+    page
+  }
+
+  // Add search parameters if they exist
+  if (searchData.search.trim()) {
+    query.search = searchData.search.trim()
+    if (searchData.searchType) {
+      query.filter = searchData.searchType
+    }
+  }
+
+  // Add filter parameters
+  Object.assign(query, filterQuery)
+
+  // Remove empty filter parameters
+  Object.keys(query).forEach(key => {
+    if (query[key] === '') {
+      delete query[key]
+    }
+  })
+
+  // Remove searchType from query as it's mapped to filter
+  delete query.searchType
+
+  // Update URL
+  router.push({ path: route.path, query }).catch(err => {
+    console.warn('Router push failed:', err)
+  })
+
+  // Apply filters
+  if (searchData.search.trim()) {
+    await searchUsers(searchData.search.trim(), page, searchData.perPage, filterQuery)
+  } else {
+    await fetchUsers(page, searchData.perPage, filterQuery)
+  }
+}
+
 async function handleSearch() {
   if (searchData.search.trim()) {
     // Reset to page 1 when searching
-    const result = await searchUsers(searchData.search.trim(), 1, searchData.perPage)
+    const filterQuery = buildFilterQuery()
+
+    // Build the search query to match the required format
+    const searchParams = {
+      ...filterQuery,
+      search: searchData.search.trim()
+    }
+
+    // Map searchType to filter parameter
+    if (searchData.searchType) {
+      searchParams.filter = searchData.searchType
+    }
+
+    const result = await searchUsers(searchData.search.trim(), 1, searchData.perPage, searchParams)
     if (result.success) {
       // Update URL with search parameters
       const query = {
@@ -213,9 +313,9 @@ async function handleSearch() {
         page: 1
       }
 
-      // Add searchType to query if it's not empty
+      // Add filter parameter if searchType exists
       if (searchData.searchType) {
-        query.searchType = searchData.searchType
+        query.filter = searchData.searchType
       }
 
       router.push({ path: route.path, query }).catch(err => {
@@ -227,7 +327,7 @@ async function handleSearch() {
     // Update URL
     const newQuery = { ...route.query }
     delete newQuery.search
-    delete newQuery.searchType
+    delete newQuery.filter
     if (Object.keys(newQuery).length === 0) {
       router.push({ path: route.path, query: {} }).catch(err => {
         console.warn('Router push failed:', err)
@@ -368,15 +468,31 @@ onMounted(async () => {
   // Check URL for initial page and search parameters
   const page = parseInt(route.query.page) || 1
   const search = route.query.search || ''
-  const searchType = route.query.searchType || ''
+  const filter = route.query.filter || ''
 
   searchData.search = search
-  searchData.searchType = searchType
+  searchData.searchType = filter // Map filter parameter back to searchType
+
+  // Apply filters from URL query parameters
+  const filterQuery = { ...route.query }
+  delete filterQuery.page
+  delete filterQuery.search
+  delete filterQuery.filter
 
   if (search.trim()) {
-    await searchUsers(search.trim(), page, searchData.perPage)
+    // Ensure filter parameter is included in the query
+    const searchParams = {
+      ...filterQuery,
+      search: search.trim()
+    }
+
+    if (filter) {
+      searchParams.filter = filter
+    }
+
+    await searchUsers(search.trim(), page, searchData.perPage, searchParams)
   } else {
-    await loadUsers(page)
+    await loadUsers(page, filterQuery)
   }
 })
 
@@ -398,10 +514,11 @@ function changePage(page) {
 }
 
 // Simplified loadUsers function
-async function loadUsers(page = 1) {
-  await fetchUsers(page, searchData.perPage)
+async function loadUsers(page = 1, filterQuery = {}) {
+  // Build filter query from form if not provided
+  const filters = Object.keys(filterQuery).length > 0 ? filterQuery : buildFilterQuery()
+  await fetchUsers(page, searchData.perPage, filters)
 }
-
 </script>
 
 <style scoped>
@@ -420,12 +537,17 @@ async function loadUsers(page = 1) {
 .filter tr {
   border: none;
   align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .filter tr td {
   border: none;
   border-width: 0;
   border-color: unset;
+  flex: 1;
+  min-width: 150px;
 }
 
 .table-info {
@@ -495,16 +617,32 @@ async function loadUsers(page = 1) {
   }
 
   .filter .grouped{
-    width: 22rem;
+    width: 97%;
   }
 
-  .filter .grouped select{
-    width: 100%;
+  .filter .grouped select,
+  .filter .grouped input {
+    width: 97%;
   }
 
   .filter td::before{
-    width: 35%;
+    width: 45%;
     text-align: right;
+  }
+
+  .filter tr {
+    display: flex;
+    gap: 0;
+    flex-direction: column;
+  }
+
+  .filter tr td {
+    margin: 0;
+    min-width: 100%;
+  }
+
+  .filter .button.icon-only{
+    margin-right: 7px;
   }
 }
 </style>

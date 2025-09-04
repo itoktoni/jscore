@@ -9,26 +9,25 @@
       size="small"
     />
 
-    <!-- Page Numbers - Simplified -->
+    <!-- Page Numbers - Fixed structure: 1 first, 3 around current, 1 last -->
     <div class="pagination-pages">
-      <!-- First pages (1-2) -->
-      <template v-for="page in Math.min(2, totalPages)" :key="page">
-        <FormButton
-          @click="handlePageChange(page)"
-          :variant="page === currentPage ? 'primary' : 'secondary'"
-          :text="page.toString()"
-          size="small"
-          :class="{ 'active': page === currentPage }"
-        />
-      </template>
+      <!-- First page (1) -->
+      <FormButton
+        v-if="totalPages >= 1"
+        @click="handlePageChange(1)"
+        :variant="1 === currentPage ? 'primary' : 'secondary'"
+        text="1"
+        size="small"
+        :class="{ 'active': 1 === currentPage }"
+      />
 
-      <!-- Ellipsis if needed -->
-      <span v-if="currentPage > 4 && totalPages > 5" class="pagination-ellipsis">...</span>
+      <!-- Ellipsis if current page is beyond the first few pages -->
+      <span v-if="currentPage > 3 && totalPages > 5" class="pagination-ellipsis">...</span>
 
       <!-- Pages around current page -->
       <template v-for="page in getPagesAroundCurrent()" :key="page">
         <FormButton
-          v-if="page > 2 && page <= totalPages - 2"
+          v-if="page > 1 && page < totalPages"
           @click="handlePageChange(page)"
           :variant="page === currentPage ? 'primary' : 'secondary'"
           :text="page.toString()"
@@ -37,20 +36,18 @@
         />
       </template>
 
-      <!-- Ellipsis if needed -->
-      <span v-if="currentPage < totalPages - 3 && totalPages > 5" class="pagination-ellipsis">...</span>
+      <!-- Ellipsis if current page is not among the last few pages -->
+      <span v-if="currentPage < totalPages - 2 && totalPages > 5" class="pagination-ellipsis">...</span>
 
-      <!-- Last pages -->
-      <template v-for="page in getLastPages()" :key="page">
-        <FormButton
-          v-if="page > 2"
-          @click="handlePageChange(page)"
-          :variant="page === currentPage ? 'primary' : 'secondary'"
-          :text="page.toString()"
-          size="small"
-          :class="{ 'active': page === currentPage }"
-        />
-      </template>
+      <!-- Last page -->
+      <FormButton
+        v-if="totalPages > 1"
+        @click="handlePageChange(totalPages)"
+        :variant="totalPages === currentPage ? 'primary' : 'secondary'"
+        :text="totalPages.toString()"
+        size="small"
+        :class="{ 'active': totalPages === currentPage }"
+      />
     </div>
 
     <!-- Next Button -->
@@ -89,32 +86,15 @@ function getPagesAroundCurrent() {
   const totalPages = props.totalPages
   const pages = []
 
-  // Add 2 pages before current (if they exist and are not first pages)
-  for (let i = Math.max(3, currentPage - 2); i < currentPage; i++) {
-    pages.push(i)
-  }
+  // Always show pages around current page (up to 3)
+  // But don't include first (1) or last page
+  const start = Math.max(2, currentPage - 1)
+  const end = Math.min(totalPages - 1, currentPage + 1)
 
-  // Add current page (if it's not already added as first or last)
-  if (currentPage > 2 && currentPage <= totalPages - 2) {
-    pages.push(currentPage)
-  }
-
-  // Add 2 pages after current (if they exist and are not last pages)
-  for (let i = currentPage + 1; i <= Math.min(totalPages - 2, currentPage + 2); i++) {
-    pages.push(i)
-  }
-
-  return pages
-}
-
-// Computed function to get last pages
-function getLastPages() {
-  const totalPages = props.totalPages
-  const pages = []
-
-  // Add last 2 pages (if they exist and are not first pages)
-  for (let i = Math.max(3, totalPages - 1); i <= totalPages; i++) {
-    pages.push(i)
+  for (let i = start; i <= end; i++) {
+    if (i > 1 && i < totalPages) {
+      pages.push(i)
+    }
   }
 
   return pages
@@ -149,15 +129,25 @@ function handlePageChange(page) {
   gap: 0.25rem;
   flex-wrap: wrap;
   justify-content: center;
+  align-items: center;
 }
 
 .pagination-ellipsis {
   padding: 0.375rem 0.25rem;
   color: #6c757d;
+  display: flex;
+  align-items: center;
 }
 
 .mt-3 {
   margin-top: 1rem;
+}
+
+/* Button sizing for both desktop and mobile */
+.form-button--small {
+  padding: 6px 12px;
+  font-size: 12px;
+  min-height: 30px;
 }
 
 /* Mobile responsiveness */
@@ -174,6 +164,17 @@ function handlePageChange(page) {
   .pagination-pages .button {
     flex: 1;
     margin: 0.125rem;
+  }
+
+  /* Make buttons display in a row on mobile */
+  .pagination-pages {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    justify-content: flex-start;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
   }
 }
 </style>
