@@ -94,6 +94,20 @@ const props = defineProps({
   validateOnSubmit: {
     type: Boolean,
     default: true
+  },
+
+  // Success notification
+  successMessage: {
+    type: String,
+    default: 'Form submitted successfully!'
+  },
+  showSuccessNotification: {
+    type: Boolean,
+    default: true
+  },
+  successNotificationTimer: {
+    type: Number,
+    default: 3000
   }
 })
 
@@ -117,7 +131,7 @@ watch(
 )
 
 // Provide form context to child components
-provide('formData', formData.value)
+provide('formData', formData)
 provide('fieldErrors', fieldErrors)
 provide('isSubmitting', isSubmitting)
 
@@ -195,22 +209,37 @@ const handleSubmit = async () => {
         // Handle success
         isSubmitting.value = false
         emit('success', result)
+
+        // Show success notification if enabled
+        if (props.showSuccessNotification) {
+          Swal.fire({
+            title: 'Success',
+            text: props.successMessage,
+            icon: 'success',
+            timer: props.successNotificationTimer,
+            showConfirmButton: false,
+            timerProgressBar: true
+          })
+        }
+
         return result
       } else {
         // Handle submission errors
-        if (result && result.errors) {
+        // Check for errors in result.errors or result.errorData.errors
+        const errors = result?.errors || result?.errorData?.errors
+        if (errors) {
           // Map API errors to form fields
-          Object.keys(result.errors).forEach(fieldName => {
-            const error = result.errors[fieldName]
+          Object.keys(errors).forEach(fieldName => {
+            const error = errors[fieldName]
             fieldErrors.value[fieldName] = typeof error === 'string' ? error : (Array.isArray(error) ? error[0] : String(error))
           })
         }
-        globalError.value = result?.error || 'Submission failed'
+        globalError.value = result?.error || result?.errorData?.message || 'Submission failed'
 
         // Show SweetAlert for submission errors
         Swal.fire({
           title: 'Submission Error',
-          text: result?.error || 'Submission failed',
+          text: result?.error || result?.errorData?.message || 'Submission failed',
           icon: 'error',
           confirmButtonText: 'OK'
         })

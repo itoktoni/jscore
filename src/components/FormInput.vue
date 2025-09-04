@@ -253,8 +253,8 @@ const computedPlaceholder = computed(() => {
 // Auto-resolve value from formData if available
 const computedValue = computed(() => {
   if (props.modelValue !== '') return props.modelValue
-  if (formData && props.name && formData[props.name] !== undefined) {
-    return formData[props.name]
+  if (formData && props.name && formData.value[props.name] !== undefined) {
+    return formData.value[props.name]
   }
   return props.modelValue
 })
@@ -264,22 +264,13 @@ const computedError = computed(() => {
   if (props.error) return props.error
 
   // Check injected fieldErrors first
-  if (fieldErrors && props.name && fieldErrors[props.name]) {
-    const error = fieldErrors[props.name]
+  if (fieldErrors && props.name && fieldErrors.value[props.name]) {
+    const error = fieldErrors.value[props.name]
     // Ensure we return a string, not an array or object
     return typeof error === 'string' ? error : (Array.isArray(error) ? error[0] : String(error))
   }
 
-  // Only validate if field has been touched and we have rules
-  if (props.rules && isTouched.value && computedValue.value !== undefined) {
-    const validationError = validateField(computedValue.value, props.rules, computedLabel.value)
-    if (validationError && fieldErrors) {
-      // Update fieldErrors for other components to see
-      fieldErrors[props.name] = validationError
-    }
-    return validationError
-  }
-
+  // Remove reactive validation - only show errors from fieldErrors (set during submission)
   return ''
 })
 
@@ -294,58 +285,37 @@ const handleInput = (event) => {
   const value = event.target.value
   console.log('FormInput handleInput, name:', props.name, 'value:', value)
 
-  // Mark field as touched when user starts typing
-  isTouched.value = true
-
   // Emit v-model update
   emit('update:modelValue', value)
 
   // Also update formData if available
   if (formData && props.name) {
-    formData[props.name] = value
-    console.log('Updated formData:', formData)
+    formData.value[props.name] = value
+    console.log('Updated formData:', formData.value)
   }
 
-  // Clear field error when user starts typing
-  if (fieldErrors && props.name && fieldErrors[props.name]) {
-    delete fieldErrors[props.name]
+  // Clear field error when user starts typing (but only if there was an error before)
+  if (fieldErrors && props.name && fieldErrors.value[props.name]) {
+    delete fieldErrors.value[props.name]
   }
 }
 
 const handleFocus = (event) => {
-  // Mark field as touched when user focuses on it
-  isTouched.value = true
   emit('focus', event)
 }
 
 const handleBlur = (event) => {
-  // Mark field as touched on blur
-  isTouched.value = true
-
-  // Trigger validation on blur
-  if (props.rules) {
-    const validationError = validateField(event.target.value, props.rules, computedLabel.value)
-    if (validationError && fieldErrors && props.name) {
-      // Ensure we store the error as a string
-      fieldErrors[props.name] = String(validationError)
-    } else if (fieldErrors && props.name) {
-      // Clear error if validation passes
-      delete fieldErrors[props.name]
-    }
-  }
-
   emit('blur', event)
 }
 
 // Function to trigger validation from external sources
 const triggerValidation = () => {
-  if (props.rules && formData && computedValue.value !== undefined) {
-    isTouched.value = true
-    const validationError = validateField(computedValue.value, props.rules, computedLabel.value)
+  if (props.rules && formData && formData.value[props.name] !== undefined) {
+    const validationError = validateField(formData.value[props.name], props.rules, computedLabel.value)
     if (validationError && fieldErrors && props.name) {
-      fieldErrors[props.name] = String(validationError)
+      fieldErrors.value[props.name] = String(validationError)
     } else if (fieldErrors && props.name) {
-      delete fieldErrors[props.name]
+      delete fieldErrors.value[props.name]
     }
   }
 }

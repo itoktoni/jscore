@@ -257,12 +257,12 @@ const changePage = async (page) => {
 }
 
 const createUser = () => {
-  router.push('/users/create')
+  router.push({ name: 'CreateUser' })
 }
 
 const editUser = (user) => {
   if (showUserDetail.value) showUserDetail.value = false
-  router.push(`/users/${user.id}/edit`)
+  router.push({ name: 'EditUser', params: { id: user.id } })
 }
 
 const viewUser = (user) => {

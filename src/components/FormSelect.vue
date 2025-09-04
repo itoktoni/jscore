@@ -184,8 +184,8 @@ const computedPlaceholder = computed(() => {
 // Auto-resolve value from formData if available
 const computedValue = computed(() => {
   if (props.modelValue !== '') return props.modelValue
-  if (formData && props.name && formData[props.name] !== undefined) {
-    return formData[props.name]
+  if (formData && props.name && formData.value[props.name] !== undefined) {
+    return formData.value[props.name]
   }
   return props.modelValue
 })
@@ -296,7 +296,7 @@ const selectOption = (option) => {
 
   // Also update formData if available
   if (formData && props.name) {
-    formData[props.name] = value
+    formData.value[props.name] = value
   }
 
   // Clear field error when user makes selection
@@ -525,7 +525,7 @@ watch(filteredOptions, () => {
 }
 
 .select-search {
-  padding: 0.5rem;
+  padding: 0.8rem;
   border-bottom: 1px solid #eee;
 }
 

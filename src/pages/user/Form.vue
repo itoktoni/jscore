@@ -42,11 +42,28 @@ const props = defineProps({
   },
   onError: {
     type: Function,
-    required: true
+    default: (error) => {
+      console.log('Form error:', error)
+    }
   },
   onCancel: {
     type: Function,
-    required: true
+    default: () => {
+      console.log('Form cancel triggered')
+    }
+  },
+  // Success notification props
+  showSuccessNotification: {
+    type: Boolean,
+    default: true
+  },
+  successMessage: {
+    type: String,
+    default: 'Form submitted successfully!'
+  },
+  successNotificationTimer: {
+    type: Number,
+    default: 3000
   }
 })
 
@@ -66,15 +83,9 @@ watch(
   { immediate: true, deep: true }
 )
 
-// Expose resetForm method to parent components
+// Expose FormContainer methods directly to parent components
 defineExpose({
-  resetForm: () => {
-    console.log('Form resetForm called')
-    // Use the simplified resetForm from composable
-    if (formContainerRef.value && typeof formContainerRef.value.resetForm === 'function') {
-      formContainerRef.value.resetForm()
-    }
-  }
+  resetForm: () => formContainerRef.value?.resetForm()
 })
 
 // Form event handlers
@@ -101,6 +112,9 @@ const handleCancel = () => {
     :title="title"
     :initial-data="initialData"
     :action="handleSubmit"
+    :show-success-notification="showSuccessNotification"
+    :success-message="successMessage"
+    :success-notification-timer="successNotificationTimer"
     @success="handleSuccess"
     @error="handleError"
   >

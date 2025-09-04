@@ -321,7 +321,7 @@ html {
 
 
 .form-container{
-    padding: 1.7rem;
+    padding: 1rem;
     flex-flow: row wrap;
     display: flex;
     justify-content: flex-start;

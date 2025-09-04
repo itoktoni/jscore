@@ -41,7 +41,7 @@ const routes = [
   },
   {
     path: '/users',
-    name: 'UserManagement',
+    name: 'UserList',
     component: UserListPage,
     meta: {
       requiresAuth: true, // Only accessible when authenticated

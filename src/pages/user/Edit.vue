@@ -6,8 +6,6 @@
       :initial-data="initialFormData"
       :on-submit="handleSubmit"
       :on-success="handleSuccess"
-      :on-error="handleError"
-      :on-cancel="handleCancel"
     />
   </div>
 </template>
@@ -52,7 +50,7 @@ onMounted(async () => {
       }
     } catch (error) {
       console.error('Error loading user:', error)
-      router.push('/users')
+      router.push({ name: 'UserManagement' })
     }
   }
 })
@@ -64,7 +62,7 @@ const handleSubmit = async (data) => {
 
 const handleSuccess = (response) => {
   // Navigate back to user list on success
-  router.push('/users')
+  router.push({ name: 'UserManagement' })
 }
 
 const handleError = (error) => {
@@ -74,7 +72,7 @@ const handleError = (error) => {
 
 const handleCancel = () => {
   // Always navigate to the user list
-  router.push('/users')
+  router.push({ name: 'UserManagement' })
 }
 </script>
 

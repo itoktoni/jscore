@@ -10,7 +10,9 @@
   "scripts": {
     "start": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:env": "node test-env-config.js",
+    "docs:success-notification": "type SUCCESS_NOTIFICATION_IMPLEMENTATION.md"
   },
   "dependencies": {
     "@aashu-dubey/capacitor-statusbar-safe-area": "^4.0.0",

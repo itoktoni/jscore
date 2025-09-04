@@ -6,8 +6,6 @@
       :is-editing="false"
       :on-submit="handleSubmit"
       :on-success="handleSuccess"
-      :on-error="handleError"
-      :on-cancel="handleCancel"
     />
   </div>
 </template>
@@ -32,25 +30,14 @@ const handleSuccess = async (response) => {
   console.log('Form submit success:', response)
 
   // Reset form using the simplified approach
-  if (formRef.value && typeof formRef.value.resetForm === 'function') {
+  if (formRef.value) {
     formRef.value.resetForm()
   }
 
-  // Navigate back to user list on success
-  router.push('/users')
+  // Navigate back to user list on success using route name
+  router.push({ name: 'UserManagement' })
 }
 
-const handleError = (error) => {
-  console.log('Form submit error:', error)
-  // Log error for debugging
-  console.error('Create user error:', error)
-}
-
-const handleCancel = () => {
-  console.log('Form cancel called')
-  // Always navigate to the user list
-  router.push('/users')
-}
 </script>
 
 <style scoped>

@@ -3,9 +3,12 @@ import { Capacitor } from '@capacitor/core'
 
 class ApiService {
   constructor() {
+    // Use environment variable if available, otherwise fallback to default
+    const apiUrl = import.meta.env.VITE_API_URL || 'https://newcore.nexeratech.co.id';
+
     this.baseURL = Capacitor.isNativePlatform()
-      ? 'https://newcore.nexeratech.co.id/api'
-      : (import.meta.env.DEV ? '/api' : 'https://newcore.nexeratech.co.id/api')
+      ? `${apiUrl}/api`
+      : (import.meta.env.DEV ? '/api' : `${apiUrl}/api`)
 
     this.api = axios.create({
       baseURL: this.baseURL,
