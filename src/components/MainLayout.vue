@@ -93,6 +93,9 @@
         <!-- Router View for Page Content -->
         <router-view />
       </div>
+
+      <!-- Network Monitor - Only visible on mobile -->
+      <NetworkMonitor />
     </main>
   </div>
 
@@ -149,6 +152,7 @@
 import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import NetworkMonitor from './NetworkMonitor.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -197,7 +201,10 @@ const subMenus = ref({
   test: [
     { title: 'Safe Area Test', route: '/test-safe-area' },
     { title: 'Safe Area Page Test', route: '/test-safe-area-page' },
-    { title: 'FormSelect Test', route: '/test-form-select' }
+    { title: 'FormSelect Test', route: '/test-form-select' },
+    { title: 'All Capacitor Plugins', route: '/test/capacitor-plugins' },
+    { title: 'Plugins by Navigation', route: '/test/plugin-tests' },
+    { title: 'Plugins by Package', route: '/test/plugins-by-package' }
   ]
 })
 

@@ -1,5 +1,5 @@
 <template>
-  <div v-if="showStatus" class="network-status" :class="statusClass">
+  <div v-if="isMobile" class="network-status" :class="statusClass">
     <div class="status-indicator">
       <span class="status-dot" :class="statusClass"></span>
       <span class="status-text">{{ statusMessage }}</span>
@@ -19,9 +19,13 @@ import { apiService } from '../stores/api'
 
 const isOnline = ref(true)
 const connectionType = ref('unknown')
-const showStatus = ref(false)
+const showStatus = ref(true) // Always show the monitor
 const retrying = ref(false)
+const isMobile = ref(false)
 let networkListener = null
+
+// Check if we're on a mobile platform
+isMobile.value = Capacitor.isNativePlatform()
 
 const statusClass = computed(() => {
   return isOnline.value ? 'online' : 'offline'
@@ -29,151 +33,143 @@ const statusClass = computed(() => {
 
 const statusMessage = computed(() => {
   if (!isOnline.value) {
-    return 'No internet connection'
+    return 'No internet'
   }
   if (connectionType.value === 'cellular') {
-    return 'Connected via cellular'
+    return 'via cellular'
   }
   if (connectionType.value === 'wifi') {
-    return 'Connected via WiFi'
+    return 'via WiFi'
   }
   return 'Connected'
 })
 
-    const checkNetworkStatus = async () => {
-      try {
-        if (Capacitor.isNativePlatform()) {
-          const status = await Network.getStatus()
-          isOnline.value = status.connected
-          connectionType.value = status.connectionType
+const checkNetworkStatus = async () => {
+  try {
+    if (Capacitor.isNativePlatform()) {
+      const status = await Network.getStatus()
+      isOnline.value = status.connected
+      connectionType.value = status.connectionType
 
-          console.log('[Network Monitor] Status:', {
-            connected: status.connected,
-            connectionType: status.connectionType
-          })
-        } else {
-          // For web platform, use navigator.onLine
-          isOnline.value = navigator.onLine
-          connectionType.value = 'unknown'
-        }
-
-        // Show status if offline or on cellular with poor connection
-        showStatus.value = !isOnline.value || connectionType.value === 'cellular'
-
-      } catch (error) {
-        console.error('[Network Monitor] Error checking status:', error)
-        isOnline.value = navigator.onLine
-        showStatus.value = !isOnline.value
-      }
+      console.log('[Network Monitor] Status:', {
+        connected: status.connected,
+        connectionType: status.connectionType
+      })
+    } else {
+      // For web platform, use navigator.onLine
+      isOnline.value = navigator.onLine
+      connectionType.value = 'unknown'
     }
 
-    const retryConnection = async () => {
-      retrying.value = true
+    // Always show status
+    showStatus.value = true
 
-      try {
-        // Wait a moment
-        await new Promise(resolve => setTimeout(resolve, 1000))
+  } catch (error) {
+    console.error('[Network Monitor] Error checking status:', error)
+    isOnline.value = navigator.onLine
+    showStatus.value = true
+  }
+}
 
-        // Check network status
-        await checkNetworkStatus()
+const retryConnection = async () => {
+  retrying.value = true
 
-        // Test API connectivity
-        const result = await apiService.testConnection()
+  try {
+    // Wait a moment
+    await new Promise(resolve => setTimeout(resolve, 1000))
 
-        if (result.success) {
-          showStatus.value = false
-          console.log('[Network Monitor] Connection restored')
-        } else {
-          console.log('[Network Monitor] API still unreachable:', result.error)
-        }
+    // Check network status
+    await checkNetworkStatus()
 
-      } catch (error) {
-        console.error('[Network Monitor] Retry failed:', error)
-      } finally {
-        retrying.value = false
-      }
+    // Test API connectivity
+    const result = await apiService.testConnection()
+
+    if (result.success) {
+      console.log('[Network Monitor] Connection restored')
+    } else {
+      console.log('[Network Monitor] API still unreachable:', result.error)
     }
 
-    const setupNetworkListener = async () => {
-      if (Capacitor.isNativePlatform()) {
-        try {
-          networkListener = await Network.addListener('networkStatusChange', (status) => {
-            console.log('[Network Monitor] Status changed:', status)
-            isOnline.value = status.connected
-            connectionType.value = status.connectionType
+  } catch (error) {
+    console.error('[Network Monitor] Retry failed:', error)
+  } finally {
+    retrying.value = false
+  }
+}
 
-            // Show status for 3 seconds when connection changes
-            showStatus.value = true
-            setTimeout(() => {
-              if (isOnline.value) {
-                showStatus.value = false
-              }
-            }, 3000)
-          })
-        } catch (error) {
-          console.error('[Network Monitor] Failed to setup listener:', error)
-        }
-      } else {
-        // For web platform, listen to online/offline events
-        const handleOnline = () => {
-          isOnline.value = true
-          showStatus.value = true
-          setTimeout(() => showStatus.value = false, 3000)
-        }
+const setupNetworkListener = async () => {
+  if (Capacitor.isNativePlatform()) {
+    try {
+      networkListener = await Network.addListener('networkStatusChange', (status) => {
+        console.log('[Network Monitor] Status changed:', status)
+        isOnline.value = status.connected
+        connectionType.value = status.connectionType
 
-        const handleOffline = () => {
-          isOnline.value = false
-          showStatus.value = true
-        }
-
-        window.addEventListener('online', handleOnline)
-        window.addEventListener('offline', handleOffline)
-
-        // Store cleanup function
-        networkListener = () => {
-          window.removeEventListener('online', handleOnline)
-          window.removeEventListener('offline', handleOffline)
-        }
-      }
+        // Always show status when connection changes
+        showStatus.value = true
+      })
+    } catch (error) {
+      console.error('[Network Monitor] Failed to setup listener:', error)
+    }
+  } else {
+    // For web platform, listen to online/offline events
+    const handleOnline = () => {
+      isOnline.value = true
+      showStatus.value = true
     }
 
-    onMounted(async () => {
-      await checkNetworkStatus()
-      await setupNetworkListener()
-    })
+    const handleOffline = () => {
+      isOnline.value = false
+      showStatus.value = true
+    }
 
-    onUnmounted(() => {
-      if (networkListener) {
-        if (typeof networkListener === 'function') {
-          networkListener() // Web cleanup
-        } else {
-          networkListener.remove() // Capacitor cleanup
-        }
-      }
-    })
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
 
+    // Store cleanup function
+    networkListener = () => {
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
+    }
+  }
+}
 
+onMounted(async () => {
+  await checkNetworkStatus()
+  await setupNetworkListener()
+})
+
+onUnmounted(() => {
+  if (networkListener) {
+    if (typeof networkListener === 'function') {
+      networkListener() // Web cleanup
+    } else {
+      networkListener.remove() // Capacitor cleanup
+    }
+  }
+})
 </script>
 
 <style scoped>
 .network-status {
   position: fixed;
-  top: 60px;
-  left: 50%;
-  transform: translateX(-50%);
+  bottom: 0;
+  left: 0;
+  right: 0;
   z-index: 9998;
-  padding: 10px 15px;
-  border-radius: 20px;
+  padding: 10px 20px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: space-between;
   font-size: 14px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-  animation: slideDown 0.3s ease-out;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  min-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .network-status.online {
-  background-color: #28a745;
+  background-color: var(--primary-color);
   color: white;
 }
 
@@ -189,8 +185,8 @@ const statusMessage = computed(() => {
 }
 
 .status-dot {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   animation: pulse 2s infinite;
 }
@@ -207,11 +203,12 @@ const statusMessage = computed(() => {
   background: rgba(255, 255, 255, 0.2);
   color: white;
   border: 1px solid rgba(255, 255, 255, 0.5);
-  padding: 5px 10px;
+  padding: 6px 12px;
   border-radius: 15px;
   font-size: 12px;
   cursor: pointer;
   transition: background-color 0.3s;
+  white-space: nowrap;
 }
 
 .retry-btn:hover:not(:disabled) {
@@ -221,17 +218,6 @@ const statusMessage = computed(() => {
 .retry-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateX(-50%) translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
 }
 
 @keyframes pulse {

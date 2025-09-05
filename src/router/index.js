@@ -3,8 +3,12 @@ import { useAuthStore } from '../stores/auth'
 import SystemSettingsPage from '../pages/SystemSettingsPage.vue'
 import TestSafeArea from '../components/TestSafeArea.vue'
 import TestSafeAreaPage from '../pages/TestSafeAreaPage.vue'
+import CapacitorPluginsTest from '../pages/test/CapacitorPluginsTest.vue'
+import PluginTestsNavigation from '../pages/test/PluginTestsNavigation.vue'
+import PluginsByPackage from '../pages/test/PluginsByPackage.vue' // Added import for plugins by package page
 import { userRoutes } from './userRoutes'
 import { authRoutes } from './authRoutes'
+import { pluginTestRoutes } from '../pages/test/plugins/index.js'
 
 const routes = [
   {
@@ -40,6 +44,32 @@ const routes = [
       requiresAuth: true // Only accessible when authenticated
     }
   },
+  {
+    path: '/test/capacitor-plugins',
+    name: 'CapacitorPluginsTest',
+    component: CapacitorPluginsTest,
+    meta: {
+      requiresAuth: true // Only accessible when authenticated
+    }
+  },
+  {
+    path: '/test/plugin-tests',
+    name: 'PluginTestsNavigation',
+    component: PluginTestsNavigation,
+    meta: {
+      requiresAuth: true // Only accessible when authenticated
+    }
+  },
+  {
+    path: '/test/plugins-by-package',
+    name: 'PluginsByPackage',
+    component: PluginsByPackage, // Added route for plugins by package page
+    meta: {
+      requiresAuth: true // Only accessible when authenticated
+    }
+  },
+  // Individual plugin test routes
+  ...pluginTestRoutes,
   {
     path: '/:pathMatch(.*)*',
     redirect: '/login'
