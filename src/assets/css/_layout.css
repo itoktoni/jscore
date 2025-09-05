@@ -48,6 +48,10 @@ html {
     margin-top: -10px;
 }
 
+.main-nav :first-child {
+  padding-top: 1rem;
+}
+
 .main-nav .bi {
     font-size: 3rem;
 }

@@ -57,6 +57,9 @@ onMounted(async () => {
         email: authStore.user.email || ''
       }
     }
+
+    // Redirect to dashboard after loading profile
+    router.push('/dashboard')
   } catch (error) {
     console.error('Error loading profile:', error)
     alertError('Error', 'Failed to load profile data')

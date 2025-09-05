@@ -17,15 +17,18 @@
   "dependencies": {
     "@aashu-dubey/capacitor-statusbar-safe-area": "^4.0.0",
     "@capacitor/android": "^7.4.3",
+    "@capacitor/app": "^7.0.2",
     "@capacitor/camera": "latest",
     "@capacitor/core": "^7.4.3",
     "@capacitor/network": "^7.0.2",
     "@capacitor/preferences": "latest",
     "@capacitor/splash-screen": "latest",
     "axios": "^1.6.0",
+    "chart.js": "^4.5.0",
     "pinia": "^2.1.0",
     "sweetalert2": "^11.22.5",
     "vue": "^3.4.0",
+    "vue-chartjs": "^5.3.2",
     "vue-router": "^4.2.0"
   },
   "devDependencies": {

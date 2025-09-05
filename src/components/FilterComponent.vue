@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, onMounted, watch, defineProps, defineEmits } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 const props = defineProps({
@@ -230,64 +230,66 @@ defineExpose({
 </script>
 
 <template>
-  <form @submit.prevent="handleFilterSubmit" class="row col-12" ref="filterForm">
-    <table class="filter data-table col-12">
+  <form @submit.prevent="handleFilterSubmit" class="row filter-form" ref="filterForm">
+    <table class="filter data-table">
       <slot name="default-filters"></slot>
 
-      <tr>
-        <td class="col-2" data-label="Per Page">
-          <p class="grouped">
-            <label class="hide-mobile" for="">Page</label>
-            <select
-              name="per_page"
-              v-model="localSearchData.perPage"
-              @change="handlePerPageChange"
-              class="per-page"
-            >
-              <option
-                v-for="option in perPageOptions"
-                :key="option"
-                :value="option"
+      <tbody>
+        <tr>
+          <td class="col-2" data-label="Per Page">
+            <p class="grouped">
+              <label class="hide-mobile" for="">Page</label>
+              <select
+                name="per_page"
+                v-model="localSearchData.perPage"
+                @change="handlePerPageChange"
+                class="per-page"
               >
-                {{ option }}
-              </option>
-            </select>
-          </p>
-        </td>
-        <td class="col-4" data-label="Filters">
-          <p class="grouped">
-            <label class="hide-mobile" for="">Filters</label>
-            <select
-              name="searchType"
-              v-model="localSearchData.searchType"
-            >
-              <option
-                v-for="option in searchOptions"
-                :key="option.value"
-                :value="option.value"
+                <option
+                  v-for="option in perPageOptions"
+                  :key="option"
+                  :value="option"
+                >
+                  {{ option }}
+                </option>
+              </select>
+            </p>
+          </td>
+          <td class="col-4" data-label="Filters">
+            <p class="grouped">
+              <label class="hide-mobile" for="">Filters</label>
+              <select
+                name="searchType"
+                v-model="localSearchData.searchType"
               >
-                {{ option.label }}
-              </option>
-            </select>
-          </p>
-        </td>
-        <td class="col-6" data-label="Search">
-          <p class="grouped">
-            <label class="hide-mobile" for="">Search</label>
-            <input
-              type="search"
-              name="search"
-              id="filter-input"
-              placeholder="Search..."
-              v-model="localSearchData.search"
-              @keyup.enter="handleSearch"
-            >
-            <button class="button icon-only" @click="handleSearch">
-              Filter
-            </button>
-          </p>
-        </td>
-      </tr>
+                <option
+                  v-for="option in searchOptions"
+                  :key="option.value"
+                  :value="option.value"
+                >
+                  {{ option.label }}
+                </option>
+              </select>
+            </p>
+          </td>
+          <td class="col-6" data-label="Search">
+            <p class="grouped">
+              <label class="hide-mobile" for="">Search</label>
+              <input
+                type="search"
+                name="search"
+                id="filter-input"
+                placeholder="Search..."
+                v-model="localSearchData.search"
+                @keyup.enter="handleSearch"
+              >
+              <button class="button icon-only" @click="handleSearch">
+                Filter
+              </button>
+            </p>
+          </td>
+        </tr>
+      </tbody>
 
       <!-- Slot for additional custom filters -->
       <slot name="custom-filters"></slot>

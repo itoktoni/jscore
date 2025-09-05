@@ -9,7 +9,7 @@ import { authRoutes } from './authRoutes'
 const routes = [
   {
     path: '/',
-    redirect: '/profile'
+    redirect: '/dashboard'
   },
   // Authentication routes
   ...authRoutes,
@@ -71,10 +71,10 @@ router.beforeEach(async (to, from, next) => {
     next('/login')
   } else if (requiresGuest && isAuthenticated) {
     // Route requires guest (not authenticated) but user is authenticated
-    next('/profile')
+    next('/dashboard')
   } else if (requiresAdmin && (!isAuthenticated || !isAdmin)) {
     // Route requires admin access but user is not admin
-    next('/profile')
+    next('/dashboard')
   } else {
     // Route is accessible
     next()

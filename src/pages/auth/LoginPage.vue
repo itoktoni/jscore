@@ -45,8 +45,8 @@ const handleLogin = async (data) => {
 
     if (result.success) {
       console.log('Login successful')
-      // Redirect to profile on successful login
-      router.push('/profile')
+      // Redirect to dashboard on successful login
+      router.push('/dashboard')
       return { success: true }
     } else {
       console.log('Login failed:', result)

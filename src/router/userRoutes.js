@@ -2,13 +2,15 @@ import UserListPage from '../pages/user/List.vue'
 import UserFormCreate from '../pages/user/Create.vue'
 import UserFormEdit from '../pages/user/Edit.vue'
 import TestFilterPage from '../pages/user/TestFilter.vue'
+import DashboardPage from '../pages/dashboard/DashboardPage.vue'
 
 // User route constants
 export const USER_ROUTES = {
   USER_LIST: 'UserList',
   CREATE_USER: 'CreateUser',
   EDIT_USER: 'EditUser',
-  TEST_FILTER: 'TestFilter'
+  TEST_FILTER: 'TestFilter',
+  DASHBOARD: 'Dashboard'
 }
 
 // User API routes
@@ -22,6 +24,14 @@ export const USER_API_ROUTES = {
 }
 
 export const userRoutes = [
+  {
+    path: '/dashboard',
+    name: USER_ROUTES.DASHBOARD,
+    component: DashboardPage,
+    meta: {
+      requiresAuth: true // Only accessible when authenticated
+    }
+  },
   {
     path: '/users',
     name: USER_ROUTES.USER_LIST,
