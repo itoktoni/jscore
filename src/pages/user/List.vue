@@ -2,7 +2,7 @@
   <div class="card">
     <!-- Header -->
     <div class="page-header">
-      <h2>User Management</h2>
+      <h2>User Management2</h2>
     </div>
 
     <!-- Card Container -->

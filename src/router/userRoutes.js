@@ -3,10 +3,12 @@ import UserFormCreate from '../pages/user/Create.vue'
 import UserFormEdit from '../pages/user/Edit.vue'
 import TestFilterPage from '../pages/user/TestFilter.vue'
 import DashboardPage from '../pages/dashboard/DashboardPage.vue'
+import UserTablePage from '../pages/user/Table.vue'
 
 // User route constants
 export const USER_ROUTES = {
   USER_LIST: 'UserList',
+  USER_TABLE: 'UserTable',
   CREATE_USER: 'CreateUser',
   EDIT_USER: 'EditUser',
   TEST_FILTER: 'TestFilter',
@@ -35,7 +37,16 @@ export const userRoutes = [
   {
     path: '/users',
     name: USER_ROUTES.USER_LIST,
-    component: UserListPage,
+    component: UserTablePage,
+    meta: {
+      requiresAuth: true, // Only accessible when authenticated
+      requiresAdmin: true // Only accessible for admin users
+    }
+  },
+  {
+    path: '/users/table',
+    name: USER_ROUTES.USER_TABLE,
+    component: UserTablePage,
     meta: {
       requiresAuth: true, // Only accessible when authenticated
       requiresAdmin: true // Only accessible for admin users

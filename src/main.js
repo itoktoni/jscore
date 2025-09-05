@@ -15,6 +15,9 @@ import safeAreaUtil from './utils/safeArea'
 import { useSettingsStore } from './stores/settings'
 import { http } from './stores/http'
 
+import Vueform from '@vueform/vueform'
+import vueformConfig from '../vueform.config'
+
 // Create Vue app
 const app = createApp(App)
 
@@ -24,6 +27,8 @@ const pinia = createPinia()
 // Use plugins
 app.use(pinia)
 app.use(router)
+
+app.use(Vueform, vueformConfig)
 
 // Initialize settings
 const settingsStore = useSettingsStore()

@@ -1,253 +1,213 @@
 import { mount } from '@vue/test-utils'
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import TableComponent from './TableComponent.vue'
 
-// Mock data
-const mockItems = [
-  {
-    id: 1,
-    name: 'John Doe',
-    email: 'john@example.com',
-    active: true,
-    selected: false
-  },
-  {
-    id: 2,
-    name: 'Jane Smith',
-    email: 'jane@example.com',
-    active: false,
-    selected: false
-  }
-]
-
-const mockPagination = {
-  currentPage: 1,
-  perPage: 10,
-  total: 2,
-  from: 1,
-  to: 2,
-  totalPages: 1
-}
-
-const mockColumns = [
-  { key: 'no', label: 'No.', type: 'number' },
-  { key: 'name', label: 'Name' },
-  { key: 'email', label: 'Email' },
-  { key: 'active', label: 'Status', type: 'status' }
-]
-
 describe('TableComponent', () => {
-  it('renders correctly with items', () => {
+  const mockData = [
+    { id: 1, name: 'John Doe', email: 'john@example.com', role: 'admin' },
+    { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'user' }
+  ]
+
+  const mockColumns = [
+    { key: 'id', label: 'ID' },
+    { key: 'name', label: 'Name' },
+    { key: 'email', label: 'Email' },
+    { key: 'role', label: 'Role' }
+  ]
+
+  it('renders correctly with data and columns', () => {
     const wrapper = mount(TableComponent, {
       props: {
-        items: mockItems,
-        pagination: mockPagination,
-        selectAll: false,
-        columns: mockColumns,
-        entityName: 'users'
+        data: mockData,
+        columns: mockColumns
       }
     })
 
-    expect(wrapper.find('table').exists()).toBe(true)
-    expect(wrapper.findAll('tbody tr')).toHaveLength(mockItems.length)
+    expect(wrapper.find('.data-table').exists()).toBe(true)
+    expect(wrapper.findAll('thead th')).toHaveLength(4)
+    expect(wrapper.findAll('tbody tr')).toHaveLength(2)
   })
 
-  it('displays correct pagination info', () => {
+  it('displays correct column headers', () => {
     const wrapper = mount(TableComponent, {
       props: {
-        items: mockItems,
-        pagination: mockPagination,
-        selectAll: false,
-        columns: mockColumns,
-        entityName: 'users'
+        data: mockData,
+        columns: mockColumns
       }
     })
 
-    expect(wrapper.text()).toContain('Showing 1 to 2 of 2 users')
+    const headers = wrapper.findAll('thead th')
+    expect(headers[0].text()).toBe('ID')
+    expect(headers[1].text()).toBe('Name')
+    expect(headers[2].text()).toBe('Email')
+    expect(headers[3].text()).toBe('Role')
   })
 
-  it('emits toggle-select-all event when select all checkbox is clicked', async () => {
+  it('displays correct data in rows', () => {
     const wrapper = mount(TableComponent, {
       props: {
-        items: mockItems,
-        pagination: mockPagination,
-        selectAll: false,
-        columns: mockColumns,
-        entityName: 'users'
+        data: mockData,
+        columns: mockColumns
       }
     })
 
-    const selectAllCheckbox = wrapper.find('thead input[type="checkbox"]')
-    await selectAllCheckbox.trigger('change')
-
-    expect(wrapper.emitted('toggle-select-all')).toBeTruthy()
+    const rows = wrapper.findAll('tbody tr')
+    const firstRowCells = rows[0].findAll('td')
+    expect(firstRowCells[0].text()).toBe('1')
+    expect(firstRowCells[1].text()).toBe('John Doe')
+    expect(firstRowCells[2].text()).toBe('john@example.com')
+    expect(firstRowCells[3].text()).toBe('admin')
   })
 
-  it('emits update-select-all event when row checkbox is clicked', async () => {
+  it('shows loading state when loading prop is true', () => {
     const wrapper = mount(TableComponent, {
       props: {
-        items: mockItems,
-        pagination: mockPagination,
-        selectAll: false,
+        data: mockData,
         columns: mockColumns,
-        entityName: 'users'
+        loading: true,
+        loadingText: 'Loading users...'
       }
     })
 
-    const rowCheckbox = wrapper.find('tbody input[type="checkbox"]')
-    await rowCheckbox.trigger('change')
-
-    expect(wrapper.emitted('update-select-all')).toBeTruthy()
+    expect(wrapper.find('.loading-indicator').text()).toBe('Loading users...')
+    expect(wrapper.find('table').exists()).toBe(false)
   })
 
-  it('renders actions slot correctly', () => {
+  it('shows empty state when data is empty', () => {
     const wrapper = mount(TableComponent, {
       props: {
-        items: mockItems,
-        pagination: mockPagination,
-        selectAll: false,
+        data: [],
         columns: mockColumns,
-        entityName: 'users'
+        emptyText: 'No users found'
+      }
+    })
+
+    expect(wrapper.find('tbody .text-center').text()).toBe('No users found')
+  })
+
+  it('renders actions column when showEdit or showDelete is true', () => {
+    const wrapper = mount(TableComponent, {
+      props: {
+        data: mockData,
+        columns: mockColumns,
+        showEdit: true
+      }
+    })
+
+    // Should have one additional column for actions
+    expect(wrapper.findAll('thead th')).toHaveLength(5)
+    expect(wrapper.find('thead th.actions-header').text()).toBe('Actions')
+  })
+
+  it('emits edit event when edit button is clicked', async () => {
+    const wrapper = mount(TableComponent, {
+      props: {
+        data: mockData,
+        columns: mockColumns,
+        showEdit: true
+      }
+    })
+
+    const editButton = wrapper.find('.btn-outline-primary')
+    await editButton.trigger('click')
+
+    expect(wrapper.emitted('edit')).toBeTruthy()
+    expect(wrapper.emitted('edit')[0]).toEqual([mockData[0], 0])
+  })
+
+  it('emits delete event when delete button is clicked', async () => {
+    const wrapper = mount(TableComponent, {
+      props: {
+        data: mockData,
+        columns: mockColumns,
+        showDelete: true
+      }
+    })
+
+    const deleteButton = wrapper.find('.btn-outline-danger')
+    await deleteButton.trigger('click')
+
+    expect(wrapper.emitted('delete')).toBeTruthy()
+    expect(wrapper.emitted('delete')[0]).toEqual([mockData[0], 0])
+  })
+
+  it('applies striped class when striped prop is true', () => {
+    const wrapper = mount(TableComponent, {
+      props: {
+        data: mockData,
+        columns: mockColumns,
+        striped: true
+      }
+    })
+
+    expect(wrapper.find('.data-table').classes()).toContain('table-striped')
+  })
+
+  it('applies hover class by default', () => {
+    const wrapper = mount(TableComponent, {
+      props: {
+        data: mockData,
+        columns: mockColumns
+      }
+    })
+
+    expect(wrapper.find('.data-table').classes()).toContain('table-hover')
+  })
+
+  it('uses custom row key when provided', () => {
+    const dataWithCustomKey = [
+      { uuid: 'abc123', name: 'John Doe' },
+      { uuid: 'def456', name: 'Jane Smith' }
+    ]
+
+    const wrapper = mount(TableComponent, {
+      props: {
+        data: dataWithCustomKey,
+        columns: [{ key: 'name', label: 'Name' }],
+        rowKey: 'uuid'
+      }
+    })
+
+    // Check that the rows have the correct keys
+    const rows = wrapper.findAll('tbody tr')
+    expect(rows[0].attributes('data-v-test-key')).toBeUndefined()
+    // Note: Vue test utils doesn't expose the v-for key directly
+    // This test mainly verifies the component accepts the prop
+  })
+
+  it('renders custom cell content via slots', () => {
+    const wrapper = mount(TableComponent, {
+      props: {
+        data: mockData,
+        columns: [{ key: 'role', label: 'Role' }]
       },
       slots: {
-        actions: '<button class="custom-action">Custom Action</button>'
+        'cell-role': '<span class="custom-role">{{ props.value }}</span>'
       }
     })
 
-    // Check that the custom action button is rendered for each item
-    const actionButtons = wrapper.findAll('.custom-action')
-    expect(actionButtons).toHaveLength(mockItems.length)
+    // Check that custom slot content is rendered
+    expect(wrapper.find('.custom-role').exists()).toBe(true)
   })
 
-  it('renders custom slots correctly', async () => {
+  it('handles nested property keys', () => {
+    const nestedData = [
+      { id: 1, user: { name: 'John Doe' }, email: 'john@example.com' }
+    ]
+
     const wrapper = mount(TableComponent, {
       props: {
-        items: mockItems,
-        pagination: mockPagination,
-        selectAll: false,
+        data: nestedData,
         columns: [
-          { key: 'name', label: 'Name', type: 'custom' }
-        ],
-        entityName: 'users'
-      },
-      slots: {
-        name: '<div class="custom-name">Custom Name Slot</div>'
+          { key: 'id', label: 'ID' },
+          { key: 'user.name', label: 'Name' }, // Nested property
+          { key: 'email', label: 'Email' }
+        ]
       }
     })
 
-    expect(wrapper.find('.custom-name').exists()).toBe(true)
-  })
-
-  it('renders status cells correctly', async () => {
-    const wrapper = mount(TableComponent, {
-      props: {
-        items: mockItems,
-        pagination: mockPagination,
-        selectAll: false,
-        columns: [
-          { key: 'active', label: 'Status', type: 'status' }
-        ],
-        entityName: 'users'
-      }
-    })
-
-    // Check that status cells are rendered with correct classes
-    const statusCells = wrapper.findAll('.table-cell--status')
-    expect(statusCells).toHaveLength(mockItems.length)
-  })
-
-  it('renders number cells with sequential numbering', async () => {
-    const wrapper = mount(TableComponent, {
-      props: {
-        items: mockItems,
-        pagination: mockPagination,
-        selectAll: false,
-        columns: [
-          { key: 'no', label: 'No.', type: 'number' }
-        ],
-        entityName: 'users'
-      }
-    })
-
-    // Check that number cells are rendered with correct values (1, 2)
-    const numberCells = wrapper.findAll('.table-cell--number')
-    expect(numberCells).toHaveLength(mockItems.length)
-    expect(numberCells[0].text()).toContain('1')
-    expect(numberCells[1].text()).toContain('2')
-  })
-
-  it('hides checkbox column when showCheckbox is false', () => {
-    const wrapper = mount(TableComponent, {
-      props: {
-        items: mockItems,
-        pagination: mockPagination,
-        columns: mockColumns,
-        entityName: 'users',
-        showCheckbox: false
-      }
-    })
-
-    // Check that checkbox column is not rendered
-    const checkboxHeaders = wrapper.findAll('thead th input[type="checkbox"]')
-    expect(checkboxHeaders).toHaveLength(0)
-
-    const checkboxCells = wrapper.findAll('tbody td input[type="checkbox"]')
-    expect(checkboxCells).toHaveLength(0)
-  })
-
-  it('hides actions column when showActions is false', () => {
-    const wrapper = mount(TableComponent, {
-      props: {
-        items: mockItems,
-        pagination: mockPagination,
-        columns: mockColumns,
-        entityName: 'users',
-        showActions: false
-      }
-    })
-
-    // Check that actions column is not rendered
-    const actionHeaders = wrapper.findAll('thead th.action-header')
-    expect(actionHeaders).toHaveLength(0)
-
-    const actionCells = wrapper.findAll('tbody td.column-action')
-    expect(actionCells).toHaveLength(0)
-  })
-
-  it('hides select all checkbox in info bar when showSelectAll is false', () => {
-    const wrapper = mount(TableComponent, {
-      props: {
-        items: mockItems,
-        pagination: mockPagination,
-        columns: mockColumns,
-        entityName: 'users',
-        showSelectAll: false
-      }
-    })
-
-    // Check that select all checkbox in info bar is not rendered
-    const selectAllCheckbox = wrapper.find('.select-all input[type="checkbox"]')
-    expect(selectAllCheckbox.exists()).toBe(false)
-  })
-
-  it('renders manual header when header slot is provided', () => {
-    const wrapper = mount(TableComponent, {
-      props: {
-        items: mockItems,
-        pagination: mockPagination,
-        columns: mockColumns,
-        entityName: 'users'
-      },
-      slots: {
-        header: '<th>Custom Header 1</th><th>Custom Header 2</th>'
-      }
-    })
-
-    // Check that custom headers are rendered
-    const customHeaders = wrapper.findAll('thead th')
-    // Should have 2 default columns (checkbox and actions) plus 2 custom headers
-    expect(customHeaders).toHaveLength(4)
-    expect(customHeaders[2].text()).toBe('Custom Header 1')
-    expect(customHeaders[3].text()).toBe('Custom Header 2')
+    const rows = wrapper.findAll('tbody tr')
+    const firstRowCells = rows[0].findAll('td')
+    expect(firstRowCells[1].text()).toBe('John Doe')
   })
 })

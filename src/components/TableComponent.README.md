@@ -1,175 +1,201 @@
 # TableComponent
 
-A reusable Vue component for displaying tabular data with pagination and selection.
+A flexible and reusable table component for displaying data with sorting, pagination, and customization options.
 
 ## Features
 
-- Reusable across different views
+- Sortable columns
 - Pagination support
-- Row selection (single and bulk)
 - Custom cell rendering with slots
-- Responsive design with horizontal scrolling
-- Sequential numbering
-- Built-in support for common field types (status, price, number)
-- Optional checkboxes and action columns
+- Loading states
+- Empty state handling
+- Striped and hover effects
+- Responsive design
+- Custom actions support
 
 ## Usage
-
-### Basic Usage
 
 ```vue
 <template>
   <TableComponent
-    :items="items"
+    :data="users"
+    :columns="columns"
+    :loading="loading"
     :pagination="pagination"
-    :select-all="selectAll"
-    :columns="tableColumns"
-    entity-name="users"
-    @toggle-select-all="toggleSelectAll"
-    @update-select-all="updateSelectAll"
+    :show-pagination="true"
+    :striped="true"
+    row-key="id"
+    show-edit
+    show-delete
+    @edit="handleEdit"
+    @delete="handleDelete"
   >
+    <!-- Custom cell rendering -->
+    <template #cell-role="{ item }">
+      <span class="badge" :class="`badge-${item.role}`">
+        {{ item.role }}
+      </span>
+    </template>
+
+    <!-- Custom actions -->
     <template #actions="{ item }">
-      <TableAction variant="primary" icon="bi bi-eye" title="View" @click="handleView(item)" />
-      <TableAction variant="secondary" icon="bi bi-pencil-square" title="Edit" @click="handleEdit(item)" />
-      <TableAction variant="info" icon="bi bi-printer" title="Print" @click="handlePrint(item)" />
-      <TableAction variant="danger" icon="bi bi-trash" title="Delete" @click="handleDelete(item)" />
+      <button @click="editUser(item)">Edit</button>
+      <button @click="deleteUser(item)">Delete</button>
     </template>
   </TableComponent>
 </template>
 
 <script setup>
-import TableComponent from '@/components/TableComponent.vue'
-import TableAction from '@/components/TableAction.vue'
+import TableComponent from '../components/TableComponent.vue'
 
-// Define table columns
-const tableColumns = [
-  { key: 'no', label: 'No.', type: 'number' },
-  { key: 'name', label: 'Name' },
-  { key: 'email', label: 'Email' },
-  { key: 'active', label: 'Status', type: 'status' },
-  { key: 'price', label: 'Price', type: 'price' },
-  { key: 'customField', label: 'Custom', type: 'custom' }
-]
+const users = ref([
+  { id: 1, username: 'john_doe', name: 'John Doe', email: 'john@example.com', role: 'admin' },
+  { id: 2, username: 'jane_smith', name: 'Jane Smith', email: 'jane@example.com', role: 'user' }
+])
+
+const columns = ref([
+  { key: 'id', label: 'ID', sortable: true },
+  { key: 'username', label: 'Username', sortable: true },
+  { key: 'name', label: 'Full Name', sortable: true },
+  { key: 'email', label: 'Email', sortable: true },
+  { key: 'role', label: 'Role', sortable: true }
+])
+
+const pagination = ref({
+  current_page: 1,
+  last_page: 5,
+  per_page: 10,
+  total: 50,
+  from: 1,
+  to: 10
+})
 </script>
 ```
 
-### Usage Without Checkboxes or Actions
+## Props
 
-```vue
-<template>
-  <TableComponent
-    :items="items"
-    :pagination="pagination"
-    :columns="tableColumns"
-    entity-name="items"
-    :show-checkbox="false"
-    :show-actions="false"
-    :show-select-all="false"
-  >
-    <template #header>
-      <th>ID</th>
-      <th>Name</th>
-      <th>Description</th>
-      <th>Status</th>
-    </template>
-  </TableComponent>
-</template>
-```
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| data | Array | `[]` | Array of data to display in the table |
+| columns | Array | `[]` | Column definitions (required) |
+| rowKey | String | `'id'` | Unique key for rows |
+| loading | Boolean | `false` | Loading state |
+| loadingText | String | `'Loading...'` | Text to show when loading |
+| emptyText | String | `'No data available'` | Text to show when no data |
+| striped | Boolean | `false` | Enable striped rows |
+| hover | Boolean | `true` | Enable hover effect |
+| pagination | Object | `null` | Pagination data |
+| showPagination | Boolean | `false` | Show pagination controls |
+| sortable | Boolean | `false` | Enable sorting |
+| showEdit | Boolean | `false` | Show edit button |
+| showDelete | Boolean | `false` | Show delete button |
 
-### Custom Cell Rendering
+## Column Definition
 
-For custom cell rendering, use named slots that match the column key:
+Each column in the `columns` array can have the following properties:
 
-```vue
-<TableComponent
-  :items="items"
-  :pagination="pagination"
-  :select-all="selectAll"
-  :columns="tableColumns"
-  entity-name="users"
-  @toggle-select-all="toggleSelectAll"
-  @update-select-all="updateSelectAll"
->
-  <template #actions="{ item }">
-    <TableAction variant="primary" icon="bi bi-eye" title="View" @click="handleView(item)" />
-    <TableAction variant="secondary" icon="bi bi-pencil-square" title="Edit" @click="handleEdit(item)" />
-    <TableAction variant="info" icon="bi bi-printer" title="Print" @click="handlePrint(item)" />
-    <TableAction variant="danger" icon="bi bi-trash" title="Delete" @click="handleDelete(item)" />
-  </template>
-
-  <template #name="{ item, index }">
-    <div class="custom-name">
-      <strong>{{ index + 1 }}.</strong> {{ item.name || item.username }}
-    </div>
-  </template>
-
-  <template #active="{ item }">
-    <span :class="item.active ? 'status-active' : 'status-inactive'">
-      {{ item.active ? 'Active' : 'Inactive' }}
-    </span>
-  </template>
-</TableComponent>
+```js
+{
+  key: 'username',        // Required: Property name from data object
+  label: 'Username',      // Required: Column header text
+  sortable: true,         // Optional: Enable sorting for this column
+  type: 'string',         // Optional: Data type (string, date, boolean, image, badge)
+  badgeClass: 'badge-primary' // Optional: CSS class for badge type
+}
 ```
 
 ### Column Types
 
-The component supports several column types:
+- `string` (default): Plain text
+- `date`: Formatted date
+- `boolean`: Yes/No display
+- `image`: Image display
+- `badge`: Badge styling
 
-- `number`: Sequential numbering based on pagination
-- `status`: Boolean value displayed as "Active"/"Inactive" with color coding
-- `price`: Numeric value prefixed with "$"
-- `custom`: Custom rendering using slots
-
-### Props
-
-| Prop | Type | Required | Default | Description |
-|------|------|----------|---------|-------------|
-| items | Array | Yes | - | Array of items to display in the table |
-| pagination | Object | Yes | - | Pagination object with currentPage, perPage, total, from, to |
-| selectAll | Boolean | No | false | Whether all items are selected |
-| columns | Array | Yes | [] | Array of column definitions |
-| entityName | String | No | "items" | Name of the entity for display in pagination info |
-| showCheckbox | Boolean | No | true | Whether to show the checkbox column |
-| showActions | Boolean | No | true | Whether to show the actions column |
-| showSelectAll | Boolean | No | true | Whether to show the select all checkbox in the info bar |
-
-### Column Definition
-
-Each column in the columns array should have the following properties:
-
-| Property | Type | Required | Description |
-|----------|------|----------|-------------|
-| key | String | Yes | Unique key for the column |
-| label | String | Yes | Display label for the column |
-| type | String | No | Type of column (number, status, price, custom) |
-
-### Events
+## Events
 
 | Event | Payload | Description |
 |-------|---------|-------------|
-| toggle-select-all | None | Emitted when the select all checkbox is toggled |
-| update-select-all | None | Emitted when individual row selection changes |
+| edit | `(item, index)` | Emitted when edit button is clicked |
+| delete | `(item, index)` | Emitted when delete button is clicked |
+| sort | `{ key, direction }` | Emitted when column is sorted |
+| page-change | `page` | Emitted when page is changed |
 
-### Slots
+## Slots
 
-| Slot | Props | Description |
-|------|-------|-------------|
-| header | None | Slot for manually defining table headers |
-| actions | { item, index } | Slot for rendering action buttons for each row |
-| [column.key] | { item, index, column } | Custom slots for rendering specific column cells |
+### Cell Slots
 
-## Manual Table Implementation
+Customize individual cells with `cell-{columnKey}` slots:
 
-For cases where you need more control over the table rendering, you can manually create tables using `v-for` loops:
+```vue
+<template #cell-username="{ item, value, index }">
+  <strong>{{ value }}</strong>
+</template>
+```
 
-### Manual Table with Actions
-See `src/components/ManualTableWithActions.vue` for an example of a manually created table with selection and actions.
+### Actions Slot
 
-### Simple Manual Table
-See `src/components/ManualTableSimple.vue` for an example of a simple manually created table without selection or actions.
+Customize the actions column:
 
-## Example Implementation
+```vue
+<template #actions="{ item, index }">
+  <button @click="customAction(item)">Custom</button>
+</template>
+```
 
-See `src/pages/user/List.vue` for a complete example of how to use this component with actions and checkboxes.
-See `src/components/TableComponentExample.vue` for an example of how to use this component without actions or checkboxes.
-See `src/components/ManualTableExample.vue` for an example of how to manually create tables with foreach loops.
+### Pagination Slot
+
+Customize pagination controls:
+
+```vue
+<template #pagination="{ pagination, changePage }">
+  <!-- Custom pagination controls -->
+</template>
+```
+
+## Examples
+
+### Basic Table
+
+```vue
+<TableComponent
+  :data="users"
+  :columns="[
+    { key: 'name', label: 'Name' },
+    { key: 'email', label: 'Email' }
+  ]"
+/>
+```
+
+### Table with Sorting and Pagination
+
+```vue
+<TableComponent
+  :data="users"
+  :columns="[
+    { key: 'name', label: 'Name', sortable: true },
+    { key: 'email', label: 'Email', sortable: true }
+  ]"
+  :pagination="pagination"
+  :show-pagination="true"
+  :sortable="true"
+/>
+```
+
+### Table with Custom Cells
+
+```vue
+<TableComponent
+  :data="users"
+  :columns="[
+    { key: 'name', label: 'Name' },
+    { key: 'status', label: 'Status' }
+  ]"
+>
+  <template #cell-status="{ item }">
+    <span :class="item.status === 'active' ? 'status-active' : 'status-inactive'">
+      {{ item.status }}
+    </span>
+  </template>
+</TableComponent>
+```

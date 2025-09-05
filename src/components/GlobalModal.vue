@@ -41,7 +41,7 @@
               />
 
               <!-- Select Input -->
-              <FormSelectApi
+              <FormSelect
                 v-else-if="field.type === 'select' && field.endpoint"
                 :name="field.name"
                 :label="field.label"
@@ -120,7 +120,7 @@
 import { ref, computed, watch } from 'vue'
 import FormButton from './FormButton.vue'
 import FormInput from './FormInput.vue'
-import FormSelectApi from './FormSelectApi.vue'
+import FormSelect from './FormSelect.vue'
 
 // Define props
 const props = defineProps({

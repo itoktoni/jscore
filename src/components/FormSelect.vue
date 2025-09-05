@@ -1,17 +1,16 @@
-/**
- * FormSelect Component
- *
- * Reusable select component with validation and mobile-optimized styling
- * Supports search functionality for large option sets
- */
-
 <template>
   <div :class="formGroupClasses" ref="selectContainer">
     <label v-if="computedLabel" :for="computedId" class="form-label">
       {{ computedLabel }}
       <span v-if="isRequired" class="required-asterisk">*</span>
     </label>
-    <div class="select-wrapper" :class="{ 'select-open': isOpen }">
+    <div v-if="loading" class="select-loading">
+      {{ loadingText }}
+    </div>
+    <div v-else-if="error" class="select-error">
+      {{ errorText }}: {{ error }}
+    </div>
+    <div v-else class="select-wrapper" :class="{ 'select-open': isOpen }">
       <div
         :id="computedId"
         class="select-display"
@@ -24,7 +23,7 @@
         tabindex="0"
         ref="selectDisplay"
       >
-        <span v-if="selectedLabel" class="select-text">{{ selectedLabel }}</span>
+        <span v-if="displayValue" class="select-text">{{ displayValue }}</span>
         <span v-else class="select-placeholder">{{ computedPlaceholder }}</span>
         <i class="select-arrow" :class="{ 'arrow-up': isOpen }"></i>
       </div>
@@ -71,6 +70,7 @@
 
 <script setup>
 import { computed, inject, onMounted, onUnmounted, ref, watch, nextTick } from 'vue'
+import http from '../stores/http'
 
 const props = defineProps({
   id: {
@@ -82,7 +82,7 @@ const props = defineProps({
     default: ''
   },
   modelValue: {
-    type: [String, Number],
+    type: [String, Number, Array],
     default: ''
   },
   label: {
@@ -95,7 +95,7 @@ const props = defineProps({
   },
   options: {
     type: Array,
-    required: true
+    default: () => []
   },
   optionLabel: {
     type: String,
@@ -136,10 +136,35 @@ const props = defineProps({
   searchPlaceholder: {
     type: String,
     default: 'Search...'
+  },
+  multiple: {
+    type: Boolean,
+    default: false
+  },
+  // API-related props
+  endpoint: {
+    type: String,
+    default: ''
+  },
+  labelField: {
+    type: String,
+    default: null
+  },
+  valueField: {
+    type: String,
+    default: null
+  },
+  loadingText: {
+    type: String,
+    default: 'Loading...'
+  },
+  errorText: {
+    type: String,
+    default: 'Error loading data'
   }
 })
 
-const emit = defineEmits(['update:modelValue', 'blur', 'focus', 'change'])
+const emit = defineEmits(['update:modelValue', 'blur', 'focus', 'change', 'refresh'])
 
 // Try to inject form validation context
 const formData = inject('formData', null)
@@ -155,6 +180,9 @@ const selectDisplay = ref(null)
 const dropdown = ref(null)
 const searchInput = ref(null)
 const optionsContainer = ref(null)
+const apiOptions = ref([])
+const loading = ref(false)
+const error = ref(null)
 
 // Auto-generate ID from name if not provided
 const computedId = computed(() => {
@@ -183,35 +211,11 @@ const computedPlaceholder = computed(() => {
 
 // Auto-resolve value from formData if available
 const computedValue = computed(() => {
-  if (props.modelValue !== '') return props.modelValue
+  if (props.modelValue !== '' && props.modelValue !== undefined) return props.modelValue
   if (formData && props.name && formData.value[props.name] !== undefined) {
     return formData.value[props.name]
   }
   return props.modelValue
-})
-
-// Get label for selected value
-const selectedLabel = computed(() => {
-  if (!computedValue.value && computedValue.value !== 0) return ''
-
-  const selectedOption = props.options.find(option =>
-    getOptionValue(option) === computedValue.value
-  )
-
-  return selectedOption ? getOptionLabel(selectedOption) : ''
-})
-
-// Filter options based on search query
-const filteredOptions = computed(() => {
-  if (!props.searchable || !searchQuery.value) return props.options
-
-  const query = searchQuery.value.toLowerCase().trim()
-  if (!query) return props.options
-
-  return props.options.filter(option => {
-    const label = getOptionLabel(option).toLowerCase()
-    return label.includes(query)
-  })
 })
 
 // Auto-resolve error from fieldErrors
@@ -245,8 +249,57 @@ const selectClasses = computed(() => ({
   'form-select': true,
   'error': !!computedError.value,
   'disabled': props.disabled,
-  'select-searchable': props.searchable
+  'select-searchable': props.searchable,
+  'select-multiple': props.multiple
 }))
+
+// Computed property for filtered options based on search query
+const filteredOptions = computed(() => {
+  let options = props.options.length > 0 ? props.options : apiOptions.value
+
+  if (searchQuery.value && props.searchable) {
+    const query = searchQuery.value.toLowerCase()
+    return options.filter(option => {
+      const label = getOptionLabel(option)
+      return label.toLowerCase().includes(query)
+    })
+  }
+
+  return options
+})
+
+// Computed property for display value
+const displayValue = computed(() => {
+  if (props.multiple) {
+    // For multiple selection, show count of selected items
+    if (Array.isArray(computedValue.value) && computedValue.value.length > 0) {
+      const selectedOptions = (props.options.length > 0 ? props.options : apiOptions.value)
+        .filter(option => computedValue.value.includes(getOptionValue(option)))
+
+      if (selectedOptions.length > 0) {
+        return selectedOptions.map(option => getOptionLabel(option)).join(', ')
+      }
+
+      // Fallback to showing count
+      return `${computedValue.value.length} item(s) selected`
+    }
+    return ''
+  } else {
+    // For single selection, show the label of the selected option
+    if (computedValue.value !== null && computedValue.value !== undefined && computedValue.value !== '') {
+      const selectedOption = (props.options.length > 0 ? props.options : apiOptions.value)
+        .find(option => getOptionValue(option) === computedValue.value)
+
+      if (selectedOption) {
+        return getOptionLabel(selectedOption)
+      }
+
+      // Fallback to showing the value itself
+      return computedValue.value
+    }
+    return ''
+  }
+})
 
 const getOptionValue = (option) => {
   return typeof option === 'object' ? option[props.optionValue] : option
@@ -257,7 +310,13 @@ const getOptionLabel = (option) => {
 }
 
 const isOptionSelected = (option) => {
-  return getOptionValue(option) === computedValue.value
+  const value = getOptionValue(option)
+
+  if (props.multiple) {
+    return Array.isArray(computedValue.value) && computedValue.value.includes(value)
+  } else {
+    return value === computedValue.value
+  }
 }
 
 const toggleSelect = () => {
@@ -290,21 +349,53 @@ const closeSelect = (shouldFocus = true) => {
 const selectOption = (option) => {
   const value = getOptionValue(option)
 
-  // Emit v-model update
-  emit('update:modelValue', value)
-  emit('change', value)
+  if (props.multiple) {
+    // Handle multiple selection
+    let newValue
+    if (Array.isArray(computedValue.value)) {
+      if (computedValue.value.includes(value)) {
+        // Remove value if already selected
+        newValue = computedValue.value.filter(v => v !== value)
+      } else {
+        // Add value if not already selected
+        newValue = [...computedValue.value, value]
+      }
+    } else {
+      // If current value is not an array, start with an array containing the new value
+      newValue = [value]
+    }
 
-  // Also update formData if available
-  if (formData && props.name) {
-    formData.value[props.name] = value
+    // Emit v-model update
+    emit('update:modelValue', newValue)
+    emit('change', newValue)
+
+    // Also update formData if available
+    if (formData && props.name) {
+      formData.value[props.name] = newValue
+
+      // Clear field error when user makes selection
+      if (fieldErrors && props.name && fieldErrors.value[props.name]) {
+        delete fieldErrors.value[props.name]
+      }
+    }
+  } else {
+    // Handle single selection
+    // Emit v-model update
+    emit('update:modelValue', value)
+    emit('change', value)
+
+    // Also update formData if available
+    if (formData && props.name) {
+      formData.value[props.name] = value
+    }
+
+    // Clear field error when user makes selection
+    if (fieldErrors && props.name && fieldErrors.value[props.name]) {
+      delete fieldErrors.value[props.name]
+    }
+
+    closeSelect()
   }
-
-  // Clear field error when user makes selection
-  if (fieldErrors && props.name && fieldErrors.value[props.name]) {
-    delete fieldErrors.value[props.name]
-  }
-
-  closeSelect()
 }
 
 const handleSearch = () => {
@@ -357,17 +448,31 @@ const triggerValidation = () => {
     // For select validation, we'd need to implement rule parsing similar to FormInput
     // For now, just check required validation
     if (props.rules.includes('required')) {
-      // Check if value is empty (null, undefined, empty string)
-      const isEmpty = computedValue.value === null ||
-                     computedValue.value === undefined ||
-                     computedValue.value === '';
+      let isEmpty
+      if (props.multiple) {
+        // For multiple selection, check if array is empty
+        isEmpty = !Array.isArray(computedValue.value) || computedValue.value.length === 0
 
-      if (isEmpty) {
-        if (fieldErrors && props.name) {
-          fieldErrors.value[props.name] = `${computedLabel.value} is required`;
+        if (isEmpty) {
+          if (fieldErrors && props.name) {
+            fieldErrors.value[props.name] = `${computedLabel.value} is required`
+          }
+        } else if (fieldErrors && props.name) {
+          delete fieldErrors.value[props.name]
         }
-      } else if (fieldErrors && props.name) {
-        delete fieldErrors.value[props.name];
+      } else {
+        // For single selection, check if value is empty
+        isEmpty = computedValue.value === null ||
+                  computedValue.value === undefined ||
+                  computedValue.value === ''
+
+        if (isEmpty) {
+          if (fieldErrors && props.name) {
+            fieldErrors.value[props.name] = `${computedLabel.value} is required`
+          }
+        } else if (fieldErrors && props.name) {
+          delete fieldErrors.value[props.name]
+        }
       }
     }
   }
@@ -375,7 +480,7 @@ const triggerValidation = () => {
 
 // Listen for validation events from FormContainer
 const handleValidateAll = () => {
-  triggerValidation();
+  triggerValidation()
 }
 
 // Handle click outside to close dropdown
@@ -419,12 +524,86 @@ const handleKeydown = (event) => {
   }
 }
 
+// Fetch data from API endpoint
+const fetchData = async () => {
+  // Only fetch if we have an endpoint
+  if (!props.endpoint) return
+
+  loading.value = true
+  error.value = null
+
+  try {
+    // Ensure endpoint starts with a forward slash
+    const url = props.endpoint.startsWith('/') ? props.endpoint : `/${props.endpoint}`
+
+    // Fetch data from the API endpoint
+    const response = await http.get(url)
+
+    const data = response.data
+
+    // Transform data based on props
+    if (Array.isArray(data)) {
+      apiOptions.value = data.map(item => {
+        // Use manual mapping if provided, otherwise auto-detect
+        const label = props.labelField
+          ? item[props.labelField]
+          : (item.name || item.label || item.title || item.text || String(item[props.optionLabel]))
+
+        const value = props.valueField
+          ? item[props.valueField]
+          : (item.id || item.value || item.key || item[props.optionValue])
+
+        return {
+          [props.optionLabel]: label,
+          [props.optionValue]: value
+        }
+      })
+    } else if (data.data && Array.isArray(data.data)) {
+      // Handle paginated API responses
+      apiOptions.value = data.data.map(item => {
+        // Use manual mapping if provided, otherwise auto-detect
+        const label = props.labelField
+          ? item[props.labelField]
+          : (item.name || item.label || item.title || item.text || String(item[props.optionLabel]))
+
+        const value = props.valueField
+          ? item[props.valueField]
+          : (item.id || item.value || item.key || item[props.optionValue])
+
+        return {
+          [props.optionLabel]: label,
+          [props.optionValue]: value
+        }
+      })
+    } else {
+      apiOptions.value = []
+    }
+  } catch (err) {
+    error.value = err.message
+    console.error('Error fetching select options:', err)
+    apiOptions.value = []
+  } finally {
+    loading.value = false
+  }
+}
+
+// Refresh data from API
+const refresh = () => {
+  fetchData()
+  emit('refresh')
+}
+
 // Set up event listeners
 onMounted(() => {
   if (typeof window !== 'undefined' && document) {
     document.addEventListener('validate-submit', handleValidateAll)
     document.addEventListener('click', handleClickOutside)
     document.addEventListener('keydown', handleKeydown)
+  }
+
+  // Fetch data if we have an endpoint
+  if (props.endpoint) {
+    fetchData()
   }
 })
 
@@ -439,6 +618,18 @@ onUnmounted(() => {
 // Watch for option changes to reset highlighted index
 watch(filteredOptions, () => {
   highlightedIndex.value = -1
+})
+
+// Watch for endpoint changes and refetch data
+watch(() => props.endpoint, (newEndpoint, oldEndpoint) => {
+  if (newEndpoint && newEndpoint !== oldEndpoint) {
+    fetchData()
+  }
+})
+
+// Expose method to refresh data
+defineExpose({
+  refresh
 })
 </script>
 
@@ -570,6 +761,21 @@ watch(filteredOptions, () => {
   border-bottom-right-radius: 0;
 }
 
+.select-loading,
+.select-error {
+  padding: 0.75rem 1rem;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  background-color: #f8f9fa;
+}
+
+.select-error {
+  color: #dc3545;
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
+}
+
 /* Mobile optimizations */
 @media (max-width: 768px) {
   .select-display {
@@ -590,6 +796,12 @@ watch(filteredOptions, () => {
 
   .select-option {
     padding: 1rem;
+  }
+
+  .select-loading,
+  .select-error {
+    padding: 1rem;
+    font-size: 13px;
   }
 }
 </style>

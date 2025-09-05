@@ -3,7 +3,7 @@
     <FormContainer
       title="Edit User"
       :initial-data="initialFormData"
-      :action="handleSubmit"
+      :endpoint="USER_API_ROUTES.update(userId)"
       @success="handleSuccess"
       @error="handleError"
     >
@@ -14,7 +14,16 @@
       <FormInput name="password" type="password" label="New Password (leave blank to keep current)" rules="min:6" placeholder="Enter new password" col="6" />
       <FormInput rules="confirmed:password" name="password_confirmation" type="password" col="6" />
 
-      <FormSelectApi name="role" endpoint="roles" rules="required" searchable option-label="name" option-value="id" col="6" label="Role" />
+      <FormSelect
+        name="role"
+        endpoint="roles"
+        rules="required"
+        searchable
+        option-label="name"
+        option-value="id"
+        col="6"
+        label="Role"
+      />
 
       <template #footer="{ isSubmitting }">
         <div class="footer-actions">
@@ -29,22 +38,18 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-// Removed useUserStore import
 import { useAlert } from '../../composables/useAlert'
-import { useResponse } from '../../composables/useResponse'
 import { UserModel } from '../../models'
 import { USER_ROUTES, USER_API_ROUTES } from '../../router/userRoutes'
 import { http } from '../../stores/http'
 import FormContainer from '../../components/FormContainer.vue'
 import FormInput from '../../components/FormInput.vue'
 import FormButton from '../../components/FormButton.vue'
-import FormSelectApi from '../../components/FormSelectApi.vue'
+import FormSelect from '../../components/FormSelect.vue'
 
 const route = useRoute()
 const router = useRouter()
-// Removed userStore reference
 const { alertSuccess, alertError } = useAlert()
-const { responseSuccess, responseError } = useResponse()
 
 const userId = route.params.id
 const initialFormData = ref(UserModel.createEmpty())
@@ -74,20 +79,6 @@ onMounted(async () => {
     }
   }
 })
-
-async function handleSubmit(data) {
-  try {
-
-    // Make API request to update user
-    const response = await http.post(USER_API_ROUTES.update(userId), data)
-
-    // Handle response structure properly
-    const resultData = response.data.data || response.data
-    return responseSuccess(resultData)
-  } catch (error) {
-    return responseError(error)
-  }
-}
 
 function handleSuccess(response) {
   alertSuccess('Success', 'User updated successfully!')

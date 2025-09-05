@@ -4,7 +4,7 @@
       title="Profile"
       subtitle="Your account details and information"
       :initial-data="initialFormData"
-      :action="handleUpdateProfile"
+      endpoint="/profile"
       @success="handleSuccess"
       @error="handleError"
     >
@@ -27,7 +27,6 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
 import { useAlert } from '../../composables/useAlert'
-import { useResponse } from '../../composables/useResponse'
 import FormContainer from '../../components/FormContainer.vue'
 import FormInput from '../../components/FormInput.vue'
 import FormButton from '../../components/FormButton.vue'
@@ -35,7 +34,6 @@ import FormButton from '../../components/FormButton.vue'
 const router = useRouter()
 const authStore = useAuthStore()
 const { alertSuccess, alertError } = useAlert()
-const { responseSuccess, responseError } = useResponse()
 
 const initialFormData = ref({
   username: '',
@@ -65,20 +63,6 @@ onMounted(async () => {
     alertError('Error', 'Failed to load profile data')
   }
 })
-
-async function handleUpdateProfile(data) {
-  try {
-    const result = await authStore.updateProfile(data)
-
-    if (result.success) {
-      return responseSuccess({ message: 'Profile updated successfully' })
-    } else {
-      return responseError(new Error(result.error || 'Failed to update profile'))
-    }
-  } catch (error) {
-    return responseError(error)
-  }
-}
 
 function handleSuccess(response) {
   alertSuccess('Success', 'Profile updated successfully!')

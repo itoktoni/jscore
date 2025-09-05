@@ -88,14 +88,14 @@ export const pluginTestRoutes = [
       requiresAuth: true
     }
   },
-  {
-    path: '/test/plugins/bluetooth-printer',
-    name: 'BluetoothPrinterPluginTest',
-    component: () => import('../../../components/plugin-tests/BluetoothPrinterTest.vue'),
-    meta: {
-      requiresAuth: true
-    }
-  },
+  // {
+  //   path: '/test/plugins/bluetooth-printer',
+  //   name: 'BluetoothPrinterPluginTest',
+  //   component: () => import('../../../components/plugin-tests/BluetoothPrinterTest.vue'),
+  //   meta: {
+  //     requiresAuth: true
+  //   }
+  // },
   {
     path: '/test/plugins/inappbrowser',
     name: 'InAppBrowserPluginTest',

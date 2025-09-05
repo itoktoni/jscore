@@ -3,8 +3,7 @@
     <FormContainer
       ref="formRef"
       title="Create New User"
-      :initial-data="initialFormData"
-      :action="handleSubmit"
+      :endpoint="USER_API_ROUTES.create"
       @success="handleSuccess"
       @error="handleError">
 
@@ -15,7 +14,17 @@
       <FormInput name="password" type="password" rules="required|min:6" col="6" />
       <FormInput rules="required|confirmed:password" name="password_confirmation" type="password" col="6" />
 
-      <FormSelectApi name="role" endpoint="roles" rules="required" searchable option-label="name" option-value="id" col="6" label="Role" />
+      <FormSelect
+        name="role"
+        endpoint="roles"
+        rules="required"
+        searchable
+        option-label="name"
+        option-value="id"
+        col="6"
+        multiple
+        label="Role"
+      />
 
       <template #footer="{ isSubmitting }">
         <div class="footer-actions">
@@ -33,39 +42,18 @@ import { ref } from 'vue'
 
 import { useRouter } from 'vue-router'
 import { USER_ROUTES, USER_API_ROUTES } from '../../router/userRoutes'
-import { http } from '../../stores/http'
 
 import { useAlert } from '../../composables/useAlert'
-import { useResponse } from '../../composables/useResponse'
-
-import { UserModel } from '../../models'
 
 import FormContainer from '../../components/FormContainer.vue'
 import FormInput from '../../components/FormInput.vue'
 import FormButton from '../../components/FormButton.vue'
-import FormSelectApi from '../../components/FormSelectApi.vue'
+import FormSelect from '../../components/FormSelect.vue'
 
 const { alertSuccess, alertError } = useAlert()
-const { responseSuccess, responseError } = useResponse()
 
 const router = useRouter()
 const formRef = ref(null)
-
-const initialFormData = ref(UserModel.createEmpty())
-
-async function handleSubmit(data) {
-  try {
-    // Prepare user data for API (remove password_confirmation)
-
-    // Make API request
-    const response = await http.post(USER_API_ROUTES.create, data)
-
-    // Return success response
-    return responseSuccess(response)
-  } catch (error) {
-    return responseError(error)
-  }
-}
 
 function handleSuccess(response) {
   alertSuccess('Success', 'User created successfully!')

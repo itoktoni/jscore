@@ -39,6 +39,7 @@
 <script setup>
 import { provide, watch, ref, onMounted, onUnmounted } from 'vue'
 import { useAlert } from '../composables/useAlert'
+import { http } from '../stores/http'
 import FormButton from './FormButton.vue'
 
 const { alertError, alertValidationError } = useAlert()
@@ -67,6 +68,12 @@ const props = defineProps({
   },
   action: {
     type: Function,
+    required: false
+  },
+
+  // Endpoint for direct API submission (Vueform-like approach)
+  endpoint: {
+    type: String,
     required: false
   },
 
@@ -170,6 +177,38 @@ const handleSubmit = async () => {
       alertValidationError('Validation Error', 'Please correct the errors below')
 
       return
+    }
+  }
+
+  // Use endpoint prop for direct API submission if provided (Vueform-like approach)
+  if (props.endpoint) {
+    isSubmitting.value = true
+    try {
+      const response = await http.post(props.endpoint, { ...formData.value })
+
+      isSubmitting.value = false
+      emit('success', response)
+
+      return response
+    } catch (error) {
+      isSubmitting.value = false
+
+      // Handle API validation errors
+      if (error.response?.status === 422) {
+        const errors = error.response.data.errors || {}
+        Object.keys(errors).forEach(fieldName => {
+          const errorMessages = errors[fieldName]
+          fieldErrors.value[fieldName] = Array.isArray(errorMessages) ? errorMessages[0] : errorMessages
+        })
+        globalError.value = error.response.data.message || 'Please correct the errors below'
+        alertValidationError('Validation Error', error.response.data.message || 'Please correct the errors below')
+      } else {
+        globalError.value = error.response?.data?.message || error.message || 'An error occurred'
+        alertError('Error', error.response?.data?.message || error.message || 'An error occurred')
+      }
+
+      emit('error', error)
+      return { success: false, error: error.message }
     }
   }
 

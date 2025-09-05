@@ -192,7 +192,7 @@ const subMenus = ref({
   ],
   system: [
     { title: 'Group', route: '/system/groups' },
-    { title: 'Roles', route: '/system/roles' },
+    { title: 'Roles', route: '/roles' },
     { title: 'Menu', route: '/system/menu' },
     { title: 'Link', route: '/system/links' },
     { title: 'Permission', route: '/system/permissions' },

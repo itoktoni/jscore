@@ -9,6 +9,7 @@ import PluginTestsNavigation from '../pages/test/PluginTestsNavigation.vue'
 import PluginsByPackage from '../pages/test/PluginsByPackage.vue' // Added import for plugins by package page
 import { userRoutes } from './userRoutes'
 import { authRoutes } from './authRoutes'
+import { roleRoutes } from './roleRoutes'
 import { pluginTestRoutes } from '../pages/test/plugins/index.js'
 
 const routes = [
@@ -20,6 +21,8 @@ const routes = [
   ...authRoutes,
   // User routes
   ...userRoutes,
+  // Role routes
+  ...roleRoutes,
   {
     path: '/settings',
     name: 'Settings',
