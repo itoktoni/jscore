@@ -21,6 +21,15 @@
         </router-link>
 
         <router-link
+          to="/settings"
+          class="nav-link"
+          :class="{ active: $route.name === 'Settings' }"
+        >
+          <span class="nav-icon">⚙️</span>
+          <span class="nav-text">Settings</span>
+        </router-link>
+
+        <router-link
           v-if="authStore.canManageUsers"
           to="/users"
           class="nav-link"
@@ -49,6 +58,11 @@
           <div class="menu-item" @click="goToProfile">
             <span class="menu-icon">👤</span>
             <span class="menu-text">My Profile</span>
+          </div>
+
+          <div class="menu-item" @click="goToSettings">
+            <span class="menu-icon">⚙️</span>
+            <span class="menu-text">Settings</span>
           </div>
 
           <div
@@ -91,6 +105,15 @@
       >
         <span class="nav-icon">👤</span>
         Profile
+      </router-link>
+
+      <router-link
+        to="/settings"
+        class="mobile-nav-link"
+        @click="closeMobileMenu"
+      >
+        <span class="nav-icon">⚙️</span>
+        Settings
       </router-link>
 
       <router-link
@@ -155,6 +178,11 @@ const closeMobileMenu = () => {
 
 const goToProfile = () => {
   router.push('/profile')
+  showUserMenu.value = false
+}
+
+const goToSettings = () => {
+  router.push('/settings')
   showUserMenu.value = false
 }
 

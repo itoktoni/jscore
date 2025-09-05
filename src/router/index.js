@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import SystemSettingsPage from '../pages/SystemSettingsPage.vue'
+import SettingsPage from '../pages/SettingsPage.vue'
 import TestSafeArea from '../components/TestSafeArea.vue'
 import TestSafeAreaPage from '../pages/TestSafeAreaPage.vue'
 import CapacitorPluginsTest from '../pages/test/CapacitorPluginsTest.vue'
@@ -19,6 +20,14 @@ const routes = [
   ...authRoutes,
   // User routes
   ...userRoutes,
+  {
+    path: '/settings',
+    name: 'Settings',
+    component: SettingsPage,
+    meta: {
+      requiresAuth: true // Only accessible when authenticated
+    }
+  },
   {
     path: '/system/settings',
     name: 'SystemSettings',
@@ -113,6 +122,18 @@ router.beforeEach(async (to, from, next) => {
 
 // Add after each hook for debugging
 router.afterEach((to, from) => {
+})
+
+// Global error handler for authentication errors
+router.onError(async (error) => {
+  console.error('Router error:', error)
+
+  // Check if this is an authentication error
+  if (error.message && error.message.includes('Unauthenticated')) {
+    const authStore = useAuthStore()
+    await authStore.logout()
+    router.push('/login')
+  }
 })
 
 export default router

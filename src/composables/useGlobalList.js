@@ -92,24 +92,25 @@ export function useGlobalList(apiRoutes, usePaginationComposable, useAlertCompos
     showModal.value = true
   }
 
-  // Delete item function
-  async function confirmDelete(item, itemNameField = 'name') {
-    itemToDelete.value = item
+  // Confirm delete function
+  async function confirmDelete(item) {
     const result = await alertConfirm(
       'Confirm Delete',
-      `Are you sure you want to delete '${item[itemNameField] || item.username || 'this item'}'? This action cannot be undone.`
+      `Are you sure you want to delete "${item.name || item.username || 'this item'}"? This action cannot be undone.`
     )
 
     if (result.isConfirmed) {
+      itemToDelete.value = item
       await deleteItem()
     }
   }
 
+  // Delete item function
   async function deleteItem() {
     if (itemToDelete.value) {
       try {
         loading.value = true
-        await fetch(apiRoutes.delete(itemToDelete.value.id))
+        const response = await fetch(apiRoutes.delete(itemToDelete.value.id))
 
         // Remove item from the list
         items.value = items.value.filter(item => item.id !== itemToDelete.value.id)
@@ -121,6 +122,16 @@ export function useGlobalList(apiRoutes, usePaginationComposable, useAlertCompos
 
         alertSuccess('Success', 'Item deleted successfully!')
       } catch (err) {
+        // Handle authentication errors
+        if (err.response?.status === 401) {
+          const message = err.response.data?.message || ''
+          if (message.toLowerCase().includes('unauthenticated')) {
+            // The auth error should be handled by the http service or pagination composable
+            // Just re-throw to let it be handled upstream
+            throw err
+          }
+        }
+
         error.value = err.message
         itemToDelete.value = null
         await loadItems()
@@ -157,6 +168,16 @@ export function useGlobalList(apiRoutes, usePaginationComposable, useAlertCompos
         await loadItems()
         alertSuccess('Success', `${selectedItems.length} item(s) deleted successfully!`)
       } catch (err) {
+        // Handle authentication errors
+        if (err.response?.status === 401) {
+          const message = err.response.data?.message || ''
+          if (message.toLowerCase().includes('unauthenticated')) {
+            // The auth error should be handled by the http service or pagination composable
+            // Just re-throw to let it be handled upstream
+            throw err
+          }
+        }
+
         error.value = err.message
         await loadItems()
         alertError('Error', 'Failed to delete selected items')

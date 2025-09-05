@@ -80,11 +80,14 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { Capacitor } from '@capacitor/core'
-import { Preferences } from '@capacitor/preferences'
+import { ref, onMounted, onUnmounted } from 'vue'
+import { http } from '../stores/http'
 import { useAuthStore } from '../stores/auth'
-import { apiService } from '../stores/api'
+import { useAlert } from '../composables/useAlert'
+import { Capacitor } from '@capacitor/core'
+import { Network } from '@capacitor/network'
+import { Preferences } from '@capacitor/preferences'
+import { SplashScreen } from '@capacitor/splash-screen'
 
 const authStore = useAuthStore()
 const showDebug = ref(false)
@@ -96,8 +99,12 @@ const platformInfo = computed(() => ({
   isNative: Capacitor.isNativePlatform()
 }))
 
+const getApiBaseUrl = () => {
+  return http.baseURL || 'Unknown'
+}
+
 const apiBaseUrl = computed(() => {
-  return apiService.baseURL || 'Unknown'
+  return getApiBaseUrl()
 })
 
 const toggleDebug = () => {
@@ -421,7 +428,7 @@ const testDetailedConnection = async () => {
         traceLog.push(`Is Native: ${Capacitor.isNativePlatform()}`)
         traceLog.push(`User Agent: ${navigator.userAgent}`)
         traceLog.push(`Online Status: ${navigator.onLine}`)
-        traceLog.push(`Base URL: ${apiService.baseURL}`)
+        traceLog.push(`Base URL: ${http.baseURL}`)
 
         // Step 2: Network Connectivity Test
         traceLog.push(`\n=== NETWORK CONNECTIVITY ===`)

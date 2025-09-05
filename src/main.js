@@ -11,6 +11,10 @@ import router from './router'
 // Import safe area utility
 import safeAreaUtil from './utils/safeArea'
 
+// Import settings store
+import { useSettingsStore } from './stores/settings'
+import { http } from './stores/http'
+
 // Create Vue app
 const app = createApp(App)
 
@@ -20,6 +24,16 @@ const pinia = createPinia()
 // Use plugins
 app.use(pinia)
 app.use(router)
+
+// Initialize settings
+const settingsStore = useSettingsStore()
+settingsStore.loadSettings().then(() => {
+  // Apply dark mode settings
+  settingsStore.applyDarkMode()
+
+  // Update HTTP service baseURL after settings are loaded
+  http.updateBaseURL()
+})
 
 // Initialize safe area only on mobile platforms
 const platform = Capacitor.getPlatform()

@@ -53,7 +53,7 @@
       </ErrorMessage>
 
       <!-- No Users State -->
-      <div v-else-if="!hasItems() && !loading" class="no-users">
+      <div v-else-if="!hasItems && !loading" class="no-users">
         <p class="text-center">No users found.</p>
       </div>
 
@@ -144,7 +144,7 @@
     <!-- Footer -->
     <footer class="content-footer">
       <div class="footer-actions">
-        <FormButton variant="secondary" @click="loadItems" text="Refresh" />
+        <FormButton variant="secondary" @click="refreshItems" text="Refresh" />
         <FormButton variant="danger" @click="deleteSelectedUsers" text="Delete" :disabled="!hasSelectedItems" />
         <FormButton variant="success" @click="handleCreate(USER_ROUTES.CREATE_USER)" text="+ Create" />
       </div>
@@ -188,7 +188,7 @@ const {
   selectedItem,
   selectAll,
   searchData,
-  hasItems,
+  hasItems: hasItemsFunction, // Rename the imported function to avoid conflict
   hasSelectedItems,
   handleFilterSubmit,
   handleSearch,
@@ -206,6 +206,13 @@ const {
   initialize
 } = useGlobalList(USER_API_ROUTES, usePagination, useAlert)
 
+// Redefine hasItems as a computed property to ensure it works correctly
+const hasItems = computed(() => {
+  return hasItemsFunction && typeof hasItemsFunction === 'function'
+    ? hasItemsFunction()
+    : items.value && items.value.length > 0
+})
+
 // Define search options based on UserModel fields
 const searchOptions = [
   { value: '', label: 'All Fields' },
@@ -214,6 +221,12 @@ const searchOptions = [
   { value: 'email', label: 'Email' },
   { value: 'role', label: 'Role' }
 ]
+
+// Refresh items function to ensure proper parameter passing
+function refreshItems() {
+  console.log('Refreshing items. Current HTTP baseURL:', http.baseURL)
+  loadItems(pagination.currentPage)
+}
 
 // Delete selected users function (specific to user list)
 async function deleteSelectedUsers() {
@@ -234,6 +247,7 @@ onBeforeRouteUpdate(handleRouteUpdate)
 
 // Initialize
 onMounted(() => {
+  console.log('User list mounted. Current HTTP baseURL:', http.baseURL)
   initialize(searchOptions)
 })
 </script>

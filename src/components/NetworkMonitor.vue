@@ -15,7 +15,7 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { Capacitor } from '@capacitor/core'
 import { Network } from '@capacitor/network'
-import { apiService } from '../stores/api'
+import { http } from '../stores/http'
 
 const isOnline = ref(true)
 const connectionType = ref('unknown')
@@ -82,7 +82,7 @@ const retryConnection = async () => {
     await checkNetworkStatus()
 
     // Test API connectivity
-    const result = await apiService.testConnection()
+    const result = await http.testConnection()
 
     if (result.success) {
       console.log('[Network Monitor] Connection restored')

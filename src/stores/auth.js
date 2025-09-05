@@ -119,6 +119,14 @@ export const useAuthStore = defineStore('auth', {
         this.user = response.data.data || response.data
         return responseSuccess(this.user)
       } catch (error) {
+        // Handle authentication errors
+        if (error.response?.status === 401) {
+          const message = error.response.data?.message || ''
+          if (message.toLowerCase().includes('unauthenticated')) {
+            // Token is invalid, logout and redirect to login
+            await this.handleAuthError()
+          }
+        }
         return responseError(error)
       }
     },
@@ -129,6 +137,15 @@ export const useAuthStore = defineStore('auth', {
         this.user = response.data.data || response.data
         return responseSuccess({ message: 'Profile updated successfully' })
       } catch (error) {
+        // Handle authentication errors
+        if (error.response?.status === 401) {
+          const message = error.response.data?.message || ''
+          if (message.toLowerCase().includes('unauthenticated')) {
+            // Token is invalid, logout and redirect to login
+            await this.handleAuthError()
+          }
+        }
+
         // Better error handling for profile update
         let errorMessage = error.message || 'Profile update failed'
         let fieldErrors = {}
@@ -154,6 +171,13 @@ export const useAuthStore = defineStore('auth', {
           }
         })
       }
+    },
+
+    // Handle authentication error - logout and prepare for redirect
+    async handleAuthError() {
+      await this.logout()
+      // The actual redirect will be handled by the router guard or component
+      console.log('Authentication error - user logged out')
     }
   }
 })

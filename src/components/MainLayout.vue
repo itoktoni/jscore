@@ -62,7 +62,7 @@
           >
             <i class="bi bi-sliders"></i>
           </button>
-          <h1 class="header-title">OBSESIMAN REPORT</h1>
+          <h1 class="header-title">{{ appName }}</h1>
         </div>
         <div class="user-profile is-vertical-align safe-area-right">
           <div
@@ -149,9 +149,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import { useSettingsStore } from '../stores/settings'
 import NetworkMonitor from './NetworkMonitor.vue'
 
 const router = useRouter()
@@ -234,6 +235,10 @@ const notifications = ref([
     read: true
   }
 ])
+
+// Get app name from settings store
+const settingsStore = useSettingsStore()
+const appName = computed(() => settingsStore.getWebsiteName)
 
 // Methods
 const isRouteActive = (route) => {

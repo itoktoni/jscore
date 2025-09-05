@@ -1,5 +1,8 @@
 import { ref, reactive } from 'vue'
 import { http } from '../stores/http'
+import { useAuthStore } from '../stores/auth'
+import { useRouter } from 'vue-router'
+import { useAlert } from './useAlert'
 
 /**
  * Generic pagination composable for handling paginated data
@@ -34,7 +37,9 @@ export function usePagination(baseUrl) {
         }
       }
 
+      console.log('Making API request to:', baseUrl, 'with config:', config)
       const response = await http.get(baseUrl, config)
+      console.log('API response received:', response)
 
       // Handle the pagination structure from the API
       if (response.data) {
@@ -65,6 +70,14 @@ export function usePagination(baseUrl) {
 
       return { success: true, data: items.value }
     } catch (err) {
+      // Handle authentication errors
+      if (err.response?.status === 401) {
+        const message = err.response.data?.message || ''
+        if (message.toLowerCase().includes('unauthenticated')) {
+          await handleAuthError()
+        }
+      }
+
       error.value = err.message
       return { success: false, error: err.message }
     } finally {
@@ -118,10 +131,40 @@ export function usePagination(baseUrl) {
 
       return { success: true, data: items.value }
     } catch (err) {
+      // Handle authentication errors
+      if (err.response?.status === 401) {
+        const message = err.response.data?.message || ''
+        if (message.toLowerCase().includes('unauthenticated')) {
+          await handleAuthError()
+        }
+      }
+
       error.value = err.message
       return { success: false, error: err.message }
     } finally {
       loading.value = false
+    }
+  }
+
+  // Handle authentication error - logout and redirect to login
+  const handleAuthError = async () => {
+    try {
+      const authStore = useAuthStore()
+      const router = useRouter()
+      const { alertError } = useAlert()
+
+      // Logout user
+      await authStore.logout()
+
+      // Show alert
+      alertError('Session Expired', 'Your session has expired. Please login again.')
+
+      // Redirect to login
+      if (router) {
+        router.push('/login')
+      }
+    } catch (error) {
+      console.error('Error handling authentication error:', error)
     }
   }
 

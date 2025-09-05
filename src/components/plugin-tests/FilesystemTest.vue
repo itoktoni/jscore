@@ -29,10 +29,13 @@
       <div v-if="fileError">
         <p><strong>Error:</strong> {{ fileError }}</p>
       </div>
-      <button class="button primary" @click="writeFile">Write File</button>
-      <button class="button secondary" @click="readFile">Read File</button>
-      <button class="button secondary" @click="deleteFile">Delete File</button>
-      <button class="button secondary" @click="listFiles">List Files</button>
+      <div v-if="!isNative">
+        <p><strong>Note:</strong> Filesystem plugin only works on native platforms (Android/iOS).</p>
+      </div>
+      <button class="button primary" @click="writeFile" :disabled="!isNative">Write File</button>
+      <button class="button secondary" @click="readFile" :disabled="!isNative">Read File</button>
+      <button class="button secondary" @click="deleteFile" :disabled="!isNative">Delete File</button>
+      <button class="button secondary" @click="listFiles" :disabled="!isNative">List Files</button>
     </div>
   </div>
 </template>
@@ -41,28 +44,6 @@
 import { ref, onMounted } from 'vue'
 import { Capacitor } from '@capacitor/core'
 
-// Use dynamic import for the plugin
-let Filesystem
-let Directory
-
-// Try to import the plugin dynamically
-const loadFilesystemPlugin = async () => {
-  try {
-    if (Capacitor.isNativePlatform()) {
-      const module = await import('@capacitor/filesystem')
-      Filesystem = module.Filesystem
-      Directory = module.Directory
-    }
-  } catch (error) {
-    console.warn('Filesystem plugin not available:', error)
-  }
-}
-
-// Load the plugin when the component is mounted
-onMounted(() => {
-  loadFilesystemPlugin()
-})
-
 // Reactive data
 const fileName = ref('test.txt')
 const fileContent = ref('This is test content from Capacitor Filesystem')
@@ -70,106 +51,99 @@ const selectedDirectory = ref('DOCUMENTS')
 const fileResult = ref('')
 const fileContentResult = ref('')
 const fileError = ref('')
+const isNative = ref(false)
+
+// Check if we're on a native platform
+isNative.value = Capacitor.isNativePlatform()
+
+// Import the plugin directly (this should work with ES modules)
+import { Filesystem, Directory } from '@capacitor/filesystem'
 
 // Filesystem Plugin
 const writeFile = async () => {
   try {
-    if (Capacitor.isNativePlatform() && Filesystem) {
-      fileError.value = ''
+    fileError.value = ''
+    fileResult.value = ''
+    fileContentResult.value = ''
 
-      // Check if the filename contains a directory path
-      const pathParts = fileName.value.split('/')
-      if (pathParts.length > 1) {
-        // If it's a path, we need to ensure the directory exists
-        const directoryPath = pathParts.slice(0, -1).join('/')
-        try {
-          // Try to create the directory (recursive creation)
-          await Filesystem.mkdir({
-            path: directoryPath,
-            directory: Directory[selectedDirectory.value],
-            recursive: true
-          })
-        } catch (mkdirError) {
-          // Directory might already exist, which is fine
-          console.log('Directory creation skipped (may already exist):', mkdirError)
-        }
+    // Check if the filename contains a directory path
+    const pathParts = fileName.value.split('/')
+    if (pathParts.length > 1) {
+      // If it's a path, we need to ensure the directory exists
+      const directoryPath = pathParts.slice(0, -1).join('/')
+      try {
+        // Try to create the directory (recursive creation)
+        await Filesystem.mkdir({
+          path: directoryPath,
+          directory: Directory[selectedDirectory.value],
+          recursive: true
+        })
+      } catch (mkdirError) {
+        // Directory might already exist, which is fine
+        console.log('Directory creation skipped (may already exist):', mkdirError)
       }
-
-      const result = await Filesystem.writeFile({
-        path: fileName.value,
-        data: fileContent.value,
-        directory: Directory[selectedDirectory.value],
-        encoding: 'utf8'
-      })
-      fileResult.value = `File written: ${result.uri}`
-      console.log('File written:', result)
-    } else {
-      fileError.value = 'Filesystem only available on native platforms'
     }
+
+    const result = await Filesystem.writeFile({
+      path: fileName.value,
+      data: fileContent.value,
+      directory: Directory[selectedDirectory.value],
+      encoding: 'utf8'
+    })
+    fileResult.value = `File written: ${result.uri}`
+    console.log('File written:', result)
   } catch (error) {
     console.error('Error writing file:', error)
-    fileError.value = error.message
+    fileError.value = error.message || 'Unknown error occurred'
   }
 }
 
 const readFile = async () => {
   try {
-    if (Capacitor.isNativePlatform() && Filesystem) {
-      fileError.value = ''
-      fileContentResult.value = ''
-      const result = await Filesystem.readFile({
-        path: fileName.value,
-        directory: Directory[selectedDirectory.value],
-        encoding: 'utf8'
-      })
-      fileContentResult.value = result.data
-      fileResult.value = 'File read successfully'
-      console.log('File read:', result)
-    } else {
-      fileError.value = 'Filesystem only available on native platforms'
-    }
+    fileError.value = ''
+    fileContentResult.value = ''
+    const result = await Filesystem.readFile({
+      path: fileName.value,
+      directory: Directory[selectedDirectory.value],
+      encoding: 'utf8'
+    })
+    fileContentResult.value = result.data
+    fileResult.value = 'File read successfully'
+    console.log('File read:', result)
   } catch (error) {
     console.error('Error reading file:', error)
-    fileError.value = error.message
+    fileError.value = error.message || 'Unknown error occurred'
   }
 }
 
 const deleteFile = async () => {
   try {
-    if (Capacitor.isNativePlatform() && Filesystem) {
-      fileError.value = ''
-      await Filesystem.deleteFile({
-        path: fileName.value,
-        directory: Directory[selectedDirectory.value]
-      })
-      fileResult.value = 'File deleted successfully'
-      fileContentResult.value = ''
-      console.log('File deleted')
-    } else {
-      fileError.value = 'Filesystem only available on native platforms'
-    }
+    fileError.value = ''
+    await Filesystem.deleteFile({
+      path: fileName.value,
+      directory: Directory[selectedDirectory.value]
+    })
+    fileResult.value = 'File deleted successfully'
+    fileContentResult.value = ''
+    console.log('File deleted')
   } catch (error) {
     console.error('Error deleting file:', error)
-    fileError.value = error.message
+    fileError.value = error.message || 'Unknown error occurred'
   }
 }
 
 const listFiles = async () => {
   try {
-    if (Capacitor.isNativePlatform() && Filesystem) {
-      fileError.value = ''
-      const result = await Filesystem.readdir({
-        path: '',
-        directory: Directory[selectedDirectory.value]
-      })
-      fileResult.value = `Files found: ${result.files.length}`
-      console.log('Files listed:', result)
-    } else {
-      fileError.value = 'Filesystem only available on native platforms'
-    }
+    fileError.value = ''
+    const result = await Filesystem.readdir({
+      path: '',
+      directory: Directory[selectedDirectory.value]
+    })
+    fileResult.value = `Files found: ${result.files.length}`
+    console.log('Files listed:', result)
   } catch (error) {
     console.error('Error listing files:', error)
-    fileError.value = error.message
+    fileError.value = error.message || 'Unknown error occurred'
   }
 }
 </script>
@@ -212,5 +186,10 @@ const listFiles = async () => {
 .button {
   margin-right: 0.5rem;
   margin-bottom: 0.5rem;
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 </style>
