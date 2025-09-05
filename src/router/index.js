@@ -7,8 +7,10 @@ import TestSafeAreaPage from '../pages/TestSafeAreaPage.vue'
 import CapacitorPluginsTest from '../pages/test/CapacitorPluginsTest.vue'
 import PluginTestsNavigation from '../pages/test/PluginTestsNavigation.vue'
 import PluginsByPackage from '../pages/test/PluginsByPackage.vue' // Added import for plugins by package page
+import PrimeVueTest from '../components/PrimeVueTest.vue' // PrimeVue test component
 import { userRoutes } from './userRoutes'
 import { authRoutes } from './authRoutes'
+import { roleRoutes } from './roleRoutes'
 import { pluginTestRoutes } from '../pages/test/plugins/index.js'
 
 const routes = [
@@ -20,6 +22,8 @@ const routes = [
   ...authRoutes,
   // User routes
   ...userRoutes,
+  // Role routes
+  ...roleRoutes,
   {
     path: '/settings',
     name: 'Settings',
@@ -73,6 +77,14 @@ const routes = [
     path: '/test/plugins-by-package',
     name: 'PluginsByPackage',
     component: PluginsByPackage, // Added route for plugins by package page
+    meta: {
+      requiresAuth: true // Only accessible when authenticated
+    }
+  },
+  {
+    path: '/test/primevue',
+    name: 'PrimeVueTest',
+    component: PrimeVueTest, // PrimeVue test route
     meta: {
       requiresAuth: true // Only accessible when authenticated
     }

@@ -13,7 +13,7 @@
             {{ device.name }} ({{ device.address }})
           </option>
         </select>
-        <button class="button secondary" @click="scanDevices">Scan Devices</button>
+        <Button label="Scan Devices" @click="scanDevices" severity="secondary" />
       </div>
 
       <!-- Print Content -->
@@ -48,10 +48,10 @@
 
       <!-- Action Buttons -->
       <div v-if="Capacitor.isNativePlatform()">
-        <button class="button primary" @click="connectPrinter" :disabled="!selectedDevice">Connect</button>
-        <button class="button primary" @click="printText" :disabled="!selectedDevice">Print Text</button>
-        <button class="button secondary" @click="disconnectPrinter" :disabled="!selectedDevice">Disconnect</button>
-        <button class="button secondary" @click="printImage" :disabled="!selectedDevice">Print Image</button>
+        <Button label="Connect" @click="connectPrinter" :disabled="!selectedDevice" />
+        <Button label="Print Text" @click="printText" :disabled="!selectedDevice" />
+        <Button label="Disconnect" @click="disconnectPrinter" :disabled="!selectedDevice" severity="secondary" />
+        <Button label="Print Image" @click="printImage" :disabled="!selectedDevice" severity="secondary" />
       </div>
       <div v-else>
         <p>Bluetooth printer functionality is only available on mobile devices.</p>
@@ -63,6 +63,7 @@
 <script setup>
 import { ref } from 'vue'
 import { Capacitor } from '@capacitor/core'
+// PrimeVue components are auto-imported
 
 // Use dynamic import for the plugin
 let BluetoothPrinter
@@ -71,8 +72,8 @@ let BluetoothPrinter
 const loadBluetoothPrinter = async () => {
   try {
     if (Capacitor.isNativePlatform()) {
-      const module = await import('@kduma-autoid/capacitor-bluetooth-printer')
-      BluetoothPrinter = module.BluetoothPrinter
+      // Note: The plugin has been removed due to conflicts
+      printerError.value = 'Bluetooth Printer plugin not available due to dependency conflicts'
     }
   } catch (error) {
     console.warn('Bluetooth Printer plugin not available:', error)
@@ -87,7 +88,7 @@ const devices = ref([])
 const selectedDevice = ref('')
 const printContent = ref('Hello from Capacitor Bluetooth Printer!\nThis is a test print.')
 const printerResult = ref('')
-const printerError = ref('')
+const printerError = ref('Plugin removed due to dependency conflicts')
 const printOptions = ref({
   bold: false,
   underline: false,
@@ -217,27 +218,15 @@ const printImage = async () => {
   margin-bottom: 1rem;
 }
 
-.form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: bold;
-}
-
 .form-control {
   width: 100%;
   padding: 0.5rem;
   border: 1px solid #ccc;
   border-radius: 4px;
-  box-sizing: border-box;
 }
 
 .button {
   margin-right: 0.5rem;
   margin-bottom: 0.5rem;
-}
-
-.button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
 }
 </style>

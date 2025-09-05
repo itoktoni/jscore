@@ -1,5 +1,6 @@
 import { ref, reactive, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { roleService } from '../services/roleService'
 
 export function useGlobalList(apiRoutes, usePaginationComposable, useAlertComposable) {
   const router = useRouter()
@@ -96,7 +97,7 @@ export function useGlobalList(apiRoutes, usePaginationComposable, useAlertCompos
   async function confirmDelete(item) {
     const result = await alertConfirm(
       'Confirm Delete',
-      `Are you sure you want to delete "${item.name || item.username || 'this item'}"? This action cannot be undone.`
+      `Are you sure you want to delete "${item.name || 'this item'}"? This action cannot be undone.`
     )
 
     if (result.isConfirmed) {
@@ -110,7 +111,15 @@ export function useGlobalList(apiRoutes, usePaginationComposable, useAlertCompos
     if (itemToDelete.value) {
       try {
         loading.value = true
-        const response = await fetch(apiRoutes.delete(itemToDelete.value.id))
+
+        // Check if we're dealing with roles
+        if (apiRoutes.list === '/api-roles/data') {
+          // Use role service for roles
+          await roleService.deleteRole(itemToDelete.value.id)
+        } else {
+          // Use default API for other entities
+          await fetch(apiRoutes.delete(itemToDelete.value.id))
+        }
 
         // Remove item from the list
         items.value = items.value.filter(item => item.id !== itemToDelete.value.id)
@@ -158,11 +167,20 @@ export function useGlobalList(apiRoutes, usePaginationComposable, useAlertCompos
       try {
         loading.value = true
 
-        // Extract IDs from selected items
-        const selectedIds = selectedItems.map(item => item.id)
+        // Check if we're dealing with roles
+        if (removeEndpoint === '/api-roles/delete') {
+          // Extract IDs from selected items
+          const selectedIds = selectedItems.map(item => item.id)
 
-        // Send DELETE request with selected IDs in the request body
-        await httpClient.post(removeEndpoint, { code: selectedIds })
+          // Use role service for roles
+          await roleService.deleteRoles(selectedIds)
+        } else {
+          // Extract IDs from selected items
+          const selectedIds = selectedItems.map(item => item.id)
+
+          // Send DELETE request with selected IDs in the request body
+          await httpClient.post(removeEndpoint, { code: selectedIds })
+        }
 
         // Refresh the item list
         await loadItems()

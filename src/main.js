@@ -8,6 +8,10 @@ import { useAlert } from './composables/useAlert'
 import App from './App.vue'
 import router from './router'
 
+// PrimeVue imports
+import PrimeVue from 'primevue/config';
+import Aura from '@primeuix/themes/aura';
+
 // Import safe area utility
 import safeAreaUtil from './utils/safeArea'
 
@@ -24,6 +28,14 @@ const pinia = createPinia()
 // Use plugins
 app.use(pinia)
 app.use(router)
+
+// Configure PrimeVue
+app.use(PrimeVue, {
+  theme: {
+    preset: Aura
+  },
+  ripple: true
+});
 
 // Initialize settings
 const settingsStore = useSettingsStore()

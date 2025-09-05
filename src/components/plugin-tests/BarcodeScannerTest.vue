@@ -17,13 +17,13 @@
       </div>
 
       <div v-if="Capacitor.isNativePlatform() && !pluginError">
-        <button class="button primary" @click="scanBarcode">Scan Barcode</button>
-        <button class="button secondary" @click="stopScan" v-if="isScanning">Stop Scan</button>
+        <Button label="Scan Barcode" @click="scanBarcode" />
+        <Button label="Stop Scan" @click="stopScan" v-if="isScanning" severity="secondary" />
       </div>
 
       <div v-else-if="!pluginError">
         <p>Barcode scanner functionality is only available on mobile devices.</p>
-        <button class="button primary" @click="simulateScan" disabled>Scan Barcode (Web - Disabled)</button>
+        <Button label="Scan Barcode (Web - Disabled)" @click="simulateScan" disabled />
       </div>
     </div>
   </div>
@@ -32,6 +32,7 @@
 <script setup>
 import { ref } from 'vue'
 import { Capacitor } from '@capacitor/core'
+// PrimeVue components are auto-imported
 
 // Use dynamic import for the plugin
 let BarcodeScanner
@@ -40,8 +41,8 @@ let BarcodeScanner
 const loadBarcodeScannerPlugin = async () => {
   try {
     if (Capacitor.isNativePlatform()) {
-      const module = await import('@capacitor-community/barcode-scanner')
-      BarcodeScanner = module.BarcodeScanner
+      // Note: The plugin has been removed due to conflicts
+      pluginError.value = 'Barcode Scanner plugin not available due to dependency conflicts'
     }
   } catch (error) {
     console.warn('Barcode Scanner plugin not available:', error)
@@ -53,7 +54,7 @@ const loadBarcodeScannerPlugin = async () => {
 loadBarcodeScannerPlugin()
 
 // Reactive data
-const pluginError = ref(null)
+const pluginError = ref('Plugin removed due to dependency conflicts')
 const scanResult = ref('')
 const scanError = ref('')
 const isScanning = ref(false)

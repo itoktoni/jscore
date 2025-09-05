@@ -55,13 +55,14 @@
     <main class="main-content">
       <header class="safe-area-header main-header">
         <div class="header-title-wrapper is-vertical-align">
-          <button
+          <Button
             id="mobile-menu-button"
             class="mobile-menu-button safe-area-left"
             @click="toggleSidebar"
-          >
-            <i class="bi bi-sliders"></i>
-          </button>
+            icon="pi pi-bars"
+            text
+            rounded
+          />
           <h1 class="header-title">{{ appName }}</h1>
         </div>
         <div class="user-profile is-vertical-align safe-area-right">
@@ -107,7 +108,7 @@
   >
     <div class="notification-header safe-area-header">
       <h2 class="notification-title">Notifications</h2>
-      <button class="notification-close" @click="closeNotifications">×</button>
+      <Button class="notification-close" @click="closeNotifications" icon="pi pi-times" text rounded />
     </div>
     <div class="notification-list is-paddingless">
       <div
@@ -123,14 +124,14 @@
           <p class="notification-message">{{ notification.message }}</p>
           <div class="notification-time">{{ notification.time }}</div>
           <div class="notification-actions">
-            <button class="notification-action" @click="markAsRead(index)">Mark as read</button>
-            <button class="notification-action" @click="dismissNotification(index)">Dismiss</button>
+            <Button class="notification-action" @click="markAsRead(index)" label="Mark as read" size="small" />
+            <Button class="notification-action" @click="dismissNotification(index)" label="Dismiss" size="small" severity="secondary" />
           </div>
         </div>
       </div>
     </div>
     <div class="notification-footer safe-area-bottom">
-      <button class="mark-all-read" @click="markAllAsRead">Mark all as read</button>
+      <Button class="mark-all-read" @click="markAllAsRead" label="Mark all as read" />
     </div>
   </div>
 
@@ -154,6 +155,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useSettingsStore } from '../stores/settings'
 import NetworkMonitor from './NetworkMonitor.vue'
+// PrimeVue components are auto-imported
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -192,7 +194,7 @@ const subMenus = ref({
   ],
   system: [
     { title: 'Group', route: '/system/groups' },
-    { title: 'Roles', route: '/system/roles' },
+    { title: 'Roles', route: '/roles' },
     { title: 'Menu', route: '/system/menu' },
     { title: 'Link', route: '/system/links' },
     { title: 'Permission', route: '/system/permissions' },
@@ -205,7 +207,8 @@ const subMenus = ref({
     { title: 'FormSelect Test', route: '/test-form-select' },
     { title: 'All Capacitor Plugins', route: '/test/capacitor-plugins' },
     { title: 'Plugins by Navigation', route: '/test/plugin-tests' },
-    { title: 'Plugins by Package', route: '/test/plugins-by-package' }
+    { title: 'Plugins by Package', route: '/test/plugins-by-package' },
+    { title: 'PrimeVue Components', route: '/test/primevue' }
   ]
 })
 
