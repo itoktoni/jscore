@@ -48,7 +48,9 @@
         </template>
       </FormContainer>
 
-      <FormLink
+      <!-- Using the new Button component with buttonType="link" -->
+      <Button
+        button-type="link"
         text="Already have an account?"
         link-text="Login here"
         to="/login"
@@ -64,7 +66,8 @@ import { useAuthStore } from '../../stores/auth'
 import FormContainer from '../../components/FormContainer.vue'
 import FormInput from '../../components/FormInput.vue'
 import FormButton from '../../components/FormButton.vue'
-import FormLink from '../../components/FormLink.vue'
+// Import the new unified Button component
+import Button from '../../components/Button.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()

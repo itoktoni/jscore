@@ -72,15 +72,23 @@
                 </td>
 
                 <td>
-                  <router-link
+                  <!-- Using the new Button component with buttonType="link" -->
+                  <Button
+                    button-type="link"
+                    variant="primary"
+                    size="small"
                     :to="{ name: USER_ROUTES.EDIT_USER, params: { id: user.id } }"
-                    class="btn btn-sm btn-outline-primary"
-                  >
-                    Edit
-                  </router-link>
-                  <ButtonDelete
+                    text="Edit"
+                  />
+
+                  <!-- Using the new Button component with buttonType="delete" -->
+                  <Button
+                    button-type="delete"
+                    variant="danger"
+                    size="small"
                     :url="USER_API_ROUTES.delete(user.id)"
                     :form-table-ref="TableRef"
+                    text="Delete"
                   />
                 </td>
 
@@ -101,17 +109,23 @@
     </FormTable>
 
     <div class="form-actions">
-      <ButtonDeleteAll
+      <!-- Using the new Button component with buttonType="remove" -->
+      <Button
+        button-type="remove"
+        variant="danger"
         :url="USER_API_ROUTES.remove"
         :selected-items="selectedItems"
         :form-table-ref="TableRef"
+        text="Delete Selected"
       />
-      <router-link
+
+      <!-- Using the new Button component with buttonType="link" -->
+      <Button
+        button-type="link"
+        variant="primary"
         :to="{ name: USER_ROUTES.CREATE_USER }"
-        class="btn btn-primary"
-      >
-        Create New User
-      </router-link>
+        text="Create New User"
+      />
     </div>
   </div>
 </template>
@@ -119,20 +133,18 @@
 <script setup>
 import { ref } from 'vue'
 import { USER_ROUTES, USER_API_ROUTES } from '../../router/userRoutes'
-import { http } from '../../stores/http'
 import { useSelectionState } from '../../composables/useSelectionState'
 import FormTable from '../../components/FormTable.vue'
 import FormInput from '../../components/FormInput.vue'
 import FormSelect from '../../components/FormSelect.vue'
 import FormCheck from '../../components/FormCheck.vue'
-import ButtonDelete from '../../components/ButtonDelete.vue'
-import ButtonDeleteAll from '../../components/ButtonDeleteAll.vue'
+// Import the new unified Button component
+import Button from '../../components/Button.vue'
 
 const TableRef = ref(null)
 
 // Use the selection state composable
 const { selectedItems, updateSelectedItems } = useSelectionState()
-
 </script>
 
 <style scoped>
@@ -145,7 +157,8 @@ const { selectedItems, updateSelectedItems } = useSelectionState()
 
 .form-actions {
   padding: 1rem;
-  flex-direction: column;
+  display: flex;
+  gap: 0.5rem;
 }
 
 .btn {

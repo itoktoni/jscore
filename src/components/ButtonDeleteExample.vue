@@ -1,46 +1,94 @@
 <template>
   <div class="button-delete-example">
-    <h3>ButtonDelete Component Examples</h3>
+    <h3>Button Component Examples</h3>
 
     <div class="example-section">
-      <h4>Basic Usage</h4>
-      <ButtonDelete
+      <h4>Basic Delete Button</h4>
+      <Button
+        button-type="delete"
         url="/api/users/delete/{id}"
-        :id="123"
+        text="Delete"
       />
     </div>
 
     <div class="example-section">
-      <h4>With Custom Text</h4>
-      <ButtonDelete
+      <h4>Delete Button With Custom Text</h4>
+      <Button
+        button-type="delete"
         url="/api/users/delete/{id}"
-        :id="456"
         text="Remove User"
       />
     </div>
 
     <div class="example-section">
-      <h4>With Custom Styling</h4>
-      <ButtonDelete
+      <h4>Delete Button With Custom Styling</h4>
+      <Button
+        button-type="delete"
         url="/api/users/delete/{id}"
-        :id="789"
         button-class="btn btn-danger"
+        text="Delete"
       />
     </div>
 
     <div class="example-section">
-      <h4>With Custom Confirmation Message</h4>
-      <ButtonDelete
+      <h4>Delete Button With Custom Confirmation Message</h4>
+      <Button
+        button-type="delete"
         url="/api/users/delete/{id}"
-        :id="101"
         confirm-message="Are you sure you want to remove this user? This action cannot be undone."
+        text="Delete"
+      />
+    </div>
+
+    <div class="example-section">
+      <h4>Remove Button (Batch Delete)</h4>
+      <Button
+        button-type="remove"
+        url="/api/users/delete"
+        :selected-items="[1, 2, 3]"
+        text="Delete Selected"
+      />
+    </div>
+
+    <div class="example-section">
+      <h4>Link Button</h4>
+      <Button
+        button-type="link"
+        to="/users"
+        text="Go to"
+        link-text="User Management"
+      />
+    </div>
+
+    <div class="example-section">
+      <h4>Submit Button</h4>
+      <Button
+        button-type="submit"
+        type="submit"
+        variant="primary"
+        text="Submit Form"
+      />
+    </div>
+
+    <div class="example-section">
+      <h4>Regular Button</h4>
+      <Button
+        button-type="button"
+        variant="secondary"
+        text="Click Me"
+        @click="handleClick"
       />
     </div>
   </div>
 </template>
 
 <script setup>
-import ButtonDelete from './ButtonDelete.vue'
+// Import the new unified Button component
+import Button from './Button.vue'
+
+const handleClick = () => {
+  console.log('Button clicked!')
+}
 </script>
 
 <style scoped>

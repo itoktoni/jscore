@@ -77,6 +77,9 @@ export function useFormTable(options = {}) {
       formData[key] = initialData[key] || ''
     })
 
+    // Ensure page is reset to 1
+    formData.page = 1
+
     // Reset field errors
     fieldErrors.value = {}
 
@@ -104,8 +107,9 @@ export function useFormTable(options = {}) {
     const query = {}
 
     // Add form data to query, but only include non-empty values
+    // Also exclude page=1 to keep URLs clean
     Object.keys(formData).forEach(key => {
-      if (formData[key]) {
+      if (formData[key] && (key !== 'page' || formData[key] !== 1)) {
         query[key] = formData[key]
       }
     })
@@ -119,20 +123,32 @@ export function useFormTable(options = {}) {
     watch(
       () => route.query,
       () => {
-        // Update form data from query parameters
-        Object.keys(initialData).forEach(key => {
-          if (route.query[key] !== undefined) {
-            formData[key] = route.query[key]
-          } else {
-            formData[key] = initialData[key] || ''
-          }
-        })
+        // Check if we're on the base route with no query parameters
+        const isBaseRoute = Object.keys(route.query).length === 0;
 
-        // Only reset page to 1 when navigating to the route if no page is specified in query
-        // This ensures that when users navigate to /users, they start on page 1
-        // but preserves page parameter when it's explicitly set
-        if (route.query.page === undefined && !formData.page) {
+        if (isBaseRoute) {
+          // Reset form data to initial values when on base route
+          Object.keys(formData).forEach(key => {
+            formData[key] = initialData[key] || ''
+          })
+          // Ensure page is reset to 1
           formData.page = 1
+        } else {
+          // Update form data from query parameters
+          Object.keys(initialData).forEach(key => {
+            if (route.query[key] !== undefined) {
+              formData[key] = route.query[key]
+            } else {
+              formData[key] = initialData[key] || ''
+            }
+          })
+
+          // Only reset page to 1 when navigating to the route if no page is specified in query
+          // This ensures that when users navigate to /users, they start on page 1
+          // but preserves page parameter when it's explicitly set
+          if (route.query.page === undefined && !formData.page) {
+            formData.page = 1
+          }
         }
 
         // Perform search when route changes
