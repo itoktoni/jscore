@@ -1,12 +1,7 @@
 <template>
   <div class="form-table-container">
     <form @submit.prevent="handleSearch" class="form-table-filter">
-      <slot
-        :formData="formData"
-        :fieldErrors="fieldErrors"
-        :isSubmitting="isSubmitting"
-        :handleSearch="handleSearch"
-      />
+      <slot name="filterForm" :formData="formData" :fieldErrors="fieldErrors" :isSubmitting="isSubmitting" :handleSearch="handleSearch"></slot>
 
       <div class="form-table-actions">
         <FormButton
@@ -25,14 +20,24 @@
     </form>
 
     <div class="form-table-content">
-      <slot name="table" :data="tableData" :loading="loading" :selectedItems="selectedItems" :toggleSelectAll="toggleSelectAll" :isAllSelected="isAllSelected" />
+      <!-- Add batch delete button -->
+      <div v-if="selectedItems.length > 0" class="batch-actions">
+        <button
+          @click="handleBatchDelete"
+          class="btn btn-danger btn-sm"
+        >
+          Delete Selected ({{ selectedItems.length }})
+        </button>
+      </div>
+
+      <slot name="tableContent" :data="tableData" :selectedItems="selectedItems" :toggleSelectAll="toggleSelectAll" :isAllSelected="isAllSelected"></slot>
     </div>
 
     <div v-if="pagination" class="form-table-pagination">
       <slot name="pagination" :pagination="pagination" :changePage="changePage">
         <nav class="pagination">
           <button
-            :disabled="pagination.current_page <= 1 || loading"
+            :disabled="pagination.current_page <= 1"
             @click="changePage(pagination.current_page - 1)"
             class="pagination-btn"
           >
@@ -44,7 +49,7 @@
           </span>
 
           <button
-            :disabled="pagination.current_page >= pagination.last_page || loading"
+            :disabled="pagination.current_page >= pagination.last_page"
             @click="changePage(pagination.current_page + 1)"
             class="pagination-btn"
           >
@@ -73,18 +78,14 @@ const props = defineProps({
     default: () => ({})
   },
   // Add new props for delete endpoints
-  deleteEndpoint: {
-    type: [String, Function],
-    default: null
-  },
-  batchDeleteEndpoint: {
+  delete: {
     type: String,
     default: null
   }
 })
 
 // Define emits
-const emit = defineEmits(['search', 'error', 'delete', 'delete-selected'])
+const emit = defineEmits(['search', 'error'])
 
 // Reactive properties
 const route = useRoute()
@@ -93,7 +94,6 @@ const formData = reactive({ ...props.initialData })
 const fieldErrors = ref({})
 const isSubmitting = ref(false)
 const tableData = ref([])
-const loading = ref(false)
 const pagination = ref(null)
 const selectedItems = ref([])
 
@@ -151,7 +151,6 @@ const handleSearch = async () => {
   fieldErrors.value = {}
 
   try {
-    loading.value = true
     const params = {
       ...formData,
       page: route.query.page || 1
@@ -195,7 +194,43 @@ const handleSearch = async () => {
     emit('error', error)
   } finally {
     isSubmitting.value = false
-    loading.value = false
+  }
+}
+
+// Batch delete items
+const batchDeleteItems = async () => {
+  if (!props.delete || selectedItems.value.length === 0) {
+    return
+  }
+
+  try {
+    // Send selected item IDs as an array in the request body
+    await http.post(props.delete, { code: selectedItems.value })
+
+    // Clear selected items
+    selectedItems.value = []
+
+    // Refresh the table data
+    await handleSearch()
+  } catch (error) {
+    console.error('Batch delete error:', error)
+    // Emit error event
+    emit('error', error)
+    throw error
+  }
+}
+
+// Handle batch delete with confirmation
+const handleBatchDelete = async () => {
+  if (selectedItems.value.length > 0) {
+    if (confirm(`Are you sure you want to delete ${selectedItems.value.length} selected items?`)) {
+      try {
+        await batchDeleteItems()
+      } catch (error) {
+        console.error('Batch delete error:', error)
+        alert('Failed to delete selected items')
+      }
+    }
   }
 }
 
@@ -207,8 +242,7 @@ defineExpose({
   selectedItems,
   toggleSelectAll,
   toggleSelectItem,
-  handleDeleteSelected,
-  deleteUser
+  batchDeleteItems
 })
 
 // Handle reset function
@@ -255,101 +289,6 @@ const updateUrlParams = () => {
 
   // Update URL without reload
   router.push({ query })
-}
-
-// Handle delete selected items
-async function handleDeleteSelected() {
-  if (selectedItems.value.length === 0) return
-
-  // Check if batch delete endpoint is provided
-  if (!props.batchDeleteEndpoint) {
-    console.error('Batch delete endpoint not provided')
-    emit('error', new Error('Batch delete endpoint not provided'))
-    return
-  }
-
-  try {
-    // Send selected item IDs as an array to the batch delete endpoint
-    await http.post(props.batchDeleteEndpoint, {code : selectedItems.value})
-
-    // Store the current selected items for potential use in events
-    const deletedItems = [...selectedItems.value]
-
-    // Clear selected items
-    selectedItems.value = []
-
-    // Refresh the table
-    await handleSearch()
-
-    console.log('Selected items deleted successfully')
-
-    // Emit a custom event for successful deletion
-    emit('delete-selected', deletedItems)
-  } catch (error) {
-    console.error('Error deleting selected items:', error)
-    emit('error', error)
-
-    // Re-throw the error so it can be handled by the caller
-    throw error
-  }
-}
-
-// Handle delete single item
-async function deleteUser(userId, confirmFunction, successFunction, errorFunction) {
-  // Check if delete endpoint is provided
-  if (!props.deleteEndpoint) {
-    console.error('Delete endpoint not provided')
-    if (errorFunction) {
-      errorFunction('Error', 'Delete endpoint not provided')
-    }
-    return
-  }
-
-  // Use the provided confirm function or a default one
-  const result = await confirmFunction(
-    'Confirm Delete',
-    'Are you sure you want to delete this item?'
-  )
-
-  if (result.isConfirmed) {
-    try {
-      // Construct the delete URL with the user ID
-      // If deleteEndpoint contains a placeholder, replace it
-      let deleteUrl = props.deleteEndpoint
-      if (typeof props.deleteEndpoint === 'function') {
-        deleteUrl = props.deleteEndpoint(userId)
-      } else if (deleteUrl.includes('{id}')) {
-        deleteUrl = deleteUrl.replace('{id}', userId)
-      } else if (deleteUrl.includes(':id')) {
-        deleteUrl = deleteUrl.replace(':id', userId)
-      } else {
-        // Assume it's a simple endpoint that needs the ID appended
-        deleteUrl = `${props.deleteEndpoint}/${userId}`
-      }
-
-      await http.get(deleteUrl)
-
-      // Refresh the table after deletion
-      await handleSearch()
-
-      // Call success function if provided
-      if (successFunction) {
-        successFunction('Success', 'Item deleted successfully')
-      }
-
-      // Emit delete event
-      emit('delete', userId)
-    } catch (error) {
-      // Call error function if provided
-      if (errorFunction) {
-        errorFunction('Error', 'Failed to delete item')
-      }
-      console.error('Delete item error:', error)
-
-      // Re-throw the error so it can be handled by the caller
-      throw error
-    }
-  }
 }
 
 // Watch for route changes
@@ -400,6 +339,37 @@ onMounted(() => {
 
 .form-table-content {
   padding: 1.5rem;
+}
+
+.batch-actions {
+  margin-bottom: 1rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  text-decoration: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+.btn-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+}
+
+.btn-danger {
+  background-color: #ef4444;
+  color: white;
+}
+
+.btn-danger:hover {
+  background-color: #dc2626;
 }
 
 .form-table-pagination {

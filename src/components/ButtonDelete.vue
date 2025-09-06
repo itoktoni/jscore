@@ -39,6 +39,15 @@ const props = defineProps({
   onError: {
     type: Function,
     default: null
+  },
+  // New prop to support FormTable batch deletion
+  formTableRef: {
+    type: Object,
+    default: null
+  },
+  itemId: {
+    type: [String, Number],
+    default: null
   }
 })
 
@@ -60,11 +69,18 @@ const handleDelete = async () => {
     try {
       loading.value = true
 
-      // Perform GET request for deletion (as per project requirements)
-      await http.get(props.url)
+      // If formTableRef and itemId are provided, use FormTable's batchDeleteItems method
+      if (props.formTableRef && props.itemId !== null) {
+        await props.formTableRef.batchDeleteItems([props.itemId])
 
-      // Show success message
-      alertSuccess('Success', 'Item deleted successfully')
+        // Refresh the table after successful deletion
+        if (props.formTableRef.refresh) {
+          props.formTableRef.refresh()
+        }
+      } else {
+        // Perform GET request for deletion (as per project requirements)
+        await http.get(props.url)
+      }
 
       // Emit success event
       emit('success', props.url)
