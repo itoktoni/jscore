@@ -1,34 +1,73 @@
-
 :root {
-    --bg-color: #fff;
-    --bg-secondary-color: #f3f3f6;
-    --color-primary: #2563eb;
-    --color-lightGrey: #d2d6dd;
-    --color-grey: #747681;
-    --color-darkGrey: #3f4144;
-    --color-error: #d43939;
-    --color-success: #28bd14;
-    --grid-maxWidth: 120rem;
-    --grid-gutter: 2rem;
-    --icon-text: 1rem;
-    --font-size: 1.6rem;
-    --font-color: #333;
-    --font-color-secondary:var(--bg-secondary-color);
-
-    --primary-color: #2563eb;
-    --primary-hover: #1d4ed8;
-    --primary-active: #1f4abf;
-    --text-light: #ffffff;
-    --bg-light: #f3f4f6;
-    --bg-white: #ffffff;
-    --border-color: #e5e7eb;
-    --text-dark: #1f2937;
-    --text-muted: #6b7280;
-    --danger-color: #ef4444;
-    --success-color: #22c55e;
-    --notification-unread-bg: #f0f7ff;
-
-  --font-family-sans: -apple-system, "BlinkMacSystemFont", "Avenir",
+  /* Base Colors */
+  --white: #ffffff;
+  --black: #000000;
+  
+  /* Background Colors */
+  --bg-color: var(--white);
+  --bg-secondary-color: #f3f3f6;
+  --bg-light: #f3f4f6;
+  --bg-white: var(--white);
+  --bg-light-secondary: #f8f9fa;
+  --bg-error-light: #fff5f5;
+  
+  /* Text Colors */
+  --font-color: #333;
+  --font-color-secondary: var(--bg-secondary-color);
+  --text-light: var(--white);
+  --text-dark: #1f2937;
+  --text-muted: #6b7280;
+  --text-gray: #555;
+  --text-gray-light: #6c757d;
+  --text-gray-dark: #495057;
+  --text-gray-medium: #868e96;
+  --text-placeholder: #bdbfc4;
+  
+  /* Primary Colors */
+  --color-primary: #2563eb;
+  --primary-color: var(--color-primary);
+  --primary-hover: #1d4ed8;
+  --primary-active: #1f4abf;
+  
+  /* Grayscale Colors */
+  --color-lightGrey: #d2d6dd;
+  --color-grey: #747681;
+  --color-darkGrey: #3f4144;
+  --color-border-light: #e9ecef;
+  --color-scrollbar-track: #f5f5f5;
+  --color-scrollbar-thumb: #d3d3d3;
+  
+  /* Status Colors */
+  --color-error: #d43939;
+  --color-success: #28bd14;
+  --danger-color: #ef4444;
+  --success-color: #22c55e;
+  --color-error-bootstrap: #dc3545;
+  --color-primary-bootstrap: #007bff;
+  
+  /* Special Colors */
+  --border-color: #e5e7eb;
+  --notification-unread-bg: #f0f7ff;
+  
+  /* Shadow Colors */
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --shadow-color-light: rgba(0, 0, 0, 0.05);
+  --shadow-color-medium: rgba(0, 0, 0, 0.05);
+  --shadow-color-dark: rgba(0, 0, 0, 0.1);
+  --shadow-overlay: rgba(0, 0, 0, 0.5);
+  --shadow-primary: rgba(0, 123, 255, 0.1);
+  --shadow-error: rgba(220, 53, 69, 0.1);
+  
+  /* Typography */
+  --font-size: 1.6rem;
+  --icon-text: 1rem;
+  
+  /* Grid System */
+  --grid-maxWidth: 120rem;
+  --grid-gutter: 2rem;
+  
+  /* Font Families */
+  --font-family-sans: 'Inter', sans-serif, "Segoe UI", "Helvetica Neue", sans-serif, -apple-system, "BlinkMacSystemFont", "Avenir",
     "Avenir Next", "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell",
     "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
   --font-family-mono: monaco, "Consolas", "Lucida Console", monospace;
