@@ -144,12 +144,12 @@ const buttonClasses = computed(() => {
   }
 
   const classes = {
-    'form-button': true,
-    [`form-button--${props.variant}`]: true,
-    [`form-button--${props.size}`]: true,
-    'form-button--block': props.block,
-    'form-button--loading': computedLoading.value,
-    'form-button--disabled': props.disabled
+    'button': true,
+    [`button ${props.variant}`]: true,
+    [`button ${props.size}`]: true,
+    'button block': props.block,
+    'button loading': computedLoading.value,
+    'button disabled': props.disabled
   }
 
   // Only add column class if col prop is provided
@@ -298,215 +298,6 @@ const handleDelete = async () => {
   min-width: fit-content;
 }
 
-/* Flexible button - adjusts to content width */
-.form-button--flexible {
-  display: inline-flex;
-  width: auto;
-  margin-right: 10px;
-  vertical-align: top;
-}
-
-/* Column support - make components work inline without row wrapper */
-.form-button.col-1 {
-  display: inline-block;
-  width: calc(8.333% - 10px);
-  margin-right: 10px;
-  vertical-align: top;
-}
-
-.form-button.col-2 {
-  display: inline-block;
-  width: calc(16.666% - 10px);
-  margin-right: 10px;
-  vertical-align: top;
-}
-
-.form-button.col-3 {
-  display: inline-block;
-  width: calc(25% - 10px);
-  margin-right: 10px;
-  vertical-align: top;
-}
-
-.form-button.col-4 {
-  display: inline-block;
-  width: calc(33.333% - 10px);
-  margin-right: 10px;
-  vertical-align: top;
-}
-
-.form-button.col-5 {
-  display: inline-block;
-  width: calc(41.666% - 10px);
-  margin-right: 10px;
-  vertical-align: top;
-}
-
-.form-button.col-6 {
-  display: inline-block;
-  width: calc(50% - 10px);
-  margin-right: 10px;
-  vertical-align: top;
-}
-
-.form-button.col-7 {
-  display: inline-block;
-  width: calc(58.333% - 10px);
-  margin-right: 10px;
-  vertical-align: top;
-}
-
-.form-button.col-8 {
-  display: inline-block;
-  width: calc(66.666% - 10px);
-  margin-right: 10px;
-  vertical-align: top;
-}
-
-.form-button.col-9 {
-  display: inline-block;
-  width: calc(75% - 10px);
-  margin-right: 10px;
-  vertical-align: top;
-}
-
-.form-button.col-10 {
-  display: inline-block;
-  width: calc(83.333% - 10px);
-  margin-right: 10px;
-  vertical-align: top;
-}
-
-.form-button.col-11 {
-  display: inline-block;
-  width: calc(91.666% - 10px);
-  margin-right: 10px;
-  vertical-align: top;
-}
-
-.form-button.col-12 {
-  display: block;
-  width: 100%;
-  margin-right: 0;
-}
-
-/* Mobile responsiveness */
-@media (max-width: 768px) {
-  .form-button[class*="col-"] {
-    display: block !important;
-    width: 100% !important;
-    margin-right: 0 !important;
-    margin-bottom: 10px;
-  }
-
-  /* Flexible buttons also become full width on mobile */
-  .form-button--flexible {
-    display: block !important;
-    width: 100% !important;
-    margin-right: 0 !important;
-    margin-bottom: 10px;
-  }
-}
-
-/* Sizes */
-.form-button--small {
-  padding: 8px 16px;
-  font-size: 14px;
-  min-height: 36px;
-}
-
-.form-button--medium {
-  padding: 10px 20px;
-  font-size: 16px;
-}
-
-.form-button--large {
-  padding: 16px 24px;
-  font-size: 18px;
-  min-height: 52px;
-}
-
-/* Variants */
-.form-button--primary {
-  background-color: #007bff;
-  color: white;
-}
-
-.form-button--primary:hover:not(:disabled) {
-  background-color: #0056b3;
-  transform: translateY(-1px);
-}
-
-.form-button--secondary {
-  background-color: #6c757d;
-  color: white;
-}
-
-.form-button--secondary:hover:not(:disabled) {
-  background-color: #545b62;
-  transform: translateY(-1px);
-}
-
-.form-button--success {
-  background-color: #28a745;
-  color: white;
-}
-
-.form-button--success:hover:not(:disabled) {
-  background-color: #218838;
-  transform: translateY(-1px);
-}
-
-.form-button--danger {
-  background-color: #dc3545;
-  color: white;
-}
-
-.form-button--danger:hover:not(:disabled) {
-  background-color: #c82333;
-  transform: translateY(-1px);
-}
-
-.form-button--warning {
-  background-color: #ffc107;
-  color: #212529;
-}
-
-.form-button--warning:hover:not(:disabled) {
-  background-color: #e0a800;
-  transform: translateY(-1px);
-}
-
-.form-button--info {
-  background-color: #17a2b8;
-  color: white;
-}
-
-.form-button--info:hover:not(:disabled) {
-  background-color: #138496;
-  transform: translateY(-1px);
-}
-
-/* States */
-.form-button--block {
-  width: 100%;
-}
-
-.form-button--disabled,
-.form-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none !important;
-}
-
-.form-button--loading {
-  cursor: wait;
-}
-
-.form-button:active:not(:disabled) {
-  transform: translateY(0);
-}
-
 /* Loading spinner */
 .loading-spinner {
   width: 16px;
@@ -524,27 +315,6 @@ const handleDelete = async () => {
 @keyframes spin {
   to {
     transform: rotate(360deg);
-  }
-}
-
-/* Mobile optimizations */
-@media (max-width: 768px) {
-  .form-button--small {
-    padding: 10px 18px;
-    font-size: 14px;
-    min-height: 40px;
-  }
-
-  .form-button--medium {
-    padding: 14px 22px;
-    font-size: 16px;
-    min-height: 48px;
-  }
-
-  .form-button--large {
-    padding: 18px 26px;
-    font-size: 18px;
-    min-height: 56px;
   }
 }
 
