@@ -1,0 +1,70 @@
+﻿<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>New Core</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link rel="preload" as="style" href="http://newcore.test/build/assets/style-CWspmG4a.css" /><link rel="stylesheet" href="http://newcore.test/build/assets/style-CWspmG4a.css" data-navigate-track="reload" />
+		<style>
+			.wrapper {
+				background: url(http://newcore.test/images/background.jpg) no-repeat right center;
+			}
+		</style>
+	</head>
+
+	<body>
+
+		<div class="wrapper">
+			<div class="inner">
+
+                
+<form class="form-detail login" method="POST" action="http://newcore.test/login">
+    <input type="hidden" name="_token" value="WrUsd6yVrCMsa9e30c4ybHDNTDDKKj8wCvOTDS9T" autocomplete="off">
+    <h2 class="logo">
+        <img class="logo"
+        src="http://newcore.test/storage/logo.png">
+    </h2>
+
+    <h3>Login Form</h3>
+    <div class="form-full">
+        <div class="form-wrapper">
+            <label for="">Username or Email</label>
+            <input type="text" class="form-control" value=""  name="login" placeholder="input your credentials">
+        </div>
+    </div>
+
+    <div class="form-full">
+        <div class="form-wrapper">
+            <label for="">Password</label>
+            <input type="password" class="form-control" name="password" placeholder="input your password">
+                    </div>
+    </div>
+
+
+    <div class="form-row form-button">
+        <div class="form-wrapper">
+            <a class="button black" href="http://newcore.test/api/register">Register</a>
+        </div>
+
+        <div class="form-wrapper">
+            <button class="button" type="submit" data-text="Submit">
+                <span>Login</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="form-full">
+        <a href="http://newcore.test/password/reset">Forgot Password</a>
+    </div>
+
+</form>
+
+
+			</div>
+		</div>
+
+
+	</body>
+</html>
+

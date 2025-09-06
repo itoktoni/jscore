@@ -25,7 +25,7 @@
     </form>
 
     <div class="form-table-content">
-      <slot name="table" :data="tableData" :loading="loading" />
+      <slot name="table" :data="tableData" :loading="loading" :selectedItems="selectedItems" :toggleSelectAll="toggleSelectAll" :isAllSelected="isAllSelected" />
     </div>
 
     <div v-if="pagination" class="form-table-pagination">
@@ -57,10 +57,12 @@
 </template>
 
 <script setup>
-import { ref, provide, watch } from 'vue'
+import { ref, reactive, onMounted, watch, provide, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { http } from '../stores/http'
 import FormButton from './FormButton.vue'
 
+// Define props
 const props = defineProps({
   endpoint: {
     type: String,
@@ -69,101 +71,127 @@ const props = defineProps({
   initialData: {
     type: Object,
     default: () => ({})
+  },
+  // Add new props for delete endpoints
+  deleteEndpoint: {
+    type: [String, Function],
+    default: null
+  },
+  batchDeleteEndpoint: {
+    type: String,
+    default: null
   }
 })
 
-const emit = defineEmits(['search', 'error'])
+// Define emits
+const emit = defineEmits(['search', 'error', 'delete', 'delete-selected'])
 
-// Form state
-const formData = ref({ ...props.initialData })
+// Reactive properties
+const route = useRoute()
+const router = useRouter()
+const formData = reactive({ ...props.initialData })
 const fieldErrors = ref({})
 const isSubmitting = ref(false)
-const loading = ref(false)
-
-// Table data
 const tableData = ref([])
+const loading = ref(false)
 const pagination = ref(null)
+const selectedItems = ref([])
+
+// Computed property for check all functionality
+const isAllSelected = computed(() => {
+  if (!tableData.value || tableData.value.length === 0) return false
+  return selectedItems.value.length === tableData.value.length
+})
+
+// Create refs for providing to child components
+const formDataRef = ref(formData)
+const fieldErrorsRef = ref(fieldErrors)
+const isSubmittingRef = ref(isSubmitting)
 
 // Provide form context to child components
-provide('formData', formData)
-provide('fieldErrors', fieldErrors)
+provide('formData', formDataRef)
+provide('fieldErrors', fieldErrorsRef)
+provide('isSubmitting', isSubmittingRef)
 
-// Handle search submission
+// Keep formDataRef in sync with formData changes
+watch(
+  () => formData,
+  (newFormData) => {
+    formDataRef.value = newFormData
+  },
+  { deep: true }
+)
+
+// Toggle select all items
+const toggleSelectAll = () => {
+  if (isAllSelected.value) {
+    // Deselect all
+    selectedItems.value = []
+  } else {
+    // Select all
+    selectedItems.value = [...(tableData.value || [])].map(item => item.id)
+  }
+}
+
+// Toggle selection of a single item
+const toggleSelectItem = (id) => {
+  const index = selectedItems.value.indexOf(id)
+  if (index > -1) {
+    // Remove from selected
+    selectedItems.value.splice(index, 1)
+  } else {
+    // Add to selected
+    selectedItems.value.push(id)
+  }
+}
+
+// Handle search function
 const handleSearch = async () => {
   isSubmitting.value = true
-  loading.value = true
   fieldErrors.value = {}
 
   try {
-    // Build query parameters from form data
-    const params = new URLSearchParams()
+    loading.value = true
+    const params = {
+      ...formData,
+      page: route.query.page || 1
+    }
 
-    Object.keys(formData.value).forEach(key => {
-      const value = formData.value[key]
-      if (value !== null && value !== undefined && value !== '') {
-        // Handle array values (for multiple selections)
-        if (Array.isArray(value)) {
-          value.forEach((item, index) => {
-            params.append(`${key}[${index}]`, item)
-          })
-        } else {
-          params.append(key, value)
-        }
-      }
-    })
-
-    // Add pagination parameter
-    params.append('page', pagination.value?.current_page || 1)
-
-    const url = `${props.endpoint}?${params.toString()}`
-    console.log('FormTable: Making request to', url)
-    const response = await http.get(url)
-
-    console.log('FormTable: Received response', response)
-
+    const response = await http.get(props.endpoint, { params })
     const data = response.data
-    console.log('FormTable: Processing data', data)
 
-    // Handle different response formats
-    if (data && typeof data === 'object' && 'data' in data) {
-      // Standard Laravel pagination format
-      console.log('FormTable: Using Laravel pagination format')
-      tableData.value = Array.isArray(data.data) ? data.data : []
-      pagination.value = {
-        current_page: data.current_page || 1,
-        last_page: data.last_page || 1,
-        per_page: data.per_page || 10,
-        total: data.total || tableData.value.length,
-        from: data.from || 1,
-        to: data.to || tableData.value.length
-      }
-    } else if (Array.isArray(data)) {
-      // Simple array response
-      console.log('FormTable: Using simple array format')
+    // Handle both direct array response and paginated response
+    if (Array.isArray(data)) {
       tableData.value = data
       pagination.value = null
+    } else if (data.data) {
+      tableData.value = data.data
+      pagination.value = {
+        current_page: data.current_page,
+        last_page: data.last_page,
+        per_page: data.per_page,
+        total: data.total,
+        from: data.from,
+        to: data.to
+      }
     } else {
-      // Unexpected format, set empty array
-      console.log('FormTable: Unexpected data format, setting empty array')
       tableData.value = []
       pagination.value = null
     }
 
-    console.log('FormTable: Final tableData', tableData.value)
+    // Reset selected items when data changes
+    selectedItems.value = []
 
+    // Update URL parameters
+    updateUrlParams()
+
+    // Emit search event with response data
     emit('search', response)
   } catch (error) {
     console.error('FormTable search error:', error)
+    fieldErrors.value = error.response?.data?.errors || {}
 
-    // Handle validation errors
-    if (error.response?.status === 422) {
-      const errors = error.response.data.errors || {}
-      Object.keys(errors).forEach(fieldName => {
-        const errorMessages = errors[fieldName]
-        fieldErrors.value[fieldName] = Array.isArray(errorMessages) ? errorMessages[0] : errorMessages
-      })
-    }
-
+    // Emit error event
     emit('error', error)
   } finally {
     isSubmitting.value = false
@@ -171,35 +199,181 @@ const handleSearch = async () => {
   }
 }
 
-// Handle pagination
-const changePage = (page) => {
-  if (pagination.value) {
-    pagination.value.current_page = page
-    handleSearch()
-  }
-}
-
-// Reset form
-const handleReset = () => {
-  formData.value = { ...props.initialData }
-  fieldErrors.value = {}
-  // Reset to first page and search
-  if (pagination.value) {
-    pagination.value.current_page = 1
-  }
-  handleSearch()
-}
-
-// Initialize data on mount
-watch(() => props.endpoint, () => {
-  handleSearch()
-}, { immediate: true })
-
-// Expose methods
+// Expose methods to parent components
+// refresh is an alias for handleSearch for more intuitive usage
 defineExpose({
   handleSearch,
-  handleReset,
-  changePage
+  refresh: handleSearch, // Alias for more intuitive usage
+  selectedItems,
+  toggleSelectAll,
+  toggleSelectItem,
+  handleDeleteSelected,
+  deleteUser
+})
+
+// Handle reset function
+const handleReset = () => {
+  // Reset form data to initial values
+  Object.keys(formData).forEach(key => {
+    formData[key] = props.initialData[key] || ''
+  })
+
+  // Reset field errors
+  fieldErrors.value = {}
+
+  // Update URL parameters
+  updateUrlParams()
+
+  // Perform search with reset data
+  handleSearch()
+}
+
+// Change page function
+const changePage = (page) => {
+  // Update form data with new page
+  formData.page = page
+
+  // Update URL parameters
+  updateUrlParams()
+
+  // Perform search with new page
+  handleSearch()
+}
+
+// Update URL parameters
+const updateUrlParams = () => {
+  const query = { ...route.query }
+
+  // Add form data to query
+  Object.keys(formData).forEach(key => {
+    if (formData[key]) {
+      query[key] = formData[key]
+    } else {
+      delete query[key]
+    }
+  })
+
+  // Update URL without reload
+  router.push({ query })
+}
+
+// Handle delete selected items
+async function handleDeleteSelected() {
+  if (selectedItems.value.length === 0) return
+
+  // Check if batch delete endpoint is provided
+  if (!props.batchDeleteEndpoint) {
+    console.error('Batch delete endpoint not provided')
+    emit('error', new Error('Batch delete endpoint not provided'))
+    return
+  }
+
+  try {
+    // Send selected item IDs as an array to the batch delete endpoint
+    await http.post(props.batchDeleteEndpoint, {code : selectedItems.value})
+
+    // Store the current selected items for potential use in events
+    const deletedItems = [...selectedItems.value]
+
+    // Clear selected items
+    selectedItems.value = []
+
+    // Refresh the table
+    await handleSearch()
+
+    console.log('Selected items deleted successfully')
+
+    // Emit a custom event for successful deletion
+    emit('delete-selected', deletedItems)
+  } catch (error) {
+    console.error('Error deleting selected items:', error)
+    emit('error', error)
+
+    // Re-throw the error so it can be handled by the caller
+    throw error
+  }
+}
+
+// Handle delete single item
+async function deleteUser(userId, confirmFunction, successFunction, errorFunction) {
+  // Check if delete endpoint is provided
+  if (!props.deleteEndpoint) {
+    console.error('Delete endpoint not provided')
+    if (errorFunction) {
+      errorFunction('Error', 'Delete endpoint not provided')
+    }
+    return
+  }
+
+  // Use the provided confirm function or a default one
+  const result = await confirmFunction(
+    'Confirm Delete',
+    'Are you sure you want to delete this item?'
+  )
+
+  if (result.isConfirmed) {
+    try {
+      // Construct the delete URL with the user ID
+      // If deleteEndpoint contains a placeholder, replace it
+      let deleteUrl = props.deleteEndpoint
+      if (typeof props.deleteEndpoint === 'function') {
+        deleteUrl = props.deleteEndpoint(userId)
+      } else if (deleteUrl.includes('{id}')) {
+        deleteUrl = deleteUrl.replace('{id}', userId)
+      } else if (deleteUrl.includes(':id')) {
+        deleteUrl = deleteUrl.replace(':id', userId)
+      } else {
+        // Assume it's a simple endpoint that needs the ID appended
+        deleteUrl = `${props.deleteEndpoint}/${userId}`
+      }
+
+      await http.get(deleteUrl)
+
+      // Refresh the table after deletion
+      await handleSearch()
+
+      // Call success function if provided
+      if (successFunction) {
+        successFunction('Success', 'Item deleted successfully')
+      }
+
+      // Emit delete event
+      emit('delete', userId)
+    } catch (error) {
+      // Call error function if provided
+      if (errorFunction) {
+        errorFunction('Error', 'Failed to delete item')
+      }
+      console.error('Delete item error:', error)
+
+      // Re-throw the error so it can be handled by the caller
+      throw error
+    }
+  }
+}
+
+// Watch for route changes
+watch(
+  () => route.query,
+  () => {
+    // Update form data from query parameters
+    Object.keys(props.initialData).forEach(key => {
+      if (route.query[key] !== undefined) {
+        formData[key] = route.query[key]
+      } else {
+        formData[key] = props.initialData[key] || ''
+      }
+    })
+
+    // Perform search when route changes
+    handleSearch()
+  },
+  { immediate: true }
+)
+
+// Initialize component
+onMounted(() => {
+  console.log('FormTable component mounted')
 })
 </script>
 
