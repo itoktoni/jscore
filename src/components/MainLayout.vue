@@ -168,8 +168,8 @@ const notificationCount = ref(3)
 // Menu configuration
 const mainNavItems = ref([
   { id: 'home', title: 'Home', icon: 'bi bi-house' },
-  { id: 'aplikasi', title: 'Aplikasi', icon: 'bi bi-house' },
-  { id: 'laporan', title: 'Laporan', icon: 'bi bi-house' },
+  { id: 'aplikasi', title: 'Apps', icon: 'bi bi-rocket' },
+  { id: 'laporan', title: 'Report', icon: 'bi bi-printer' },
   { id: 'system', title: 'System', icon: 'bi bi-house' },
   { id: 'test', title: 'Test', icon: 'bi bi-bug' }
 ])

@@ -14,9 +14,7 @@ import safeAreaUtil from './utils/safeArea'
 // Import settings store
 import { useSettingsStore } from './stores/settings'
 import { http } from './stores/http'
-
-import Vueform from '@vueform/vueform'
-import vueformConfig from '../vueform.config'
+import { useAuthStore } from './stores/auth'
 
 // Create Vue app
 const app = createApp(App)
@@ -28,8 +26,6 @@ const pinia = createPinia()
 app.use(pinia)
 app.use(router)
 
-app.use(Vueform, vueformConfig)
-
 // Initialize settings
 const settingsStore = useSettingsStore()
 settingsStore.loadSettings().then(() => {
@@ -38,6 +34,14 @@ settingsStore.loadSettings().then(() => {
 
   // Update HTTP service baseURL after settings are loaded
   http.updateBaseURL()
+
+  // Initialize auth store after settings are loaded
+  const authStore = useAuthStore()
+  authStore.initAuth().then((result) => {
+    console.log('Auth initialized:', result)
+  }).catch((error) => {
+    console.error('Error initializing auth:', error)
+  })
 })
 
 // Initialize safe area only on mobile platforms

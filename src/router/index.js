@@ -99,7 +99,9 @@ router.beforeEach(async (to, from, next) => {
 
   // Initialize auth if not already done
   if (!authStore.isAuthenticated && !authStore.token) {
-    await authStore.initAuth()
+    console.log('Initializing auth...')
+    const result = await authStore.initAuth()
+    console.log('Auth init result:', result)
   }
 
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
@@ -108,17 +110,23 @@ router.beforeEach(async (to, from, next) => {
   const isAuthenticated = authStore.isAuthenticated
   const isAdmin = authStore.user && (authStore.user.role === 'admin' || authStore.user.role === 'administrator')
 
+  console.log('Route guard - requiresAuth:', requiresAuth, 'isAuthenticated:', isAuthenticated)
+
   if (requiresAuth && !isAuthenticated) {
     // Route requires authentication but user is not authenticated
+    console.log('Redirecting to login - not authenticated')
     next('/login')
   } else if (requiresGuest && isAuthenticated) {
     // Route requires guest (not authenticated) but user is authenticated
+    console.log('Redirecting to dashboard - already authenticated')
     next('/dashboard')
   } else if (requiresAdmin && (!isAuthenticated || !isAdmin)) {
     // Route requires admin access but user is not admin
+    console.log('Redirecting to dashboard - not admin')
     next('/dashboard')
   } else {
     // Route is accessible
+    console.log('Allowing navigation to:', to.path)
     next()
   }
 })

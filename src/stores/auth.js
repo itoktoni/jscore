@@ -94,31 +94,41 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async initAuth() {
-      const { value: token } = await Preferences.get({ key: 'auth_token' })
-      if (token) {
-        this.token = token
-        this.isAuthenticated = true
-        http.setAuthToken(token)
+      try {
+        const { value: token } = await Preferences.get({ key: 'auth_token' })
+        if (token) {
+          this.token = token
+          this.isAuthenticated = true
+          http.setAuthToken(token)
 
-        // Load user profile data
-        try {
-          await this.loadProfile()
-          return responseSuccess({ message: 'Authentication initialized' })
-        } catch (error) {
-          // If profile loading fails, logout
-          await this.logout()
-          return responseError(error)
+          // Load user profile data
+          try {
+            console.log('Initializing auth with token, loading profile...')
+            await this.loadProfile()
+            return responseSuccess({ message: 'Authentication initialized' })
+          } catch (error) {
+            console.error('Error loading profile during init:', error)
+            // If profile loading fails, logout
+            await this.logout()
+            return responseError(error)
+          }
         }
+        return responseSuccess({ message: 'No authentication token found' })
+      } catch (error) {
+        console.error('Error initializing auth:', error)
+        return responseError(error)
       }
-      return responseSuccess({ message: 'No authentication token found' })
     },
 
     async loadProfile() {
       try {
+        console.log('Loading user profile...')
         const response = await http.get('/profile')
         this.user = response.data.data || response.data
+        console.log('Profile loaded successfully:', this.user)
         return responseSuccess(this.user)
       } catch (error) {
+        console.error('Error loading profile:', error)
         // Handle authentication errors
         if (error.response?.status === 401) {
           const message = error.response.data?.message || ''

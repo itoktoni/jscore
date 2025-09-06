@@ -21,7 +21,8 @@ import {
   DoughnutController,
   ArcElement,
   RadarController,
-  RadialLinearScale
+  RadialLinearScale,
+  Filler // Add Filler plugin
 } from 'chart.js'
 
 // Register Chart.js components
@@ -31,6 +32,7 @@ Chart.register(
   LineController,
   LineElement,
   PointElement,
+
   CategoryScale,
   LinearScale,
   Title,
@@ -39,7 +41,8 @@ Chart.register(
   DoughnutController,
   ArcElement,
   RadarController,
-  RadialLinearScale
+  RadialLinearScale,
+  Filler // Register Filler plugin
 )
 
 const props = defineProps({

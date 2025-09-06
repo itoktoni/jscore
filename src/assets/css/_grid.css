@@ -8,6 +8,7 @@
 .row {
   display: flex;
   flex-flow: row wrap;
+  align-items: center;
   justify-content: flex-start;
   margin-left: calc(var(--grid-gutter) / -2);
   margin-right: calc(var(--grid-gutter) / -2);
