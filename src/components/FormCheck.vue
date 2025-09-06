@@ -3,13 +3,14 @@
     ref="checkboxRef"
     type="checkbox"
     :checked="isChecked"
+    :indeterminate="isIndeterminate"
     @change="handleChange"
-    v-bind="$attrs"
-  >
+  />
 </template>
 
 <script setup>
-import { ref, watch, computed, onMounted } from 'vue'
+import { ref, watch, computed } from 'vue'
+import { useSelectionState } from '../composables/useSelectionState'
 
 const props = defineProps({
   model: {
@@ -28,21 +29,68 @@ const props = defineProps({
   dataArray: {
     type: Array,
     default: () => []
+  },
+  // New prop to indicate this is a "select all" checkbox
+  selectAll: {
+    type: Boolean,
+    default: false
+  },
+  // New prop to provide a callback for updating selected items
+  updateSelectedItems: {
+    type: Function,
+    default: null
+  },
+  // Props for coordinated selection management
+  selectedItems: {
+    type: Array,
+    default: null
+  },
+  onSelectionChange: {
+    type: Function,
+    default: null
   }
 })
 
-const emit = defineEmits(['update:model'])
+const emit = defineEmits(['update:model', 'select-all', 'selection-change'])
+
+// Use the selection state composable
+const {
+  selectedItems: internalSelectedItems,
+  toggleItemSelection,
+  selectAllItems: internalSelectAllItems,
+  clearSelection
+} = useSelectionState()
 
 const checkboxRef = ref(null)
 
+// Computed property to determine which selected items to use
+const effectiveSelectedItems = computed(() => {
+  // If selectedItems prop is provided, use it (controlled by parent)
+  if (props.selectedItems !== null) {
+    return props.selectedItems
+  }
+  // If model is provided and it's an array, use it
+  if (Array.isArray(props.model)) {
+    return props.model
+  }
+  // Otherwise use internal state (uncontrolled)
+  return internalSelectedItems.value
+})
+
 // Computed property to determine if the checkbox is checked
 const isChecked = computed(() => {
-  if (Array.isArray(props.model)) {
-    // If model is an array, check if it includes the value prop
-    return props.value !== null && props.model.includes(props.value)
+  if (props.selectAll) {
+    // For select all checkbox, check if all items are selected
+    if (!props.dataArray || props.dataArray.length === 0) return false
+    return effectiveSelectedItems.value.length === props.dataArray.length
   }
-  // If model is a boolean, use it directly
-  return props.model
+
+  if (Array.isArray(effectiveSelectedItems.value)) {
+    // If selectedItems is an array, check if it includes the value prop
+    return props.value !== null && effectiveSelectedItems.value.includes(props.value)
+  }
+  // If selectedItems is a boolean, use it directly
+  return effectiveSelectedItems.value
 })
 
 // Computed property to determine indeterminate state
@@ -53,8 +101,8 @@ const isIndeterminate = computed(() => {
   }
 
   // If we have an array and data array, calculate indeterminate state
-  if (Array.isArray(props.model) && props.dataArray.length > 0) {
-    return props.model.length > 0 && props.model.length < props.dataArray.length
+  if (Array.isArray(effectiveSelectedItems.value) && props.dataArray && props.dataArray.length > 0) {
+    return effectiveSelectedItems.value.length > 0 && effectiveSelectedItems.value.length < props.dataArray.length
   }
 
   return false
@@ -68,27 +116,64 @@ watch(isIndeterminate, (newValue) => {
 }, { immediate: true })
 
 const handleChange = (event) => {
-  if (Array.isArray(props.model)) {
-    // Handle array-based selection
+  if (props.selectAll) {
+    // Handle select all functionality
+    let selectedIds = [];
     if (event.target.checked) {
-      // Add value to array if not already present
-      if (props.value !== null && !props.model.includes(props.value)) {
-        emit('update:model', [...props.model, props.value])
-      }
-    } else {
-      // Remove value from array
-      if (props.value !== null) {
-        const newArray = props.model.filter(item => item !== props.value)
-        emit('update:model', newArray)
-      }
+      // Select all items
+      selectedIds = (props.dataArray || []).map(item => item.id)
     }
+
+    // Notify parent of selection change
+    if (props.onSelectionChange) {
+      props.onSelectionChange(selectedIds)
+    } else if (props.updateSelectedItems) {
+      props.updateSelectedItems(selectedIds)
+    } else {
+      // Otherwise emit the select-all event
+      emit('select-all', selectedIds)
+    }
+    // Emit selection change event
+    emit('selection-change', selectedIds)
   } else {
-    // Handle boolean-based selection
-    emit('update:model', event.target.checked)
+    // Handle individual checkbox
+    if (props.value !== null) {
+      const currentItems = [...effectiveSelectedItems.value]
+      const index = currentItems.indexOf(props.value)
+
+      if (event.target.checked) {
+        // Add item if not already selected
+        if (index === -1) {
+          currentItems.push(props.value)
+        }
+      } else {
+        // Remove item if selected
+        if (index > -1) {
+          currentItems.splice(index, 1)
+        }
+      }
+
+      // Update internal state if not controlled by parent
+      if (props.selectedItems === null && !Array.isArray(props.model)) {
+        internalSelectedItems.value = currentItems
+      }
+
+      // Notify parent of selection change
+      if (props.onSelectionChange) {
+        props.onSelectionChange(currentItems)
+      } else if (props.updateSelectedItems) {
+        props.updateSelectedItems(currentItems)
+      } else {
+        // Otherwise emit the update:model event
+        emit('update:model', currentItems)
+      }
+      // Emit selection change event
+      emit('selection-change', currentItems)
+    }
   }
 }
 </script>
 
 <style scoped>
-/* You can add custom styling here if needed */
+/* Add any specific styles for the checkbox if needed */
 </style>

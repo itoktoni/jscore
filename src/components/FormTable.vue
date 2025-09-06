@@ -20,17 +20,7 @@
     </form>
 
     <div class="form-table-content">
-      <!-- Add batch delete button -->
-      <div v-if="selectedItems.length > 0" class="batch-actions">
-        <button
-          @click="handleBatchDelete"
-          class="btn btn-danger btn-sm"
-        >
-          Delete Selected ({{ selectedItems.length }})
-        </button>
-      </div>
-
-      <slot name="tableContent" :data="tableData" :selectedItems="selectedItems" :toggleSelectAll="toggleSelectAll" :isAllSelected="isAllSelected"></slot>
+      <slot name="tableContent" :data="tableData"></slot>
     </div>
 
     <div v-if="pagination" class="form-table-pagination">
@@ -63,8 +53,7 @@
 
 <script setup>
 import { ref, reactive, onMounted, watch, provide, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { http } from '../stores/http'
+import { useFormTable } from '../composables/useFormTable'
 import FormButton from './FormButton.vue'
 
 // Define props
@@ -87,20 +76,25 @@ const props = defineProps({
 // Define emits
 const emit = defineEmits(['search', 'error'])
 
-// Reactive properties
-const route = useRoute()
-const router = useRouter()
-const formData = reactive({ ...props.initialData })
-const fieldErrors = ref({})
-const isSubmitting = ref(false)
-const tableData = ref([])
-const pagination = ref(null)
-const selectedItems = ref([])
-
-// Computed property for check all functionality
-const isAllSelected = computed(() => {
-  if (!tableData.value || tableData.value.length === 0) return false
-  return selectedItems.value.length === tableData.value.length
+// Use the form table composable
+const {
+  formData,
+  fieldErrors,
+  isSubmitting,
+  tableData,
+  pagination,
+  handleSearch,
+  handleReset,
+  changePage,
+  updateUrlParams,
+  refresh,
+  deleteItem,
+  batchDeleteItems,
+  initialize
+} = useFormTable({
+  endpoint: props.endpoint,
+  initialData: props.initialData,
+  deleteEndpoint: props.delete
 })
 
 // Create refs for providing to child components
@@ -122,197 +116,18 @@ watch(
   { deep: true }
 )
 
-// Toggle select all items
-const toggleSelectAll = () => {
-  if (isAllSelected.value) {
-    // Deselect all
-    selectedItems.value = []
-  } else {
-    // Select all
-    selectedItems.value = [...(tableData.value || [])].map(item => item.id)
-  }
-}
-
-// Toggle selection of a single item
-const toggleSelectItem = (id) => {
-  const index = selectedItems.value.indexOf(id)
-  if (index > -1) {
-    // Remove from selected
-    selectedItems.value.splice(index, 1)
-  } else {
-    // Add to selected
-    selectedItems.value.push(id)
-  }
-}
-
-// Handle search function
-const handleSearch = async () => {
-  isSubmitting.value = true
-  fieldErrors.value = {}
-
-  try {
-    const params = {
-      ...formData,
-      page: route.query.page || 1
-    }
-
-    const response = await http.get(props.endpoint, { params })
-    const data = response.data
-
-    // Handle both direct array response and paginated response
-    if (Array.isArray(data)) {
-      tableData.value = data
-      pagination.value = null
-    } else if (data.data) {
-      tableData.value = data.data
-      pagination.value = {
-        current_page: data.current_page,
-        last_page: data.last_page,
-        per_page: data.per_page,
-        total: data.total,
-        from: data.from,
-        to: data.to
-      }
-    } else {
-      tableData.value = []
-      pagination.value = null
-    }
-
-    // Reset selected items when data changes
-    selectedItems.value = []
-
-    // Update URL parameters
-    updateUrlParams()
-
-    // Emit search event with response data
-    emit('search', response)
-  } catch (error) {
-    console.error('FormTable search error:', error)
-    fieldErrors.value = error.response?.data?.errors || {}
-
-    // Emit error event
-    emit('error', error)
-  } finally {
-    isSubmitting.value = false
-  }
-}
-
-// Batch delete items
-const batchDeleteItems = async () => {
-  if (!props.delete || selectedItems.value.length === 0) {
-    return
-  }
-
-  try {
-    // Send selected item IDs as an array in the request body
-    await http.post(props.delete, { code: selectedItems.value })
-
-    // Clear selected items
-    selectedItems.value = []
-
-    // Refresh the table data
-    await handleSearch()
-  } catch (error) {
-    console.error('Batch delete error:', error)
-    // Emit error event
-    emit('error', error)
-    throw error
-  }
-}
-
-// Handle batch delete with confirmation
-const handleBatchDelete = async () => {
-  if (selectedItems.value.length > 0) {
-    if (confirm(`Are you sure you want to delete ${selectedItems.value.length} selected items?`)) {
-      try {
-        await batchDeleteItems()
-      } catch (error) {
-        console.error('Batch delete error:', error)
-        alert('Failed to delete selected items')
-      }
-    }
-  }
-}
-
 // Expose methods to parent components
 // refresh is an alias for handleSearch for more intuitive usage
 defineExpose({
   handleSearch,
-  refresh: handleSearch, // Alias for more intuitive usage
-  selectedItems,
-  toggleSelectAll,
-  toggleSelectItem,
+  refresh, // Alias for more intuitive usage
+  deleteItem,
   batchDeleteItems
 })
 
-// Handle reset function
-const handleReset = () => {
-  // Reset form data to initial values
-  Object.keys(formData).forEach(key => {
-    formData[key] = props.initialData[key] || ''
-  })
-
-  // Reset field errors
-  fieldErrors.value = {}
-
-  // Update URL parameters
-  updateUrlParams()
-
-  // Perform search with reset data
-  handleSearch()
-}
-
-// Change page function
-const changePage = (page) => {
-  // Update form data with new page
-  formData.page = page
-
-  // Update URL parameters
-  updateUrlParams()
-
-  // Perform search with new page
-  handleSearch()
-}
-
-// Update URL parameters
-const updateUrlParams = () => {
-  const query = { ...route.query }
-
-  // Add form data to query
-  Object.keys(formData).forEach(key => {
-    if (formData[key]) {
-      query[key] = formData[key]
-    } else {
-      delete query[key]
-    }
-  })
-
-  // Update URL without reload
-  router.push({ query })
-}
-
-// Watch for route changes
-watch(
-  () => route.query,
-  () => {
-    // Update form data from query parameters
-    Object.keys(props.initialData).forEach(key => {
-      if (route.query[key] !== undefined) {
-        formData[key] = route.query[key]
-      } else {
-        formData[key] = props.initialData[key] || ''
-      }
-    })
-
-    // Perform search when route changes
-    handleSearch()
-  },
-  { immediate: true }
-)
-
 // Initialize component
 onMounted(() => {
-  console.log('FormTable component mounted')
+  initialize()
 })
 </script>
 
@@ -341,10 +156,6 @@ onMounted(() => {
   padding: 1.5rem;
 }
 
-.batch-actions {
-  margin-bottom: 1rem;
-}
-
 .btn {
   display: inline-flex;
   align-items: center;
@@ -361,15 +172,6 @@ onMounted(() => {
 .btn-sm {
   padding: 0.25rem 0.5rem;
   font-size: 0.875rem;
-}
-
-.btn-danger {
-  background-color: #ef4444;
-  color: white;
-}
-
-.btn-danger:hover {
-  background-color: #dc2626;
 }
 
 .form-table-pagination {

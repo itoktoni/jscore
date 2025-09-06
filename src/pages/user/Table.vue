@@ -40,16 +40,17 @@
       </template>
 
       <!-- Table Content -->
-      <template #tableContent="{ data, selectedItems, toggleSelectAll, isAllSelected }">
+      <template #tableContent="{ data }">
         <div class="table-responsive">
           <table class="data-table">
             <thead>
               <tr>
                 <th>
                   <FormCheck
-                    :model="isAllSelected"
                     :data-array="data || []"
-                    @update:model="toggleSelectAll"
+                    select-all
+                    :selected-items="selectedItems"
+                    :on-selection-change="updateSelectedItems"
                   />
                 </th>
                 <th>Actions</th>
@@ -64,8 +65,9 @@
               <tr v-for="user in (data || [])" :key="user.id">
                 <td data-label="Select">
                   <FormCheck
-                    :model="selectedItems"
                     :value="user.id"
+                    :selected-items="selectedItems"
+                    :on-selection-change="updateSelectedItems"
                   />
                 </td>
 
@@ -79,7 +81,6 @@
                   <ButtonDelete
                     :url="USER_API_ROUTES.delete(user.id)"
                     :form-table-ref="TableRef"
-                    :item-id="user.id"
                   />
                 </td>
 
@@ -100,6 +101,11 @@
     </FormTable>
 
     <div class="form-actions">
+      <ButtonDeleteAll
+        :url="USER_API_ROUTES.remove"
+        :selected-items="selectedItems"
+        :form-table-ref="TableRef"
+      />
       <router-link
         :to="{ name: USER_ROUTES.CREATE_USER }"
         class="btn btn-primary"
@@ -113,13 +119,20 @@
 <script setup>
 import { ref } from 'vue'
 import { USER_ROUTES, USER_API_ROUTES } from '../../router/userRoutes'
+import { http } from '../../stores/http'
+import { useSelectionState } from '../../composables/useSelectionState'
 import FormTable from '../../components/FormTable.vue'
 import FormInput from '../../components/FormInput.vue'
 import FormSelect from '../../components/FormSelect.vue'
 import FormCheck from '../../components/FormCheck.vue'
 import ButtonDelete from '../../components/ButtonDelete.vue'
+import ButtonDeleteAll from '../../components/ButtonDeleteAll.vue'
 
 const TableRef = ref(null)
+
+// Use the selection state composable
+const { selectedItems, updateSelectedItems } = useSelectionState()
+
 </script>
 
 <style scoped>
@@ -131,9 +144,8 @@ const TableRef = ref(null)
 }
 
 .form-actions {
-  padding: 1.5rem;
-  border-top: 1px solid #e2e8f0;
-  background-color: #f8fafc;
+  padding: 1rem;
+  flex-direction: column;
 }
 
 .btn {
@@ -174,6 +186,11 @@ const TableRef = ref(null)
   color: white;
 }
 
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .text-center {
   text-align: center;
 }
@@ -212,6 +229,7 @@ const TableRef = ref(null)
 
   .form-actions {
     padding: 1rem;
+    flex-direction: column;
   }
 }
 </style>

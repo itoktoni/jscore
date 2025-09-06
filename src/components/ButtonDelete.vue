@@ -44,10 +44,6 @@ const props = defineProps({
   formTableRef: {
     type: Object,
     default: null
-  },
-  itemId: {
-    type: [String, Number],
-    default: null
   }
 })
 
@@ -69,41 +65,31 @@ const handleDelete = async () => {
     try {
       loading.value = true
 
-      // If formTableRef and itemId are provided, use FormTable's batchDeleteItems method
-      if (props.formTableRef && props.itemId !== null) {
-        await props.formTableRef.batchDeleteItems([props.itemId])
-
-        // Refresh the table after successful deletion
-        if (props.formTableRef.refresh) {
-          props.formTableRef.refresh()
-        }
-      } else {
-        // Perform GET request for deletion (as per project requirements)
-        await http.get(props.url)
-      }
+      // Perform GET request for deletion (as per project requirements)
+      await http.get(props.url);
 
       // Emit success event
-      emit('success', props.url)
+      emit('success', props.url);
 
       // Call onSuccess callback if provided
       if (props.onSuccess) {
-        props.onSuccess(props.url)
+        props.onSuccess(props.url);
       }
     } catch (error) {
-      console.error('Delete error:', error)
+      console.error('Delete error:', error);
 
       // Show error message
-      alertError('Error', 'Failed to delete item')
+      alertError('Error', 'Failed to delete item');
 
       // Emit error event
-      emit('error', error)
+      emit('error', error);
 
       // Call onError callback if provided
       if (props.onError) {
-        props.onError(error)
+        props.onError(error);
       }
     } finally {
-      loading.value = false
+      loading.value = false;
     }
   }
 }
