@@ -47,7 +47,7 @@
       <BrowserTest />
 
       <!-- Bluetooth Printer Plugin -->
-      <BluetoothPrinterTest />
+      <!-- <BluetoothPrinterTest /> -->
 
       <!-- InAppBrowser Plugin -->
       <InAppBrowserTest />
@@ -67,7 +67,7 @@ import GeolocationTest from '../../components/plugin-tests/GeolocationTest.vue'
 import LocalNotificationsTest from '../../components/plugin-tests/LocalNotificationsTest.vue'
 import FilesystemTest from '../../components/plugin-tests/FilesystemTest.vue'
 import BrowserTest from '../../components/plugin-tests/BrowserTest.vue'
-import BluetoothPrinterTest from '../../components/plugin-tests/BluetoothPrinterTest.vue'
+// import BluetoothPrinterTest from '../../components/plugin-tests/BluetoothPrinterTest.vue'
 import InAppBrowserTest from '../../components/plugin-tests/InAppBrowserTest.vue'
 </script>
 

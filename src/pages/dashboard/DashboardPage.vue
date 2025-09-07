@@ -117,6 +117,15 @@ import {
   fetchPerformanceData,
   fetchRecentActivities
 } from '../../services/dashboardService'
+import { useAuthStore } from '../../stores/auth'
+
+// Get auth store to check user data
+const authStore = useAuthStore()
+console.log('Dashboard - Auth store state:', {
+  isAuthenticated: authStore.isAuthenticated,
+  user: authStore.user,
+  token: authStore.token
+})
 
 // Reactive data
 const selectedPeriod = ref('30')
@@ -334,6 +343,9 @@ const updateCharts = async () => {
 onMounted(() => {
   // Initialize charts
   updateCharts()
+  
+  // Log user data after mount
+  console.log('Dashboard mounted - User data:', authStore.user)
 })
 </script>
 

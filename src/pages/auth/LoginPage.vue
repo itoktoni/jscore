@@ -16,7 +16,7 @@
         <FormInput col="12" name="password" type="password" rules="required|min:4" />
 
         <div class="form-actions">
-          <FormButton col="12" type="submit" variant="primary" text="Login" />
+          <Button col="12" type="submit" variant="primary" text="Login" />
         </div>
       </FormContainer>
 
@@ -33,6 +33,7 @@ import { useAuthStore } from '../../stores/auth'
 import FormContainer from '../../components/FormContainer.vue'
 import FormInput from '../../components/FormInput.vue'
 import FormButton from '../../components/FormButton.vue'
+import Button from '../../components/Button.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()

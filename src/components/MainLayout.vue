@@ -168,9 +168,9 @@ const notificationCount = ref(3)
 // Menu configuration
 const mainNavItems = ref([
   { id: 'home', title: 'Home', icon: 'bi bi-house' },
-  { id: 'aplikasi', title: 'Aplikasi', icon: 'bi bi-house' },
-  { id: 'laporan', title: 'Laporan', icon: 'bi bi-house' },
-  { id: 'system', title: 'System', icon: 'bi bi-house' },
+  { id: 'aplikasi', title: 'Apps', icon: 'bi bi-rocket' },
+  { id: 'laporan', title: 'Report', icon: 'bi bi-printer' },
+  { id: 'system', title: 'System', icon: 'bi bi-wrench-adjustable-circle' },
   { id: 'test', title: 'Test', icon: 'bi bi-bug' }
 ])
 
@@ -192,7 +192,7 @@ const subMenus = ref({
   ],
   system: [
     { title: 'Group', route: '/system/groups' },
-    { title: 'Roles', route: '/system/roles' },
+    { title: 'Roles', route: '/roles' },
     { title: 'Menu', route: '/system/menu' },
     { title: 'Link', route: '/system/links' },
     { title: 'Permission', route: '/system/permissions' },
@@ -375,7 +375,7 @@ onUnmounted(() => {
 
 <style>
 /* Import local Chota CSS and Bootstrap Icons */
-@import url('../assets/css/chota.css');
+@import url('../assets/css/app.css');
 @import url('https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css');
 @import url('../assets/css/safe-area.css');
 </style>

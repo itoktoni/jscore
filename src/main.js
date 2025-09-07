@@ -14,6 +14,7 @@ import safeAreaUtil from './utils/safeArea'
 // Import settings store
 import { useSettingsStore } from './stores/settings'
 import { http } from './stores/http'
+import { useAuthStore } from './stores/auth'
 
 // Create Vue app
 const app = createApp(App)
@@ -33,6 +34,14 @@ settingsStore.loadSettings().then(() => {
 
   // Update HTTP service baseURL after settings are loaded
   http.updateBaseURL()
+
+  // Initialize auth store after settings are loaded
+  const authStore = useAuthStore()
+  authStore.initAuth().then((result) => {
+    console.log('Auth initialized:', result)
+  }).catch((error) => {
+    console.error('Error initializing auth:', error)
+  })
 })
 
 // Initialize safe area only on mobile platforms

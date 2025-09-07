@@ -40,7 +40,7 @@ let BarcodeScanner
 const loadBarcodeScannerPlugin = async () => {
   try {
     if (Capacitor.isNativePlatform()) {
-      const module = await import('@capacitor-community/barcode-scanner')
+      const module = await import('@capacitor/barcode-scanner')
       BarcodeScanner = module.BarcodeScanner
     }
   } catch (error) {

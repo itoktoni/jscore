@@ -14,9 +14,8 @@
         <h3>Example 1: Default Footer</h3>
         <FormContainer
           title="Default Footer Example"
-          :initial-data="{ name: '', email: '' }"
           submit-text="Save"
-          :submit-handler="handleDefaultSubmit"
+          endpoint="/api/users"
         >
           <template #default="{ formData, fieldErrors }">
             <FormInput name="name" label="Full Name" rules="required|min:2" />
@@ -30,9 +29,8 @@
         <h3>Example 2: Custom Footer Slot</h3>
         <FormContainer
           title="Custom Footer Example"
-          :initial-data="{ username: '', password: '' }"
           :show-footer="true"
-          :submit-handler="handleCustomSubmit"
+          endpoint="/api/register"
         >
           <template #default="{ formData, fieldErrors }">
             <FormInput name="username" label="Username" rules="required|min:3" />
@@ -64,9 +62,8 @@
         <h3>Example 3: No Footer</h3>
         <FormContainer
           title="No Footer Example"
-          :initial-data="{ title: '', content: '' }"
           :show-footer="false"
-          :submit-handler="handleNoFooterSubmit"
+          endpoint="/api/posts"
         >
           <template #default="{ formData, fieldErrors }">
             <FormInput name="title" label="Title" rules="required|min:5" />
@@ -96,24 +93,6 @@ import FormButton from '../components/FormButton.vue'
 import { inject } from 'vue'
 
 const isSubmitting = inject('isSubmitting', ref(false))
-
-const handleDefaultSubmit = async (data) => {
-  // Simulate API call
-  await new Promise(resolve => setTimeout(resolve, 1000))
-  return { success: true }
-}
-
-const handleCustomSubmit = async (data) => {
-  // Simulate API call
-  await new Promise(resolve => setTimeout(resolve, 1000))
-  return { success: true }
-}
-
-const handleNoFooterSubmit = async (data) => {
-  // Simulate API call
-  await new Promise(resolve => setTimeout(resolve, 1000))
-  return { success: true }
-}
 
 const handleReset = () => {
   // Reset button clicked
