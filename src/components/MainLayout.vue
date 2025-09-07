@@ -170,7 +170,7 @@ const mainNavItems = ref([
   { id: 'home', title: 'Home', icon: 'bi bi-house' },
   { id: 'aplikasi', title: 'Apps', icon: 'bi bi-rocket' },
   { id: 'laporan', title: 'Report', icon: 'bi bi-printer' },
-  { id: 'system', title: 'System', icon: 'bi bi-house' },
+  { id: 'system', title: 'System', icon: 'bi bi-wrench-adjustable-circle' },
   { id: 'test', title: 'Test', icon: 'bi bi-bug' }
 ])
 
