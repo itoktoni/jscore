@@ -31,9 +31,9 @@
 
         <router-link
           v-if="authStore.canManageUsers"
-          to="/users"
+          :to="getModuleLink(USER_MODULE_LINK)"
           class="nav-link"
-          :class="{ active: $route.name === 'UserManagement' }"
+          :class="{ active: $route.name === USER_ROUTES.LIST }"
         >
           <span class="nav-icon">👥</span>
           <span class="nav-text">User Management</span>
@@ -55,31 +55,32 @@
 
         <!-- User Dropdown Menu -->
         <div v-if="showUserMenu" class="user-menu" @click.stop>
-          <div class="menu-item" @click="goToProfile">
+          <router-link to="/profile" class="menu-item" @click="showUserMenu = false">
             <span class="menu-icon">👤</span>
             <span class="menu-text">My Profile</span>
-          </div>
+          </router-link>
 
-          <div class="menu-item" @click="goToSettings">
+          <router-link to="/settings" class="menu-item" @click="showUserMenu = false">
             <span class="menu-icon">⚙️</span>
             <span class="menu-text">Settings</span>
-          </div>
+          </router-link>
 
-          <div
+          <router-link
             v-if="authStore.canManageUsers"
+            :to="getModuleLink(USER_MODULE_LINK)"
             class="menu-item"
-            @click="goToUserManagement"
+            @click="showUserMenu = false"
           >
             <span class="menu-icon">👥</span>
             <span class="menu-text">Manage Users</span>
-          </div>
+          </router-link>
 
           <div class="menu-divider"></div>
 
-          <div class="menu-item logout" @click="handleLogout">
+          <a href="#" class="menu-item logout" @click.prevent="handleLogout">
             <span class="menu-icon">🚪</span>
             <span class="menu-text">Logout</span>
-          </div>
+          </a>
         </div>
       </div>
 
@@ -118,7 +119,7 @@
 
       <router-link
         v-if="authStore.canManageUsers"
-        to="/users"
+        :to="getModuleLink(USER_MODULE_LINK)"
         class="mobile-nav-link"
         @click="closeMobileMenu"
       >
@@ -140,6 +141,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import { ROUTES as USER_ROUTES, MODULE_LINK as USER_MODULE_LINK } from '../router/userRoutes'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -176,6 +178,10 @@ const closeMobileMenu = () => {
   showMobileMenu.value = false
 }
 
+const getModuleLink = (moduleLink) => {
+  return '/' + moduleLink
+}
+
 const goToProfile = () => {
   router.push('/profile')
   showUserMenu.value = false
@@ -186,8 +192,8 @@ const goToSettings = () => {
   showUserMenu.value = false
 }
 
-const goToUserManagement = () => {
-  router.push('/users')
+const goToUserList = () => {
+  router.push(getModuleLink(USER_MODULE_LINK))
   showUserMenu.value = false
 }
 

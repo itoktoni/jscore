@@ -4,11 +4,11 @@
  * Centralized API endpoint configuration for the application
  */
 
-import { USER_API_ROUTES } from '../router/userRoutes'
+import { API } from '../router/userRoutes'
 
 export function useApiRoutes() {
   const API_ROUTES = {
-    users: USER_API_ROUTES,
+    users: API,
     roles: '/roles',
     statuses: '/statuses'
   }

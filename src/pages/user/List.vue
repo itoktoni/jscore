@@ -1,144 +1,71 @@
 <template>
   <div class="card">
-    <!-- Header -->
     <div class="page-header">
-      <h2>User Management2</h2>
+      <h2>User Management</h2>
     </div>
 
-    <!-- Card Container -->
-    <div class="form-container">
-      <!-- Search and Filters Row -->
+    <div class="card-content">
+      <!-- Filter Component -->
       <FilterComponent
+        ref="filterComponent"
         :search-data="searchData"
         :search-options="searchOptions"
-        @filter-submit="handleFilterSubmit"
         @search="handleSearch"
+        @filter-submit="handleFilterSubmit"
         @per-page-change="handlePerPageChange"
-        ref="filterComponent"
       >
-        <template #default-filters>
-          <tr>
-            <td class="col-4" data-label="Name">
-              <p class="grouped">
-                <label class="hide-mobile" for="">Name</label>
-                <input type="text" name="name" placeholder="Filter by name...">
-              </p>
-            </td>
-            <td class="col-4" data-label="Username">
-              <p class="grouped">
-                <label class="hide-mobile" for="">Username</label>
-                <input type="text" name="username" placeholder="Filter by username...">
-              </p>
-            </td>
-            <td class="col-4" data-label="System Role">
-              <p class="grouped">
-                <label class="hide-mobile" for="">Role</label>
-                <input type="text" name="system_role_name" placeholder="Filter by role...">
-              </p>
-            </td>
-          </tr>
+        <template #actions>
+          <Button button-type="button" variant="primary" @click="handleCreate(ROUTES.CREATE)" text="+ Create" />
         </template>
       </FilterComponent>
 
-      <hr>
+      <!-- Error Message -->
+      <ErrorMessage :error="error" />
 
-      <!-- Loading State -->
-      <div class="col-12" v-if="loading">
-        <LoadingData />
-      </div>
+      <!-- Loading Indicator -->
+      <LoadingData v-if="loading" />
 
-      <!-- Error State -->
-      <ErrorMessage v-else-if="error" :message="error">
-        <FormButton variant="primary" @click="loadItems" text="Retry" size="small" />
-      </ErrorMessage>
-
-      <!-- No Users State -->
-      <div v-else-if="!hasItems && !loading" class="no-users">
-        <p class="text-center">No users found.</p>
-      </div>
-
-      <!-- Users Table -->
-      <div class="col-12" v-else>
+      <!-- Table Component -->
+      <div class="table-wrapper">
         <TableComponent
-          :items="items"
-          :pagination="pagination"
+          :data="items"
+          :columns="tableColumns"
+          :selectable="true"
           :select-all="selectAll"
-          :columns="[]"
-          entity-name="users"
-          @toggle-select-all="toggleSelectAll"
-          @update-select-all="updateSelectAll"
+          :show-edit="true"
+          :show-delete="true"
+          @edit="handleEdit"
+          @delete="confirmDelete"
+          @select-all="toggleSelectAll"
+          @sort="loadItems"
         >
-          <template #header>
-            <th>
-              <input
-                type="checkbox"
-                :checked="selectAll"
-                @change="toggleSelectAll"
-              >
-            </th>
-            <th class="action-header text-center">Actions</th>
-            <th>No.</th>
-            <th>Name</th>
-            <th>Username</th>
-            <th>Email</th>
-            <th>Status</th>
-          </template>
-
-          <template #default="{ item, index }">
-            <td data-label="Select">
-              <input
-                type="checkbox"
-                :checked="item.selected"
-                @change="() => updateSelectAll(item)"
-              >
-            </td>
-            <td class="column-action" data-label="Actions">
-              <div class="action-table">
-                <TableAction
-                  variant="primary"
-                  icon="bi bi-eye"
-                  title="View"
-                  @click="handleView(item)"
-                />
-                <TableAction
-                  variant="secondary"
-                  icon="bi bi-pencil-square"
-                  title="Edit"
-                  @click="handleEdit(item, USER_ROUTES.EDIT_USER)"
-                />
-                <TableAction
-                  variant="info"
-                  icon="bi bi-printer"
-                  title="Print"
-                  @click="handlePrint(item)"
-                />
-                <TableAction
-                  variant="danger"
-                  icon="bi bi-trash"
-                  title="Delete"
-                  @click="confirmDelete(item)"
-                />
-              </div>
-            </td>
-            <td data-label="No.">{{ (pagination.currentPage - 1) * pagination.perPage + index + 1 }}</td>
-            <td data-label="Name">{{ item.name || item.username || 'N/A' }}</td>
-            <td data-label="Username">@{{ item.username }}</td>
-            <td data-label="Email">{{ item.email }}</td>
-            <td data-label="Status">
-              <span :class="item.active ? 'status-active' : 'status-inactive'">
-                {{ item.active ? 'Active' : 'Inactive' }}
-              </span>
-            </td>
+          <template #actions="{ item, index }">
+            <TableAction
+              :item="item"
+              :index="index"
+              @edit="handleEdit"
+              @view="handleView"
+              @delete="confirmDelete"
+              @print="handlePrint"
+            />
           </template>
         </TableComponent>
-
-        <!-- Pagination Component -->
-        <PaginationComponent
-          :current-page="pagination.currentPage"
-          :total-pages="pagination.totalPages"
-          @change-page="changePage"
-        />
       </div>
+
+      <!-- Empty State -->
+      <div v-if="!loading && !hasItems" class="table-info">
+        No users found.
+        <div class="select-all">
+          <input type="checkbox" v-model="selectAll" @change="toggleSelectAll" />
+        </div>
+      </div>
+
+      <!-- Pagination Component -->
+      <PaginationComponent
+        :current-page="pagination.currentPage"
+        :total-pages="pagination.totalPages"
+        @change-page="changePage"
+      />
     </div>
 
     <!-- Footer -->
@@ -146,7 +73,7 @@
       <div class="form-actions">
         <Button button-type="button" variant="secondary" @click="refreshItems" text="Refresh" />
         <Button button-type="button" variant="danger" @click="deleteSelectedUsers" text="Delete" :disabled="!hasSelectedItems" />
-        <Button button-type="button" variant="success" @click="handleCreate(USER_ROUTES.CREATE_USER)" text="+ Create" />
+        <Button button-type="button" variant="success" @click="handleCreate(ROUTES.CREATE)" text="+ Create" />
       </div>
     </footer>
 
@@ -158,8 +85,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute, onBeforeRouteUpdate } from 'vue-router'
-import { USER_ROUTES } from '../../router/userRoutes'
-import { USER_API_ROUTES } from '../../router/userRoutes'
+import { ROUTES, API } from '../../router/userRoutes'
 import { usePagination } from '../../composables/usePagination'
 import { useAlert } from '../../composables/useAlert'
 import { useGlobalList } from '../../composables/useGlobalList'
@@ -204,7 +130,7 @@ const {
   loadItems,
   handleRouteUpdate,
   initialize
-} = useGlobalList(USER_API_ROUTES, usePagination, useAlert)
+} = useGlobalList(API, usePagination, useAlert)
 
 // Redefine hasItems as a computed property to ensure it works correctly
 const hasItems = computed(() => {
@@ -222,6 +148,15 @@ const searchOptions = [
   { value: 'role', label: 'Role' }
 ]
 
+// Table columns definition
+const tableColumns = [
+  { key: 'id', label: 'ID' },
+  { key: 'username', label: 'Username' },
+  { key: 'name', label: 'Name' },
+  { key: 'email', label: 'Email' },
+  { key: 'system_role_name', label: 'Role' }
+]
+
 // Refresh items function to ensure proper parameter passing
 function refreshItems() {
   console.log('Refreshing items. Current HTTP baseURL:', http.baseURL)
@@ -230,7 +165,7 @@ function refreshItems() {
 
 // Delete selected users function (specific to user list)
 async function deleteSelectedUsers() {
-  await deleteSelected(http, USER_API_ROUTES.remove)
+  await deleteSelected(http, API.REMOVE)
 }
 
 // Print user function

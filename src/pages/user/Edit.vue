@@ -3,7 +3,7 @@
     <FormContainer
       title="Edit User"
       :initial-data="initialFormData"
-      :endpoint="USER_API_ROUTES.update(userId)"
+      :endpoint="API.UPDATE(userId)"
       @success="handleSuccess"
       @error="handleError"
     >
@@ -40,7 +40,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAlert } from '../../composables/useAlert'
 import { UserModel } from '../../models'
-import { USER_ROUTES, USER_API_ROUTES } from '../../router/userRoutes'
+import { ROUTES, API } from '../../router/userRoutes'
 import { http } from '../../stores/http'
 import FormContainer from '../../components/FormContainer.vue'
 import FormInput from '../../components/FormInput.vue'
@@ -59,7 +59,7 @@ onMounted(async () => {
   if (userId) {
     try {
       // Directly fetch user data using http client
-      const response = await http.get(USER_API_ROUTES.show(userId))
+      const response = await http.get(API.SHOW(userId))
 
       // Handle the response structure properly
       // API returns data in response.data.data or response.data
@@ -74,14 +74,14 @@ onMounted(async () => {
       }
     } catch (error) {
       // Error loading user
-      router.push({ name: USER_ROUTES.USER_LIST })
+      router.push({ name: ROUTES.LIST })
     }
   }
 })
 
 function handleSuccess(response) {
   alertSuccess('Success', 'User updated successfully!')
-  router.push({ name: USER_ROUTES.USER_LIST })
+  router.push({ name: ROUTES.LIST })
 }
 
 function handleError(error) {
@@ -89,6 +89,6 @@ function handleError(error) {
 }
 
 function handleCancel() {
-  router.push({ name: USER_ROUTES.USER_LIST })
+  router.push({ name: ROUTES.LIST })
 }
 </script>

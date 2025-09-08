@@ -3,7 +3,7 @@
     <FormContainer
       ref="formRef"
       title="Create Form"
-      :endpoint="USER_API_ROUTES.create"
+      :endpoint="API.CREATE"
       @success="handleSuccess"
       @error="handleError">
 
@@ -40,7 +40,7 @@
 import { ref } from 'vue'
 
 import { useRouter } from 'vue-router'
-import { USER_ROUTES, USER_API_ROUTES } from '../../router/userRoutes'
+import { ROUTES, API } from '../../router/userRoutes'
 
 import { useAlert } from '../../composables/useAlert'
 
@@ -56,7 +56,7 @@ const formRef = ref(null)
 
 function handleSuccess(response) {
   alertSuccess('Success', 'User created successfully!')
-  router.push({ name: USER_ROUTES.USER_LIST })
+  router.push({ name: ROUTES.LIST })
 }
 
 function handleError(error) {
@@ -64,6 +64,6 @@ function handleError(error) {
 }
 
 function handleCancel() {
-  router.push({ name: USER_ROUTES.USER_LIST })
+  router.push({ name: ROUTES.LIST })
 }
 </script>

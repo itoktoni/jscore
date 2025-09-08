@@ -1,32 +1,36 @@
-import UserListPage from '../pages/user/List.vue'
-import UserFormCreate from '../pages/user/Create.vue'
-import UserFormEdit from '../pages/user/Edit.vue'
+import ListPage from '../pages/user/List.vue'
+import CreatePage from '../pages/user/Create.vue'
+import EditPage from '../pages/user/Edit.vue'
 import DashboardPage from '../pages/dashboard/DashboardPage.vue'
-import UserTablePage from '../pages/user/Table.vue'
+import TablePage from '../pages/user/Table.vue'
 
-// User route constants
-export const USER_ROUTES = {
-  USER_LIST: 'UserList',
-  USER_TABLE: 'UserTable',
-  CREATE_USER: 'CreateUser',
-  EDIT_USER: 'EditUser',
-  DASHBOARD: 'Dashboard'
+// User route constants - new simplified names
+export const ROUTES = {
+  LIST: 'UserList',
+  TABLE: 'UserTable',
+  CREATE: 'UserCreate',
+  EDIT: 'UserEdit',
+  DASHBOARD: 'UserDashboard'
 }
 
-// User API routes
-export const USER_API_ROUTES = {
-  list: '/api-user/data',
-  create: '/api-user/create',
-  update: (id) => `/api-user/update/${id}`,
-  delete: (id) => `/api-user/delete/?code=${id}`,
-  remove: '/api-user/delete',
-  show: (id) => `/api-user/${id}`
+// Module name
+export const MODULE = 'Users'
+export const MODULE_LINK = 'users'
+
+// User API routes - new simplified names
+export const API = {
+  LIST: '/api-user/data',
+  CREATE: '/api-user/create',
+  UPDATE: (id) => `/api-user/update/${id}`,
+  DELETE: (id) => `/api-user/delete/?code=${id}`,
+  REMOVE: '/api-user/delete',
+  SHOW: (id) => `/api-user/${id}`
 }
 
 export const userRoutes = [
   {
     path: '/dashboard',
-    name: USER_ROUTES.DASHBOARD,
+    name: ROUTES.DASHBOARD,
     component: DashboardPage,
     meta: {
       requiresAuth: true // Only accessible when authenticated
@@ -34,8 +38,8 @@ export const userRoutes = [
   },
   {
     path: '/users',
-    name: USER_ROUTES.USER_LIST,
-    component: UserTablePage,
+    name: ROUTES.LIST,
+    component: TablePage,
     meta: {
       requiresAuth: true, // Only accessible when authenticated
       requiresAdmin: true // Only accessible for admin users
@@ -43,8 +47,8 @@ export const userRoutes = [
   },
   {
     path: '/users/table',
-    name: USER_ROUTES.USER_TABLE,
-    component: UserTablePage,
+    name: ROUTES.TABLE,
+    component: TablePage,
     meta: {
       requiresAuth: true, // Only accessible when authenticated
       requiresAdmin: true // Only accessible for admin users
@@ -52,8 +56,8 @@ export const userRoutes = [
   },
   {
     path: '/users/create',
-    name: USER_ROUTES.CREATE_USER,
-    component: UserFormCreate,
+    name: ROUTES.CREATE,
+    component: CreatePage,
     meta: {
       requiresAuth: true, // Only accessible when authenticated
       requiresAdmin: true // Only accessible for admin users
@@ -61,8 +65,8 @@ export const userRoutes = [
   },
   {
     path: '/users/:id/edit',
-    name: USER_ROUTES.EDIT_USER,
-    component: UserFormEdit,
+    name: ROUTES.EDIT,
+    component: EditPage,
     meta: {
       requiresAuth: true, // Only accessible when authenticated
       requiresAdmin: true // Only accessible for admin users

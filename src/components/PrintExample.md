@@ -220,7 +220,7 @@ You can also add a print button to the footer for batch printing:
       <FormButton variant="secondary" @click="loadItems" text="Refresh" />
       <FormButton variant="info" @click="handlePrintSelected" text="Print Selected" :disabled="!hasSelectedItems" />
       <FormButton variant="danger" @click="deleteSelectedUsers" text="Delete" :disabled="!hasSelectedItems" />
-      <FormButton variant="success" @click="handleCreate(USER_ROUTES.CREATE_USER)" text="+ Create" />
+      <FormButton variant="success" @click="handleCreate(ROUTES.CREATE)" text="+ Create" />
     </div>
   </footer>
 </template>

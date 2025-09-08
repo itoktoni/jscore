@@ -1,6 +1,6 @@
 import { ref, reactive } from 'vue'
 import { http } from '../stores/http'
-import { USER_API_ROUTES } from '../router/userRoutes'
+import { API } from '../router/userRoutes'
 
 // User management composable
 export function useUserManagement() {
@@ -64,7 +64,7 @@ export function useUserManagement() {
         }
       }
 
-      const response = await http.get(USER_API_ROUTES.list, config)
+      const response = await http.get(API.LIST, config)
 
       // Handle the new pagination structure from the API
       if (response.data) {
@@ -116,7 +116,7 @@ export function useUserManagement() {
         }
       }
 
-      const response = await http.get(USER_API_ROUTES.list, config)
+      const response = await http.get(API.LIST, config)
 
       // Handle the new pagination structure from the API
       if (response.data) {
@@ -160,7 +160,7 @@ export function useUserManagement() {
     error.value = null
 
     try {
-      const response = await http.get(USER_API_ROUTES.show(id))
+      const response = await http.get(API.SHOW(id))
 
       // Check if response exists
       if (!response) {
@@ -198,21 +198,30 @@ export function useUserManagement() {
     // Validate form data
     const validation = userHelpers.validateUserData(formData)
     if (!validation.isValid) {
+      error.value = 'Validation failed'
       loading.value = false
-      return { success: false, error: 'Validation failed', errorData: { errors: validation.errors } }
+      return { success: false, error: validation.errors }
     }
 
     try {
-      const userData = userHelpers.createUserFromForm(formData)
-      const response = await http.post(USER_API_ROUTES.create, userData)
+      const response = await http.post(API.CREATE, formData)
 
-      // Add new user to the list
-      if (response.data) {
-        const newUser = response.data.data || response.data
-        users.value.unshift(newUser)
+      // Check if response exists
+      if (!response) {
+        throw new Error('No response received from API')
       }
 
-      return { success: true, message: 'User created successfully' }
+      // Check if response has data
+      if (!response.data) {
+        throw new Error('No data in API response')
+      }
+
+      const userData = response.data.data || response.data
+
+      // Add new user to the list
+      users.value.unshift(userData)
+
+      return { success: true, data: userData }
     } catch (err) {
       error.value = err.message
       return { success: false, error: err.message }
@@ -221,7 +230,7 @@ export function useUserManagement() {
     }
   }
 
-  // Update existing user
+  // Update user
   const updateUser = async (id, formData) => {
     loading.value = true
     error.value = null
@@ -229,25 +238,34 @@ export function useUserManagement() {
     // Validate form data
     const validation = userHelpers.validateUserData(formData)
     if (!validation.isValid) {
+      error.value = 'Validation failed'
       loading.value = false
-      return { success: false, error: 'Validation failed', errorData: { errors: validation.errors } }
+      return { success: false, error: validation.errors }
     }
 
     try {
-      const userData = userHelpers.createUserFromForm(formData)
-      const response = await http.put(USER_API_ROUTES.update(id), userData)
+      const response = await http.put(API.UPDATE(id), formData)
 
-      // Update user in the list
-      if (response.data) {
-        const updatedUser = response.data.data || response.data
-        const userIndex = users.value.findIndex(user => user.id === id)
-        if (userIndex !== -1) {
-          users.value[userIndex] = updatedUser
-        }
-        selectedUser.value = updatedUser
+      // Check if response exists
+      if (!response) {
+        throw new Error('No response received from API')
       }
 
-      return { success: true, message: 'User updated successfully' }
+      // Check if response has data
+      if (!response.data) {
+        throw new Error('No data in API response')
+      }
+
+      const userData = response.data.data || response.data
+      selectedUser.value = userData
+
+      // Update user in the list if it exists
+      const userIndex = users.value.findIndex(user => user.id === id)
+      if (userIndex !== -1) {
+        users.value[userIndex] = userData
+      }
+
+      return { success: true, data: userData }
     } catch (err) {
       error.value = err.message
       return { success: false, error: err.message }
@@ -262,17 +280,17 @@ export function useUserManagement() {
     error.value = null
 
     try {
-      await http.delete(USER_API_ROUTES.delete(id))
+      await http.delete(API.DELETE(id))
 
       // Remove user from the list
       users.value = users.value.filter(user => user.id !== id)
 
-      // Clear selected user if it was the one being deleted
+      // Clear selected user if it was deleted
       if (selectedUser.value && selectedUser.value.id === id) {
         selectedUser.value = null
       }
 
-      return { success: true, message: 'User deleted successfully' }
+      return { success: true }
     } catch (err) {
       error.value = err.message
       return { success: false, error: err.message }
@@ -281,7 +299,32 @@ export function useUserManagement() {
     }
   }
 
-  // Reset store state
+  // Delete multiple users
+  const deleteUsers = async (userIds) => {
+    loading.value = true
+    error.value = null
+
+    try {
+      const response = await http.post(API.REMOVE, { code: userIds })
+
+      // Remove users from the list
+      users.value = users.value.filter(user => !userIds.includes(user.id))
+
+      // Clear selected user if it was deleted
+      if (selectedUser.value && userIds.includes(selectedUser.value.id)) {
+        selectedUser.value = null
+      }
+
+      return { success: true, data: response.data }
+    } catch (err) {
+      error.value = err.message
+      return { success: false, error: err.message }
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Reset state
   const reset = () => {
     users.value = []
     selectedUser.value = null
@@ -295,15 +338,6 @@ export function useUserManagement() {
     pagination.to = 0
   }
 
-  // Getters
-  const getUserById = (id) => {
-    return users.value.find(user => user.id === id)
-  }
-
-  const totalUsers = () => users.value.length
-
-  const hasUsers = () => users.value.length > 0
-
   return {
     // State
     users,
@@ -312,18 +346,17 @@ export function useUserManagement() {
     error,
     pagination,
 
-    // Getters
-    getUserById,
-    totalUsers,
-    hasUsers,
-
-    // Actions
+    // Methods
     fetchUsers,
     searchUsers,
     fetchUserById,
     createUser,
     updateUser,
     deleteUser,
-    reset
+    deleteUsers,
+    reset,
+
+    // Helpers
+    userHelpers
   }
 }

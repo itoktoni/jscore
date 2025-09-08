@@ -11,9 +11,11 @@ The following route names are available in the application:
 | Login | /login | LoginPage |
 | Register | /register | RegisterPage |
 | Profile | /profile | ProfilePage |
-| UserManagement | /users | UserListPage |
-| CreateUser | /users/create | UserFormCreate |
-| EditUser | /users/:id/edit | UserFormEdit |
+| UserList | /users | TablePage |
+| UserTable | /users/table | TablePage |
+| UserCreate | /users/create | CreatePage |
+| UserEdit | /users/:id/edit | EditPage |
+| UserDashboard | /dashboard | DashboardPage |
 | SystemSettings | /system/settings | SystemSettingsPage |
 | TestSafeArea | /test-safe-area | TestSafeArea |
 | TestSafeAreaPage | /test-safe-area-page | TestSafeAreaPage |
@@ -43,7 +45,7 @@ router.push({ name: 'EditUser', params: { id: userId } })
 
 To add query parameters:
 ```javascript
-router.push({ name: 'UserManagement', query: { page: 2, search: 'john' } })
+router.push({ name: 'UserList', query: { page: 2, search: 'john' } })
 ```
 
 ## Benefits of Using Route Names
@@ -57,8 +59,8 @@ router.push({ name: 'UserManagement', query: { page: 2, search: 'john' } })
 
 All user management components have been updated to use route names:
 
-1. **Create.vue**: Navigates to `UserManagement` after successful user creation
-2. **Edit.vue**: Navigates to `UserManagement` after successful user update
-3. **List.vue**: Navigates to `CreateUser` when creating a new user, and to `EditUser` when editing a user
+1. **Create.vue**: Navigates to `UserList` after successful user creation
+2. **Edit.vue**: Navigates to `UserList` after successful user update
+3. **List.vue**: Navigates to `UserCreate` when creating a new user, and to `UserEdit` when editing a user
 
 This approach ensures consistency and makes the application easier to maintain.

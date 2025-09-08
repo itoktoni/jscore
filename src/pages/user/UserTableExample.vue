@@ -54,7 +54,7 @@
 
     <div class="form-actions">
       <router-link
-        :to="{ name: USER_ROUTES.CREATE_USER }"
+        :to="{ name: ROUTES.CREATE }"
         class="btn btn-primary"
       >
         Create New User
@@ -67,7 +67,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAlert } from '../../composables/useAlert'
-import { USER_ROUTES } from '../../router/userRoutes'
+import { ROUTES } from '../../router/userRoutes'
 import TableComponent from '../../components/TableComponent.vue'
 
 const router = useRouter()
@@ -170,7 +170,7 @@ const loadUsers = async () => {
 }
 
 const handleEdit = (user) => {
-  router.push({ name: USER_ROUTES.EDIT_USER, params: { id: user.id } })
+  router.push({ name: ROUTES.EDIT, params: { id: user.id } })
 }
 
 const handleDelete = async (user) => {
@@ -195,7 +195,7 @@ const handleDelete = async (user) => {
 }
 
 const viewUser = (user) => {
-  router.push({ name: USER_ROUTES.USER_LIST, params: { id: user.id } })
+  router.push({ name: ROUTES.LIST, params: { id: user.id } })
 }
 
 const deleteUser = async (user) => {

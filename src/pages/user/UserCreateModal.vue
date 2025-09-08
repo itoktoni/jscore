@@ -14,7 +14,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { USER_ROUTES, USER_API_ROUTES } from '../../router/userRoutes'
+import { ROUTES, API } from '../../router/userRoutes'
 import { http } from '../../stores/http'
 import { useAlert } from '../../composables/useAlert'
 import { useResponse } from '../../composables/useResponse'
@@ -71,7 +71,7 @@ const handleSubmit = async (userData) => {
     const { password_confirmation, ...userDataToSend } = userData
 
     // Make API request
-    const response = await http.post(USER_API_ROUTES.create, userDataToSend)
+    const response = await http.post(API.CREATE, userDataToSend)
     const result = responseSuccess(response)
 
     if (result.success) {
@@ -80,7 +80,7 @@ const handleSubmit = async (userData) => {
       handleClose()
 
       // Optionally redirect to user list
-      router.push({ name: USER_ROUTES.USER_LIST })
+      router.push({ name: ROUTES.LIST })
     } else {
       alertError('Error', 'Failed to create user')
       throw new Error('Failed to create user')

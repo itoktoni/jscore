@@ -16,7 +16,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { USER_ROUTES } from '../../router/userRoutes'
+import { ROUTES } from '../../router/userRoutes'
 import GlobalModal from '../../components/GlobalModal.vue'
 
 // Define props
@@ -51,7 +51,7 @@ const closeModal = () => {
 const editUser = () => {
   if (props.user && props.user.id) {
     closeModal()
-    router.push({ name: USER_ROUTES.EDIT_USER, params: { id: props.user.id } })
+    router.push({ name: ROUTES.EDIT, params: { id: props.user.id } })
   }
 }
 </script>
