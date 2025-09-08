@@ -1,117 +1,69 @@
 <template>
-  <div class="profile-edit-page">
-    <div class="page-header">
-      <h2>Profile</h2>
-    </div>
+  <div class="card">
+    <FormContainer
+      title="Profile"
+      :initial-data="initialFormData"
+      endpoint="/profile"
+      method="post"
+      @success="handleSuccess"
+      @error="handleError"
+    >
+      <FormInput name="username" rules="required" disabled hint="Username cannot be changed" col="6" />
+      <FormInput name="name" rules="required" col="6" />
+      <FormInput name="email" rules="required" type="email" col="12" />
 
-    <div class="card w-full max-w-3xl mx-auto">
-      <div class="card-header">
-        <h3 class="m-0">Your Account Information</h3>
-      </div>
-      <div class="card-content">
-        <form @submit.prevent="onFormSubmit" class="flex flex-col gap-4">
-          <div class="field mb-4">
-            <label for="username" class="font-bold block mb-2">Username</label>
-            <input
-              id="username"
-              v-model="form.username"
-              type="text"
-              placeholder="Enter username"
-              class="form-input"
-              disabled
-            />
-            <div class="field-hint">Username cannot be changed</div>
-          </div>
+      <FormInput name="password" type="password" label="New Password (leave blank to keep current)" rules="min:6" placeholder="Enter new password" col="6" />
+      <FormInput rules="confirmed:password" name="password_confirmation" type="password" col="6" />
 
-          <div class="field mb-4">
-            <label for="name" class="font-bold block mb-2">Name *</label>
-            <input
-              id="name"
-              v-model="form.name"
-              type="text"
-              placeholder="Enter your name"
-              class="form-input"
-              required
-            />
-            <div v-if="errors.name" class="error-message">
-              {{ errors.name }}
-            </div>
-          </div>
-
-          <div class="field mb-4">
-            <label for="email" class="font-bold block mb-2">Email *</label>
-            <input
-              id="email"
-              v-model="form.email"
-              type="email"
-              placeholder="Enter your email"
-              class="form-input"
-              required
-            />
-            <div v-if="errors.email" class="error-message">
-              {{ errors.email }}
-            </div>
-          </div>
-
-          <div class="form-actions">
-            <button
-              @click="handleLogout"
-              type="button"
-              class="btn btn-secondary"
-            >
-              Logout
-            </button>
-            <button
-              type="submit"
-              class="btn btn-primary"
-              :disabled="isSubmitting"
-            >
-              {{ isSubmitting ? 'Saving...' : 'Save Changes' }}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+      <template #footer="{ isSubmitting }">
+        <div class="footer-actions">
+          <FormButton type="button" variant="secondary" @click="handleLogout" text="Logout" />
+          <FormButton type="submit" variant="success" :text="isSubmitting ? 'Saving...' : 'Save Changes'" :disabled="isSubmitting" />
+        </div>
+      </template>
+    </FormContainer>
   </div>
 </template>
 
 <script setup>
-import { reactive, onMounted, ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
+import { useUser } from '../../stores/user'
 import { useAlert } from '../../composables/useAlert'
 import { http } from '../../stores/http'
+import FormContainer from '../../components/FormContainer.vue'
+import FormInput from '../../components/FormInput.vue'
+import FormButton from '../../components/FormButton.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const userStore = useUser()
 const { alertSuccess, alertError } = useAlert()
 
-// Form data
-const form = reactive({
+const initialFormData = ref({
   username: '',
   name: '',
-  email: ''
+  email: '',
+  password: '',
+  password_confirmation: ''
 })
-
-// Form state
-const isSubmitting = ref(false)
-
-// Form errors
-const errors = ref({})
 
 // Load user data on mount
 onMounted(async () => {
   try {
     // Load user profile data if not already loaded
-    if (!authStore.user) {
-      await authStore.loadProfile()
+    if (!userStore.user) {
+      await userStore.loadProfile()
     }
 
-    if (authStore.user) {
-      // Populate form data with current user data
-      form.username = authStore.user.username || ''
-      form.name = authStore.user.name || ''
-      form.email = authStore.user.email || ''
+    if (userStore.user) {
+      // Load data directly from user store
+      initialFormData.value = {
+        ...userStore.user,
+        password: '',
+        password_confirmation: ''
+      }
     }
   } catch (error) {
     console.error('Error loading profile:', error)
@@ -119,61 +71,17 @@ onMounted(async () => {
   }
 })
 
-// Validate form
-const validateForm = () => {
-  const newErrors = {}
+function handleSuccess(response) {
+  alertSuccess('Success', 'Profile updated successfully!')
 
-  if (!form.name) {
-    newErrors.name = 'Name is required.'
-  } else if (form.name.length < 2) {
-    newErrors.name = 'Name must be at least 2 characters.'
+  // Update user store with new data
+  if (response.data && response.data.data) {
+    userStore.user = response.data.data
   }
-
-  if (!form.email) {
-    newErrors.email = 'Email is required.'
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-    newErrors.email = 'Please enter a valid email address.'
-  }
-
-  errors.value = newErrors
-  return Object.keys(newErrors).length === 0
 }
 
-// Handle form submission
-const onFormSubmit = async () => {
-  if (validateForm()) {
-    try {
-      isSubmitting.value = true
-
-      // Create profile data object
-      const profileData = {
-        name: form.name,
-        email: form.email
-      }
-
-      // Update profile using our service
-      const response = await http.post('/profile', profileData)
-
-      // Update auth store with new user data
-      if (response.data && response.data.data) {
-        authStore.user = { ...authStore.user, ...response.data.data }
-      }
-
-      // Show success message
-      alertSuccess('Success', 'Profile updated successfully!')
-
-      // Reset form with updated data
-      if (response.data && response.data.data) {
-        form.name = response.data.data.name || form.name
-        form.email = response.data.data.email || form.email
-      }
-    } catch (error) {
-      console.error('Error updating profile:', error)
-      alertError('Error', 'Failed to update profile')
-    } finally {
-      isSubmitting.value = false
-    }
-  }
+function handleError(error) {
+  alertError('Error', 'Failed to update profile')
 }
 
 // Handle logout

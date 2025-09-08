@@ -95,13 +95,16 @@ const router = createRouter({
 
 // Navigation guards
 router.beforeEach(async (to, from, next) => {
-  const authStore = useAuthStore()
+  let authStore = useAuthStore()
 
   // Initialize auth if not already done
-  if (!authStore.isAuthenticated && !authStore.token) {
+  if (!authStore.isAuthenticated) {
     console.log('Initializing auth...')
     const result = await authStore.initAuth()
     console.log('Auth init result:', result)
+
+    // Re-get the auth store to get updated values
+    authStore = useAuthStore()
   }
 
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
