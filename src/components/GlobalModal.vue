@@ -82,13 +82,15 @@
         <slot name="footer">
           <!-- View Mode Buttons -->
           <template v-if="mode === 'view'">
-            <FormButton
+            <Button
+              button-type="button"
               variant="secondary"
               text="Close"
               @click="onClose"
             />
-            <FormButton
+            <Button
               v-if="showEditButton"
+              button-type="button"
               variant="primary"
               :text="editButtonText"
               @click="switchToEdit"
@@ -97,13 +99,15 @@
 
           <!-- Form Mode Buttons -->
           <template v-else-if="mode === 'create' || mode === 'edit'">
-            <FormButton
+            <Button
+              button-type="button"
               variant="secondary"
               :text="cancelButtonText"
               @click="onCancel"
               :disabled="submitting"
             />
-            <FormButton
+            <Button
+              button-type="button"
               variant="primary"
               :text="submitting ? submittingText : submitButtonText"
               @click="handleSubmit"
@@ -118,7 +122,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import FormButton from './FormButton.vue'
+import Button from './Button.vue'
 import FormInput from './FormInput.vue'
 import FormSelect from './FormSelect.vue'
 

@@ -1,7 +1,8 @@
 <template>
   <div v-if="totalPages > 1" class="pagination mt-3">
     <!-- Previous Button -->
-    <FormButton
+    <Button
+      button-type="button"
       @click="handlePageChange(currentPage - 1)"
       :disabled="currentPage <= 1"
       variant="secondary"
@@ -12,7 +13,8 @@
     <!-- Page Numbers - Fixed structure: 1 first, 3 around current, 1 last -->
     <div class="pagination-pages">
       <!-- First page (1) -->
-      <FormButton
+      <Button
+        button-type="button"
         v-if="totalPages >= 1"
         @click="handlePageChange(1)"
         :variant="1 === currentPage ? 'primary' : 'secondary'"
@@ -26,7 +28,8 @@
 
       <!-- Pages around current page -->
       <template v-for="page in getPagesAroundCurrent()" :key="page">
-        <FormButton
+        <Button
+          button-type="button"
           v-if="page > 1 && page < totalPages"
           @click="handlePageChange(page)"
           :variant="page === currentPage ? 'primary' : 'secondary'"
@@ -40,7 +43,8 @@
       <span v-if="currentPage < totalPages - 2 && totalPages > 5" class="pagination-ellipsis">...</span>
 
       <!-- Last page -->
-      <FormButton
+      <Button
+        button-type="button"
         v-if="totalPages > 1"
         @click="handlePageChange(totalPages)"
         :variant="totalPages === currentPage ? 'primary' : 'secondary'"
@@ -51,7 +55,8 @@
     </div>
 
     <!-- Next Button -->
-    <FormButton
+    <Button
+      button-type="button"
       @click="handlePageChange(currentPage + 1)"
       :disabled="currentPage >= totalPages"
       variant="secondary"
@@ -63,7 +68,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import FormButton from './FormButton.vue'
+import Button from './Button.vue'
 
 // Props
 const props = defineProps({
@@ -112,69 +117,3 @@ function handlePageChange(page) {
   }
 }
 </script>
-
-<style scoped>
-.pagination {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-top: 1rem;
-  padding: 1rem 0;
-}
-
-.pagination-pages {
-  display: flex;
-  gap: 0.25rem;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-}
-
-.pagination-ellipsis {
-  padding: 0.375rem 0.25rem;
-  color: #6c757d;
-  display: flex;
-  align-items: center;
-}
-
-.mt-3 {
-  margin-top: 1rem;
-}
-
-/* Button sizing for both desktop and mobile */
-.form-button--small {
-  padding: 6px 12px;
-  font-size: 12px;
-  min-height: 30px;
-}
-
-/* Mobile responsiveness */
-@media (max-width: 768px) {
-  .pagination {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .pagination-pages {
-    justify-content: stretch;
-  }
-
-  .pagination-pages .button {
-    flex: 1;
-    margin: 0.125rem;
-  }
-
-  /* Make buttons display in a row on mobile */
-  .pagination-pages {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    justify-content: flex-start;
-    gap: 0.5rem;
-    padding: 0.5rem 0;
-  }
-}
-</style>

@@ -8,30 +8,40 @@
     @click="handleClick"
   >
     <span v-if="computedLoading" class="loading-spinner"></span>
+    <i v-if="iconClass" :class="iconClass"></i>
     <span :class="{ 'with-spinner': computedLoading }">
       <slot>{{ text }}</slot>
     </span>
   </button>
 
   <!-- Link type -->
-  <div v-else-if="buttonType === 'link'" class="form-link">
-    <p>
-      {{ text }}
-      <router-link :to="to" class="link">
-        {{ linkText }}
-      </router-link>
-    </p>
-  </div>
+  <button
+    v-else-if="buttonType === 'link'"
+    :type="type"
+    :disabled="disabled || loading || computedLoading"
+    :class="buttonClasses"
+    @click="handleClick"
+  >
+    <span v-if="computedLoading" class="loading-spinner"></span>
+    <i v-if="iconClass" :class="iconClass"></i>
+    <span :class="{ 'with-spinner': computedLoading }">
+      <slot>{{ text }}</slot>
+    </span>
+  </button>
 
   <!-- Delete/Remove type -->
   <button
     v-else-if="buttonType === 'delete' || buttonType === 'remove'"
     @click="handleDelete"
-    :class="buttonClass"
+    :class="buttonClasses"
     :disabled="isDeleteDisabled"
   >
-    <span v-if="deleteLoading">{{ deleteLoadingText }}</span>
-    <span v-else>{{ text }}</span>
+    <span v-if="deleteLoading || computedLoading" class="loading-spinner"></span>
+    <i v-if="iconClass" :class="iconClass"></i>
+    <span :class="{ 'with-spinner': deleteLoading || computedLoading }">
+      <span v-if="deleteLoading">{{ deleteLoadingText }}</span>
+      <span v-else>{{ text }}</span>
+    </span>
   </button>
 </template>
 
@@ -40,6 +50,7 @@ import { ref, computed, inject } from 'vue'
 import { useRouter } from 'vue-router'
 import { http } from '../stores/http'
 import { useAlert } from '../composables/useAlert'
+import { BUTTON_ICONS } from '../models/ButtonIcons'
 
 // Define props
 const props = defineProps({
@@ -50,6 +61,10 @@ const props = defineProps({
     validator: (value) => ['button', 'submit', 'link', 'delete', 'remove'].includes(value)
   },
   text: {
+    type: String,
+    default: ''
+  },
+  iconType: {
     type: String,
     default: ''
   },
@@ -107,7 +122,7 @@ const props = defineProps({
   },
   buttonClass: {
     type: String,
-    default: 'btn btn-sm btn-outline-danger'
+    default: ''
   },
   selectedItems: {
     type: Array,
@@ -133,34 +148,78 @@ const emit = defineEmits(['click', 'success', 'error'])
 const router = useRouter()
 const { alertConfirm, alertSuccess, alertError } = useAlert()
 
+// Icon class computation
+const iconClass = computed(() => {
+  if (props.iconType) {
+    const upper = props.iconType.toUpperCase()
+    return BUTTON_ICONS[upper] || props.iconType
+  }
+  return ''
+})
+
 // Try to inject form validation context for auto-loading state
 const isSubmitting = inject('isSubmitting', null)
 
 // Button/Submit functionality
 const buttonClasses = computed(() => {
-  // If this is a delete button, use the provided buttonClass
-  if (props.buttonType === 'delete' || props.buttonType === 'remove') {
-    return props.buttonClass
+  // Map variants to CSS classes that match the role create page
+  const variantClasses = {
+    'primary': 'button primary',
+    'secondary': 'button secondary',
+    'success': 'button success',
+    'danger': 'button danger',
+    'warning': 'button warning',
+    'info': 'button info'
   }
 
-  const classes = {
-    'button': true,
-    [`button ${props.variant}`]: true,
-    [`button ${props.size}`]: true,
-    'button block': props.block,
-    'button loading': computedLoading.value,
-    'button disabled': props.disabled
+  // Map sizes to CSS classes
+  const sizeClasses = {
+    'small': 'small',
+    'medium': 'medium',
+    'large': 'large'
+  }
+
+  const classes = []
+
+  // Add base button class
+  classes.push('button')
+
+  // Add variant class
+  if (variantClasses[props.variant]) {
+    classes.push(variantClasses[props.variant])
+  } else {
+    classes.push('primary')
+  }
+
+  // Add size class
+  if (sizeClasses[props.size]) {
+    classes.push(sizeClasses[props.size])
+  }
+
+  // Add block class if needed
+  if (props.block) {
+    classes.push('block')
+  }
+
+  // Add loading class
+  if (computedLoading.value || deleteLoading.value) {
+    classes.push('loading')
+  }
+
+  // Add disabled class
+  if (props.disabled || isDeleteDisabled.value) {
+    classes.push('disabled')
   }
 
   // Only add column class if col prop is provided
   if (props.col !== null && props.col !== undefined) {
-    classes[`col-${props.col}`] = true
+    classes.push(`col-${props.col}`)
   } else {
     // Add flexible width class when no column is specified
-    classes['form-button--flexible'] = true
+    classes.push('flexible')
   }
 
-  return classes
+  return classes.join(' ')
 })
 
 // Auto-detect loading state from form context if submit button
@@ -176,6 +235,12 @@ const handleClick = (event) => {
   if (props.type !== 'submit') {
     event.preventDefault()
   }
+
+  // Handle navigation for link type
+  if (props.buttonType === 'link' && props.to) {
+    router.push(props.to)
+  }
+
   emit('click', event)
 }
 
@@ -276,81 +341,3 @@ const handleDelete = async () => {
   }
 }
 </script>
-
-<style scoped>
-/* Button styles from FormButton */
-.form-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  -webkit-appearance: none;
-  appearance: none;
-  touch-action: manipulation;
-  text-decoration: none;
-  position: relative;
-  padding: 10px 20px;
-  min-width: fit-content;
-}
-
-/* Loading spinner */
-.loading-spinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid transparent;
-  border-top: 2px solid currentColor;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-.with-spinner {
-  opacity: 0.7;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Link styles from FormLink */
-.form-link {
-  text-align: center;
-  margin-top: 20px;
-  padding-top: 15px;
-  border-top: 1px solid #eee;
-}
-
-.form-link p {
-  margin: 0;
-  color: #666;
-  font-size: 14px;
-}
-
-.link {
-  color: #007bff;
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.link:hover {
-  text-decoration: underline;
-}
-
-/* Mobile optimizations for link */
-@media (max-width: 480px) {
-  .form-link {
-    margin-top: 15px;
-    padding-top: 12px;
-  }
-
-  .form-link p {
-    font-size: 13px;
-  }
-}
-</style>

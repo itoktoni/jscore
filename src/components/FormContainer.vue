@@ -18,14 +18,15 @@
       <footer v-if="showFooter" class="content-footer safe-area-bottom">
         <slot name="footer" :formData="formData" :fieldErrors="fieldErrors" :isSubmitting="isSubmitting" :handleSubmit="handleSubmit">
           <!-- Default footer content -->
-            <FormButton
+            <Button
               v-if="cancelText"
+              button-type="button"
               variant="secondary"
               @click="handleCancel"
               :text="cancelText"
             />
-            <FormButton
-              type="submit"
+            <Button
+              button-type="submit"
               :variant="submitVariant"
               :text="isSubmitting ? loadingText : submitText"
               :disabled="isSubmitting"
@@ -40,7 +41,7 @@
 import { provide, watch, ref, onMounted, onUnmounted } from 'vue'
 import { useAlert } from '../composables/useAlert'
 import { http } from '../stores/http'
-import FormButton from './FormButton.vue'
+import Button from './Button.vue'
 
 const { alertError, alertValidationError } = useAlert()
 

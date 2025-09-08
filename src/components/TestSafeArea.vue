@@ -24,8 +24,20 @@
           <p>This content has no safe area padding (web) but still has additional padding from --safe-area-padding variable (default: 1.5rem)</p>
         </div>
         <div class="button-group">
-          <button @click="updateSafeArea" class="button primary">Update Safe Area</button>
-          <button @click="checkPlatform" class="button secondary">Check Platform</button>
+          <Button
+            button-type="button"
+            variant="primary"
+            size="medium"
+            @click="updateSafeArea"
+            text="Update Safe Area"
+          />
+          <Button
+            button-type="button"
+            variant="secondary"
+            size="medium"
+            @click="checkPlatform"
+            text="Check Platform"
+          />
         </div>
       </div>
     </div>
@@ -36,6 +48,7 @@
 import { ref, onMounted } from 'vue'
 import { Capacitor } from '@capacitor/core'
 import { useSafeArea } from '../composables/useSafeArea'
+import Button from './Button.vue'
 
 const platform = ref(Capacitor.getPlatform())
 const isMobile = ref(platform.value === 'ios' || platform.value === 'android')
@@ -74,7 +87,9 @@ onMounted(() => {
   margin-top: 1rem;
 }
 
-.button-group .button {
-  flex: 1;
+@media (max-width: 768px) {
+  .button-group {
+    flex-direction: column;
+  }
 }
 </style>

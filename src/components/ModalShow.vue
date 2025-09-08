@@ -26,7 +26,8 @@
       </div>
       <div class="modal-footer">
         <slot name="footer">
-          <FormButton
+          <Button
+            button-type="button"
             variant="secondary"
             text="Close"
             @click="closeModal"
@@ -39,7 +40,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import FormButton from './FormButton.vue'
+import Button from './Button.vue'
 
 // Define props
 const props = defineProps({

@@ -2,7 +2,8 @@
   <div class="user-management">
     <div class="page-header">
       <h2>User Management</h2>
-      <FormButton
+      <Button
+        button-type="button"
         variant="primary"
         text="Create User"
         @click="showCreateModal = true"
@@ -26,7 +27,7 @@
 <script setup>
 import { ref } from 'vue'
 import UserCreateModal from './UserCreateModal.vue'
-import FormButton from '../../components/FormButton.vue'
+import Button from '../../components/Button.vue'
 
 // Modal visibility
 const showCreateModal = ref(false)

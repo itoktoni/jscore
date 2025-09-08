@@ -11,9 +11,9 @@
       <FormToggle name="darkMode" label="Dark Mode" on-text="Enabled" off-text="Disabled" show-text col="12" />
 
       <template #footer="{ isSubmitting }">
-        <div class="footer-actions">
-          <FormButton type="button" variant="secondary" @click="resetToDefaults" text="Reset to Defaults" />
-          <FormButton type="submit" variant="success" :text="isSubmitting ? 'Saving...' : 'Save Settings'"
+        <div class="form-actions">
+          <Button button-type="button" variant="secondary" @click="resetToDefaults" text="Reset to Defaults" />
+          <Button button-type="submit" variant="success" :text="isSubmitting ? 'Saving...' : 'Save Settings'"
             :disabled="isSubmitting" />
         </div>
       </template>
@@ -44,7 +44,7 @@ import { http } from '../stores/http'
 import FormContainer from '../components/FormContainer.vue'
 import FormInput from '../components/FormInput.vue'
 import FormToggle from '../components/FormToggle.vue'
-import FormButton from '../components/FormButton.vue'
+import Button from '../components/Button.vue'
 import FormLabel from '../components/FormLabel.vue'
 
 const settingsStore = useSettingsStore()

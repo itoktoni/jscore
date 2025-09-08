@@ -37,8 +37,8 @@
             rules="required|confirmed"
           />
 
-          <FormButton
-            type="submit"
+          <Button
+            button-type="submit"
             variant="success"
             :text="isSubmitting ? 'Creating Account...' : 'Create Account'"
             :disabled="isSubmitting"
@@ -65,7 +65,6 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
 import FormContainer from '../../components/FormContainer.vue'
 import FormInput from '../../components/FormInput.vue'
-import FormButton from '../../components/FormButton.vue'
 // Import the new unified Button component
 import Button from '../../components/Button.vue'
 

@@ -3,15 +3,15 @@
     <form @submit.prevent="handleSearch" class="form-table-filter">
       <slot name="filterForm" :formData="formData" :fieldErrors="fieldErrors" :isSubmitting="isSubmitting" :handleSearch="handleSearch"></slot>
 
-      <div class="form-table-actions">
-        <FormButton
-          type="submit"
+      <div class="form-actions">
+        <Button
+          button-type="submit"
           variant="primary"
           :text="isSubmitting ? 'Searching...' : 'Search'"
           :disabled="isSubmitting"
         />
-        <FormButton
-          type="button"
+        <Button
+          button-type="button"
           variant="secondary"
           text="Reset"
           @click="handleReset"
@@ -54,7 +54,7 @@
 <script setup>
 import { ref, reactive, onMounted, watch, provide, computed } from 'vue'
 import { useFormTable } from '../composables/useFormTable'
-import FormButton from './FormButton.vue'
+import Button from './Button.vue'
 
 // Define props
 const props = defineProps({
@@ -130,7 +130,3 @@ onMounted(() => {
   initialize()
 })
 </script>
-
-<style scoped>
-
-</style>

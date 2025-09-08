@@ -16,9 +16,9 @@
       <FormInput rules="confirmed:password" name="password_confirmation" type="password" col="6" />
 
       <template #footer="{ isSubmitting }">
-        <div class="footer-actions">
-          <FormButton type="button" variant="secondary" @click="handleLogout" text="Logout" />
-          <FormButton type="submit" variant="success" :text="isSubmitting ? 'Saving...' : 'Save Changes'" :disabled="isSubmitting" />
+        <div class="form-actions">
+          <Button button-type="button" variant="secondary" @click="handleLogout" text="Logout" />
+          <Button button-type="submit" variant="success" :text="isSubmitting ? 'Saving...' : 'Save Changes'" :disabled="isSubmitting" />
         </div>
       </template>
     </FormContainer>
@@ -34,7 +34,7 @@ import { useAlert } from '../../composables/useAlert'
 import { http } from '../../stores/http'
 import FormContainer from '../../components/FormContainer.vue'
 import FormInput from '../../components/FormInput.vue'
-import FormButton from '../../components/FormButton.vue'
+import Button from '../../components/Button.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()

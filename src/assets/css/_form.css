@@ -156,6 +156,10 @@ textarea.success {
   background-color: var(--color-error);
 }
 
+.button.danger {
+  background-color: var(--color-error);
+}
+
 .button.success {
   background-color: var(--color-success);
 }
@@ -221,6 +225,12 @@ button:active:not(:disabled) {
   flex-flow: row wrap;
   display: flex;
   justify-content: flex-start;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
 }
 
 .form-label {
@@ -412,6 +422,90 @@ button:active:not(:disabled) {
   text-decoration: underline;
 }
 
+/* Column support - make components work inline without row wrapper */
+.form-button.col-1 {
+  display: inline-block;
+  width: calc(8.333% - 10px);
+  margin-right: 10px;
+  vertical-align: top;
+}
+
+.form-button.col-2 {
+  display: inline-block;
+  width: calc(16.666% - 10px);
+  margin-right: 10px;
+  vertical-align: top;
+}
+
+.form-button.col-3 {
+  display: inline-block;
+  width: calc(25% - 10px);
+  margin-right: 10px;
+  vertical-align: top;
+}
+
+.form-button.col-4 {
+  display: inline-block;
+  width: calc(33.333% - 10px);
+  margin-right: 10px;
+  vertical-align: top;
+}
+
+.form-button.col-5 {
+  display: inline-block;
+  width: calc(41.666% - 10px);
+  margin-right: 10px;
+  vertical-align: top;
+}
+
+.form-button.col-6 {
+  display: inline-block;
+  width: calc(50% - 10px);
+  margin-right: 10px;
+  vertical-align: top;
+}
+
+.form-button.col-7 {
+  display: inline-block;
+  width: calc(58.333% - 10px);
+  margin-right: 10px;
+  vertical-align: top;
+}
+
+.form-button.col-8 {
+  display: inline-block;
+  width: calc(66.666% - 10px);
+  margin-right: 10px;
+  vertical-align: top;
+}
+
+.form-button.col-9 {
+  display: inline-block;
+  width: calc(75% - 10px);
+  margin-right: 10px;
+  vertical-align: top;
+}
+
+.form-button.col-10 {
+  display: inline-block;
+  width: calc(83.333% - 10px);
+  margin-right: 10px;
+  vertical-align: top;
+}
+
+.form-button.col-11 {
+  display: inline-block;
+  width: calc(91.666% - 10px);
+  margin-right: 10px;
+  vertical-align: top;
+}
+
+.form-button.col-12 {
+  display: block;
+  width: 100%;
+  margin-right: 0;
+}
+
 /* Form Media Queries */
 /* Mobile responsiveness */
 @media (max-width: 768px) {
@@ -449,6 +543,22 @@ button:active:not(:disabled) {
 
   .form-button {
     width: 100%;
+    margin-bottom: 10px;
+  }
+
+  /* Flexible buttons also become full width on mobile */
+  .form-button--flexible {
+    display: block !important;
+    width: 100% !important;
+    margin-right: 0 !important;
+    margin-bottom: 10px;
+  }
+
+  /* Column buttons also become full width on mobile */
+  .form-button[class*="col-"] {
+    display: block !important;
+    width: 100% !important;
+    margin-right: 0 !important;
     margin-bottom: 10px;
   }
 }

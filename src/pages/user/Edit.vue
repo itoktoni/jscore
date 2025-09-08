@@ -26,9 +26,9 @@
       />
 
       <template #footer="{ isSubmitting }">
-        <div class="footer-actions">
-          <FormButton type="button" variant="secondary" @click="handleCancel" text="← Back" />
-          <FormButton type="submit" variant="success" :text="isSubmitting ? 'Saving...' : 'Update'" :disabled="isSubmitting" />
+        <div class="form-actions">
+          <Button button-type="button" variant="secondary" @click="handleCancel" text="← Back" />
+          <Button button-type="submit" variant="success" :text="isSubmitting ? 'Saving...' : 'Update'" :disabled="isSubmitting" />
         </div>
       </template>
     </FormContainer>
@@ -44,7 +44,7 @@ import { USER_ROUTES, USER_API_ROUTES } from '../../router/userRoutes'
 import { http } from '../../stores/http'
 import FormContainer from '../../components/FormContainer.vue'
 import FormInput from '../../components/FormInput.vue'
-import FormButton from '../../components/FormButton.vue'
+import Button from '../../components/Button.vue'
 import FormSelect from '../../components/FormSelect.vue'
 
 const route = useRoute()

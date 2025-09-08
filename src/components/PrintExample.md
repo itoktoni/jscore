@@ -216,7 +216,7 @@ You can also add a print button to the footer for batch printing:
 ```vue
 <template>
   <footer class="content-footer">
-    <div class="footer-actions">
+    <div class="form-actions">
       <FormButton variant="secondary" @click="loadItems" text="Refresh" />
       <FormButton variant="info" @click="handlePrintSelected" text="Print Selected" :disabled="!hasSelectedItems" />
       <FormButton variant="danger" @click="deleteSelectedUsers" text="Delete" :disabled="!hasSelectedItems" />

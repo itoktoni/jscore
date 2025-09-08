@@ -3,7 +3,8 @@
     <h2>ModalShow Component Example</h2>
 
     <!-- Button to open the modal -->
-    <FormButton
+    <Button
+      button-type="button"
       variant="primary"
       text="Show User Modal"
       @click="showUserModal = true"
@@ -20,7 +21,8 @@
     />
 
     <!-- Button to open the product modal -->
-    <FormButton
+    <Button
+      button-type="button"
       variant="secondary"
       text="Show Product Modal"
       @click="showProductModal = true"
@@ -40,7 +42,7 @@
 <script setup>
 import { ref } from 'vue'
 import ModalShow from './ModalShow.vue'
-import FormButton from './FormButton.vue'
+import Button from './Button.vue'
 
 // Modal visibility states
 const showUserModal = ref(false)
@@ -88,20 +90,3 @@ const productFields = [
   { key: 'created_at', label: 'Added On' }
 ]
 </script>
-
-<style scoped>
-.example-container {
-  padding: 2rem;
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.example-container h2 {
-  color: #333;
-  margin-bottom: 1.5rem;
-}
-
-.example-container > * {
-  margin-bottom: 1rem;
-}
-</style>

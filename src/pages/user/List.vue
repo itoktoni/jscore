@@ -143,10 +143,10 @@
 
     <!-- Footer -->
     <footer class="content-footer">
-      <div class="footer-actions">
-        <FormButton variant="secondary" @click="refreshItems" text="Refresh" />
-        <FormButton variant="danger" @click="deleteSelectedUsers" text="Delete" :disabled="!hasSelectedItems" />
-        <FormButton variant="success" @click="handleCreate(USER_ROUTES.CREATE_USER)" text="+ Create" />
+      <div class="form-actions">
+        <Button button-type="button" variant="secondary" @click="refreshItems" text="Refresh" />
+        <Button button-type="button" variant="danger" @click="deleteSelectedUsers" text="Delete" :disabled="!hasSelectedItems" />
+        <Button button-type="button" variant="success" @click="handleCreate(USER_ROUTES.CREATE_USER)" text="+ Create" />
       </div>
     </footer>
 
@@ -165,7 +165,7 @@ import { useAlert } from '../../composables/useAlert'
 import { useGlobalList } from '../../composables/useGlobalList'
 import { http } from '../../stores/http'
 
-import FormButton from '../../components/FormButton.vue'
+import Button from '../../components/Button.vue'
 import ErrorMessage from '../../components/ErrorMessage.vue'
 import Show from './Show.vue'
 import LoadingData from '../../components/LoadingData.vue'

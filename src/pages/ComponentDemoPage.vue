@@ -1,9 +1,3 @@
-/**
- * Component Demo Page
- *
- * Demonstrates the ultra-minimal FormInput, FormSelect, and FormButton components
- */
-
 <template>
   <div class="demo-container">
     <div class="demo-card">
@@ -32,10 +26,10 @@
           option-value="code"
         />
 
-        <!-- Multiple FormButton variants -->
+        <!-- Multiple Button variants -->
         <div class="button-row">
-          <FormButton
-            type="submit"
+          <Button
+            button-type="submit"
             variant="primary"
             text="Submit Form"
             block
@@ -43,19 +37,22 @@
         </div>
 
         <div class="button-row">
-          <FormButton
+          <Button
+            button-type="button"
             variant="secondary"
             text="Cancel"
             size="small"
             @click="handleCancel"
           />
-          <FormButton
+          <Button
+            button-type="button"
             variant="success"
             text="Save Draft"
             size="small"
             @click="handleSave"
           />
-          <FormButton
+          <Button
+            button-type="button"
             variant="danger"
             text="Delete"
             size="small"
@@ -85,7 +82,7 @@ import { ref } from 'vue'
 import { useFormValidation } from '../composables/useFormValidation'
 import FormInput from '../components/FormInput.vue'
 import FormSelect from '../components/FormSelect.vue'
-import FormButton from '../components/FormButton.vue'
+import Button from '../components/Button.vue'
 
 const {
   isSubmitting,
@@ -158,102 +155,3 @@ const handleDelete = () => {
   }
 }
 </script>
-
-<style scoped>
-.demo-container {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  min-height: 100vh;
-  background-color: #f5f5f5;
-  padding: 20px;
-}
-
-.demo-card {
-  background: white;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.demo-card h2 {
-  text-align: center;
-  margin-bottom: 30px;
-  color: #333;
-  font-size: 24px;
-  font-weight: 600;
-}
-
-.button-row {
-  display: flex;
-  gap: 10px;
-  margin-top: 15px;
-}
-
-.button-row .form-button {
-  flex: 1;
-}
-
-.error-message {
-  background-color: #f8d7da;
-  color: #721c24;
-  padding: 12px 16px;
-  border-radius: 8px;
-  margin-top: 20px;
-  border: 1px solid #f5c6cb;
-  font-size: 14px;
-}
-
-.debug-panel {
-  margin-top: 30px;
-  padding: 20px;
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  border: 1px solid #dee2e6;
-}
-
-.debug-panel h3 {
-  margin-top: 0;
-  margin-bottom: 10px;
-  font-size: 16px;
-  color: #495057;
-}
-
-.debug-panel pre {
-  background-color: #fff;
-  padding: 10px;
-  border-radius: 4px;
-  border: 1px solid #dee2e6;
-  font-size: 12px;
-  overflow-x: auto;
-  margin: 0 0 15px 0;
-}
-
-/* Mobile optimizations */
-@media (max-width: 768px) {
-  .demo-container {
-    padding: 10px;
-  }
-
-  .demo-card {
-    padding: 20px;
-  }
-
-  .button-row {
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .debug-panel {
-    padding: 15px;
-  }
-
-  .debug-panel pre {
-    font-size: 11px;
-    padding: 8px;
-  }
-}
-</style>

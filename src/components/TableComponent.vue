@@ -1,102 +1,62 @@
 <template>
-  <div class="table-container">
-    <div v-if="loading" class="loading-indicator">
-      {{ loadingText }}
-    </div>
-
-    <div v-else class="table-responsive">
+  <div class="table-component">
+    <!-- Table -->
+    <div class="table-responsive">
       <table class="data-table" :class="{ 'table-striped': striped, 'table-hover': hover }">
         <thead>
           <tr>
-            <th
-              v-for="column in columns"
-              :key="column.key"
-              :class="{
-                'sortable': column.sortable,
-                'sort-asc': sortBy === column.key && sortDirection === 'asc',
-                'sort-desc': sortBy === column.key && sortDirection === 'desc'
-              }"
-              @click="column.sortable ? handleSort(column.key) : null"
-            >
+            <th v-for="column in columns" :key="column.key" @click="handleSort(column.key)" :class="{ 'sortable': sortable && column.sortable !== false }">
               {{ column.label }}
-              <span v-if="column.sortable" class="sort-indicator">
-                <i v-if="sortBy !== column.key" class="sort-icon">↕</i>
-                <i v-else-if="sortDirection === 'asc'" class="sort-icon">↑</i>
-                <i v-else class="sort-icon">↓</i>
+              <span v-if="sortable && column.sortable !== false && sortBy === column.key" class="sort-indicator">
+                {{ sortDirection === 'asc' ? '↑' : '↓' }}
               </span>
             </th>
-
-            <!-- Actions column if actions are provided -->
             <th v-if="hasActions" class="actions-header">Actions</th>
           </tr>
         </thead>
-
         <tbody>
-          <tr v-for="(item, index) in processedData" :key="getRowKey(item, index)">
-            <td v-for="column in columns" :key="`${column.key}-${index}`">
-              <!-- Slot for custom cell rendering -->
-              <slot
-                :name="`cell-${column.key}`"
-                :item="item"
-                :value="getItemValue(item, column.key)"
-                :index="index"
-              >
-                <!-- Default cell rendering -->
-                <template v-if="column.type === 'badge'">
-                  <span
-                    class="badge"
-                    :class="getBadgeClass(item, column)"
-                  >
-                    {{ getItemValue(item, column.key) }}
-                  </span>
-                </template>
-
-                <template v-else-if="column.type === 'boolean'">
-                  <span :class="getItemValue(item, column.key) ? 'status-active' : 'status-inactive'">
-                    {{ getItemValue(item, column.key) ? 'Yes' : 'No' }}
-                  </span>
-                </template>
-
-                <template v-else-if="column.type === 'date'">
-                  {{ formatDate(getItemValue(item, column.key)) }}
-                </template>
-
-                <template v-else-if="column.type === 'image'">
-                  <img
-                    :src="getItemValue(item, column.key)"
-                    :alt="column.label"
-                    class="table-image"
-                    @error="handleImageError($event)"
-                  />
-                </template>
-
-                <template v-else>
-                  {{ getItemValue(item, column.key) }}
-                </template>
-              </slot>
+          <!-- Loading state -->
+          <tr v-if="loading">
+            <td :colspan="columns.length + (hasActions ? 1 : 0)" class="text-center">
+              {{ loadingText }}
             </td>
+          </tr>
 
-            <!-- Actions cell -->
+          <!-- Data rows -->
+          <tr v-for="(item, index) in processedData" :key="getRowKey(item, index)">
+            <td v-for="column in columns" :key="column.key" :class="column.class" :data-label="column.label">
+              <span v-if="column.badge" :class="['badge', getBadgeClass(item, column)]">
+                {{ formatValue(getItemValue(item, column.key), column) }}
+              </span>
+              <span v-else-if="column.status" :class="getItemValue(item, column.key) ? 'status-active' : 'status-inactive'">
+                {{ getItemValue(item, column.key) ? column.status.active : column.status.inactive }}
+              </span>
+              <span v-else>
+                {{ formatValue(getItemValue(item, column.key), column) }}
+              </span>
+            </td>
             <td v-if="hasActions" class="actions-cell">
               <slot
                 name="actions"
                 :item="item"
                 :index="index"
               >
-                <button
+                <Button
                   v-if="showEdit"
+                  button-type="button"
+                  variant="outline-primary"
+                  size="small"
                   @click="$emit('edit', item, index)"
-                  class="btn btn-sm btn-outline-primary"
-                >
-                  Edit
-                </button>
-                <button
+                  text="Edit"
+                />
+                <Button
                   v-if="showDelete"
+                  button-type="button"
+                  variant="outline-danger"
+                  size="small"
                   @click="$emit('delete', item, index)"
-                  class="btn btn-sm btn-outline-danger"
-                >
-                  Delete
-                </button>
+                  text="Delete"
+                />
               </slot>
             </td>
           </tr>
@@ -115,25 +75,27 @@
     <div v-if="showPagination && pagination" class="table-pagination">
       <slot name="pagination" :pagination="pagination" :changePage="changePage">
         <nav class="pagination">
-          <button
+          <Button
+            button-type="button"
+            variant="outline-primary"
+            size="small"
             :disabled="pagination.current_page <= 1"
             @click="changePage(pagination.current_page - 1)"
-            class="pagination-btn"
-          >
-            Previous
-          </button>
+            text="Previous"
+          />
 
           <span class="pagination-info">
             Showing {{ pagination.from }} to {{ pagination.to }} of {{ pagination.total }} entries
           </span>
 
-          <button
+          <Button
+            button-type="button"
+            variant="outline-primary"
+            size="small"
             :disabled="pagination.current_page >= pagination.last_page"
             @click="changePage(pagination.current_page + 1)"
-            class="pagination-btn"
-          >
-            Next
-          </button>
+            text="Next"
+          />
         </nav>
       </slot>
     </div>
@@ -142,6 +104,7 @@
 
 <script setup>
 import { computed, ref, useSlots } from 'vue'
+import Button from './Button.vue'
 
 const slots = useSlots()
 
@@ -280,6 +243,13 @@ const formatDate = (dateString) => {
   if (!dateString) return ''
   const date = new Date(dateString)
   return date.toLocaleDateString()
+}
+
+const formatValue = (value, column) => {
+  if (column.type === 'date') {
+    return formatDate(value)
+  }
+  return value
 }
 
 const handleSort = (key) => {

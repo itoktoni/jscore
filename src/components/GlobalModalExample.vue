@@ -3,14 +3,16 @@
     <h2>GlobalModal Component Examples</h2>
 
     <!-- Button to open the create user modal -->
-    <FormButton
+    <Button
+      button-type="button"
       variant="primary"
       text="Create New User"
       @click="openCreateModal"
     />
 
     <!-- Button to open the view user modal -->
-    <FormButton
+    <Button
+      button-type="button"
       variant="secondary"
       text="View User Details"
       @click="openViewModal"
@@ -60,7 +62,7 @@
 <script setup>
 import { ref } from 'vue'
 import GlobalModal from './GlobalModal.vue'
-import FormButton from './FormButton.vue'
+import Button from './Button.vue'
 import { useAlert } from '../composables/useAlert.js'
 
 // Modal visibility states
@@ -171,20 +173,3 @@ const handleUpdateUser = async (userData) => {
   }
 }
 </script>
-
-<style scoped>
-.example-container {
-  padding: 2rem;
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.example-container h2 {
-  color: #333;
-  margin-bottom: 1.5rem;
-}
-
-.example-container > * {
-  margin-bottom: 1rem;
-}
-</style>

@@ -16,12 +16,20 @@
     </div>
 
     <div class="actions">
-      <button @click="toggleDarkMode" class="button">
-        Toggle Dark Mode
-      </button>
-      <button @click="resetSettings" class="button secondary">
-        Reset to Defaults
-      </button>
+      <Button
+        button-type="button"
+        variant="primary"
+        size="medium"
+        @click="toggleDarkMode"
+        text="Toggle Dark Mode"
+      />
+      <Button
+        button-type="button"
+        variant="secondary"
+        size="medium"
+        @click="resetSettings"
+        text="Reset to Defaults"
+      />
     </div>
 
     <div class="test-section">
@@ -46,9 +54,13 @@
           class="form-input"
         >
       </div>
-      <button @click="updateSettings" class="button primary">
-        Update Settings
-      </button>
+      <Button
+        button-type="button"
+        variant="success"
+        size="medium"
+        @click="updateSettings"
+        text="Update Settings"
+      />
     </div>
   </div>
 </template>
@@ -57,6 +69,7 @@
 import { ref, onMounted } from 'vue'
 import { useSettings } from '../composables/useSettings'
 import { http } from '../stores/http'
+import Button from './Button.vue'
 
 // Initialize the settings composable
 const {
@@ -143,10 +156,8 @@ const resetSettings = async () => {
 
 .actions {
   margin-bottom: 20px;
-}
-
-.actions .button {
-  margin-right: 10px;
+  display: flex;
+  gap: 10px;
 }
 
 .test-section {
@@ -172,57 +183,5 @@ const resetSettings = async () => {
   border-radius: 4px;
   font-size: 14px;
   box-sizing: border-box;
-}
-
-.button {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 4px;
-  background-color: #007bff;
-  color: white;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.button:hover {
-  background-color: #0069d9;
-}
-
-.button.secondary {
-  background-color: #6c757d;
-}
-
-.button.secondary:hover {
-  background-color: #5a6268;
-}
-
-.button.primary {
-  background-color: #28a745;
-}
-
-.button.primary:hover {
-  background-color: #218838;
-}
-
-/* Dark mode styles */
-.dark .settings-demo {
-  border-color: #4a5568;
-  background-color: #2d3748;
-  color: #e2e8f0;
-}
-
-.dark .current-settings,
-.dark .test-section {
-  background-color: #4a5568;
-}
-
-.dark .form-input {
-  background: #2d3748;
-  border-color: #718096;
-  color: #e2e8f0;
-}
-
-.dark .setting-item {
-  border-color: #718096;
 }
 </style>

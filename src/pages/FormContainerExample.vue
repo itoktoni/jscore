@@ -40,14 +40,14 @@
           <!-- Custom footer with custom buttons -->
           <template #footer="{ isSubmitting }">
             <div class="custom-footer">
-              <FormButton
-                type="button"
+              <Button
+                button-type="button"
                 variant="secondary"
                 text="Reset"
                 @click="handleReset"
               />
-              <FormButton
-                type="submit"
+              <Button
+                button-type="submit"
                 variant="success"
                 :text="isSubmitting ? 'Saving...' : 'Create Account'"
                 :disabled="isSubmitting"
@@ -69,8 +69,8 @@
             <FormInput name="title" label="Title" rules="required|min:5" />
             <FormInput name="content" label="Content" type="textarea" rules="required|min:10" />
             <div class="form-actions">
-              <FormButton
-                type="submit"
+              <Button
+                button-type="submit"
                 variant="primary"
                 text="Submit"
                 :disabled="isSubmitting"
@@ -87,7 +87,7 @@
 import { ref } from 'vue'
 import FormContainer from '../components/FormContainer.vue'
 import FormInput from '../components/FormInput.vue'
-import FormButton from '../components/FormButton.vue'
+import Button from '../components/Button.vue'
 
 // We need to inject isSubmitting for the third example
 import { inject } from 'vue'

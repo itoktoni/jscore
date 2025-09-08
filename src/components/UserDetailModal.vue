@@ -47,12 +47,14 @@
           </div>
         </div>
         <div class="modal-actions">
-          <FormButton
+          <Button
+            button-type="button"
             variant="primary"
             @click="$emit('edit', user)"
             text="Edit User"
           />
-          <FormButton
+          <Button
+            button-type="button"
             variant="secondary"
             @click="$emit('close')"
             text="Close"
@@ -64,7 +66,7 @@
 </template>
 
 <script setup>
-import FormButton from './FormButton.vue'
+import Button from './Button.vue'
 
 const props = defineProps({
   user: {

@@ -48,19 +48,17 @@
           </div>
 
           <div class="form-actions">
-            <button
+            <Button
+              button-type="button"
+              variant="secondary"
               @click="handleCancel"
-              type="button"
-              class="btn btn-secondary"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              class="btn btn-primary"
-            >
-              Create Role
-            </button>
+              text="Cancel"
+            />
+            <Button
+              button-type="submit"
+              variant="primary"
+              text="Create Role"
+            />
           </div>
         </form>
       </div>
@@ -74,6 +72,7 @@ import { useRouter } from 'vue-router'
 import { ROLE_ROUTES } from '../../router/roleRoutes'
 import { roleService } from '../../services/roleService'
 import { useAlert } from '../../composables/useAlert'
+import Button from '../../components/Button.vue'
 
 const router = useRouter()
 const { alertSuccess, alertError } = useAlert()
@@ -203,23 +202,6 @@ const handleCancel = () => {
   justify-content: flex-end;
   gap: 0.5rem;
   margin-top: 1rem;
-}
-
-.btn {
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  border: none;
-  cursor: pointer;
-}
-
-.btn-primary {
-  background-color: #007bff;
-  color: white;
-}
-
-.btn-secondary {
-  background-color: #6c757d;
-  color: white;
 }
 
 .font-bold {

@@ -74,7 +74,7 @@ The template now includes:
   />
 
   <template #footer="{ isSubmitting }">
-    <div class="footer-actions">
+    <div class="form-actions">
       <FormButton type="button" variant="secondary" text="← Back" @click="handleCancel" />
       <FormButton
         type="submit"
