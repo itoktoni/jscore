@@ -20,13 +20,13 @@
           <!-- Default footer content -->
             <Button
               v-if="cancelText"
-              button-type="button"
+              type="button"
               variant="secondary"
               @click="handleCancel"
               :text="cancelText"
             />
             <Button
-              button-type="submit"
+              type="submit"
               :variant="submitVariant"
               :text="isSubmitting ? loadingText : submitText"
               :disabled="isSubmitting"

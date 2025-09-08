@@ -1,4 +1,3 @@
-import ListPage from '../pages/user/List.vue'
 import CreatePage from '../pages/user/Create.vue'
 import EditPage from '../pages/user/Edit.vue'
 import DashboardPage from '../pages/dashboard/DashboardPage.vue'

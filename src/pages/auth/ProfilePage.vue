@@ -17,8 +17,8 @@
 
       <template #footer="{ isSubmitting }">
         <div class="form-actions">
-          <Button button-type="button" variant="secondary" @click="handleLogout" text="Logout" />
-          <Button button-type="submit" variant="success" :text="isSubmitting ? 'Saving...' : 'Save Changes'" :disabled="isSubmitting" />
+          <Button type="button" variant="secondary" @click="handleLogout" text="Logout" />
+          <Button type="submit" variant="success" :text="isSubmitting ? 'Saving...' : 'Save Changes'" :disabled="isSubmitting" />
         </div>
       </template>
     </FormContainer>

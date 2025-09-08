@@ -12,8 +12,8 @@
 
       <template #footer="{ isSubmitting }">
         <div class="form-actions">
-          <Button button-type="button" variant="secondary" @click="resetToDefaults" text="Reset to Defaults" />
-          <Button button-type="submit" variant="success" :text="isSubmitting ? 'Saving...' : 'Save Settings'"
+          <Button type="button" variant="secondary" @click="resetToDefaults" text="Reset to Defaults" />
+          <Button type="submit" variant="success" :text="isSubmitting ? 'Saving...' : 'Save Settings'"
             :disabled="isSubmitting" />
         </div>
       </template>

@@ -48,10 +48,10 @@
 
               <td data-label="Actions">
                 <div class="action-table">
-                  <Button button-type="link" variant="primary"
+                  <Button type="link" variant="primary"
                     :to="{ name: ROUTES.EDIT, params: { id: user.id } }" text="Button.edit:icon" />
 
-                  <Button button-type="delete" variant="danger" :url="API.DELETE(user.id)"
+                  <Button type="delete" variant="danger" :url="API.DELETE(user.id)"
                     :form-table-ref="TableRef" text="Button.delete:icon" />
                 </div>
               </td>
@@ -73,10 +73,10 @@
 
     <!-- Footer Actions -->
     <template #footerActions>
-      <Button button-type="remove" variant="danger" :url="API.REMOVE" :selected-items="selectedItems"
+      <Button type="remove" variant="danger" :url="API.REMOVE" :selected-items="selectedItems"
         :form-table-ref="TableRef" text="Delete" />
 
-      <Button button-type="link" variant="success" :to="{ name: ROUTES.CREATE }" text="Button.create" />
+      <Button type="link" variant="success" :to="{ name: ROUTES.CREATE }" text="Button.create" />
     </template>
   </FormTable>
 </template>

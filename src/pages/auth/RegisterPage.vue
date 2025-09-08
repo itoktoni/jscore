@@ -38,7 +38,7 @@
           />
 
           <Button
-            button-type="submit"
+            type="submit"
             variant="success"
             :text="isSubmitting ? 'Creating Account...' : 'Create Account'"
             :disabled="isSubmitting"
@@ -50,7 +50,7 @@
 
       <!-- Using the new Button component with buttonType="link" -->
       <Button
-        button-type="link"
+        type="link"
         text="Already have an account?"
         link-text="Login here"
         to="/login"

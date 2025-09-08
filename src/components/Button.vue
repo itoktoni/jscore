@@ -1,7 +1,7 @@
 <template>
   <!-- Submit/Button type -->
   <button
-    v-if="buttonType === 'submit' || buttonType === 'button'"
+    v-if="type === 'submit' || type === 'button'"
     :type="buttonTypeAttr"
     :disabled="disabled || loading || computedLoading"
     :class="buttonClasses"
@@ -16,7 +16,7 @@
 
   <!-- Link type -->
   <button
-    v-else-if="buttonType === 'link'"
+    v-else-if="type === 'link'"
     :type="buttonTypeAttr"
     :disabled="disabled || loading || computedLoading"
     :class="buttonClasses"
@@ -31,7 +31,7 @@
 
   <!-- Delete/Remove type -->
   <button
-    v-else-if="buttonType === 'delete' || buttonType === 'remove'"
+    v-else-if="type === 'delete' || type === 'remove'"
     @click="handleDelete"
     :class="buttonClasses"
     :disabled="isDeleteDisabled"
@@ -55,7 +55,7 @@ import { BUTTON_ICONS } from '../models/ButtonIcons'
 // Define props
 const props = defineProps({
   // Common props
-  buttonType: {
+  type: {
     type: String,
     default: 'button',
     validator: (value) => ['button', 'submit', 'link', 'delete', 'remove'].includes(value)
@@ -78,7 +78,7 @@ const props = defineProps({
   },
 
   // Button/Submit specific props
-  type: {
+  buttonType: {
     type: String,
     default: 'button',
     validator: (value) => ['button', 'submit', 'reset'].includes(value)
@@ -182,9 +182,9 @@ const isSubmitting = inject('isSubmitting', null)
 
 // Computed button type for HTML type attribute
 const buttonTypeAttr = computed(() => {
-  if (props.buttonType === 'submit') {
+  if (props.type === 'submit') {
     return 'submit'
-  } else if (props.buttonType === 'reset') {
+  } else if (props.type === 'reset') {
     return 'reset'
   }
   return 'button'
@@ -255,7 +255,7 @@ const handleClick = (event) => {
   }
 
   // Handle navigation for link type
-  if (props.buttonType === 'link' && props.to) {
+  if (props.type === 'link' && props.to) {
     router.push(props.to)
   }
 
@@ -266,23 +266,23 @@ const handleClick = (event) => {
 const deleteLoading = ref(false)
 
 const isDeleteDisabled = computed(() => {
-  if (props.buttonType === 'delete') {
+  if (props.type === 'delete') {
     return props.disabled || deleteLoading.value
-  } else if (props.buttonType === 'remove') {
+  } else if (props.type === 'remove') {
     return props.disabled || deleteLoading.value || !props.selectedItems || props.selectedItems.length === 0
   }
   return props.disabled || deleteLoading.value
 })
 
 const deleteLoadingText = computed(() => {
-  return props.buttonType === 'delete' ? 'Deleting...' : 'Deleting...'
+  return props.type === 'delete' ? 'Deleting...' : 'Deleting...'
 })
 
 const defaultConfirmMessage = computed(() => {
   if (props.confirmMessage) return props.confirmMessage
-  if (props.buttonType === 'delete') {
+  if (props.type === 'delete') {
     return 'Are you sure you want to delete this item?'
-  } else if (props.buttonType === 'remove') {
+  } else if (props.type === 'remove') {
     if (!props.selectedItems || props.selectedItems.length === 0) {
       return 'You must select items first before deleting'
     }
@@ -294,7 +294,7 @@ const defaultConfirmMessage = computed(() => {
 // Handle delete operation
 const handleDelete = async () => {
   // Check if any items are selected for remove type
-  if (props.buttonType === 'remove' && (!props.selectedItems || props.selectedItems.length === 0)) {
+  if (props.type === 'remove' && (!props.selectedItems || props.selectedItems.length === 0)) {
     alertError('Error', 'You must select items first before deleting')
     return
   }
@@ -311,7 +311,7 @@ const handleDelete = async () => {
     try {
       deleteLoading.value = true
 
-      if (props.buttonType === 'delete') {
+      if (props.type === 'delete') {
         // Perform GET request for deletion (as per project requirements)
         await http.get(props.url)
 
@@ -327,7 +327,7 @@ const handleDelete = async () => {
         if (props.formTableRef && props.formTableRef.refresh) {
           props.formTableRef.refresh()
         }
-      } else if (props.buttonType === 'remove') {
+      } else if (props.type === 'remove') {
         // If formTableRef is provided, handle batch deletion manually
         if (props.formTableRef) {
           // Perform the deletion for selected items using the FormTable's delete endpoint
@@ -348,7 +348,7 @@ const handleDelete = async () => {
     } catch (error) {
 
       // Show error message
-      alertError('Error', `Failed to delete ${props.buttonType === 'delete' ? 'item' : 'selected items'}`)
+      alertError('Error', `Failed to delete ${props.type === 'delete' ? 'item' : 'selected items'}`)
 
       // Emit error event
       emit('error', error)

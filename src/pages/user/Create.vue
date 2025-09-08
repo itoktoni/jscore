@@ -27,8 +27,8 @@
 
       <template #footer="{ isSubmitting }">
         <div class="form-actions">
-          <Button button-type="button" variant="secondary" @click="handleCancel" text="Button.back" />
-          <Button button-type="submit" variant="primary" text="Button.create" loadingText="Saving..." :disabled="isSubmitting" />
+          <Button type="button" variant="secondary" @click="handleCancel" text="Button.back" />
+          <Button type="submit" variant="primary" text="Button.create" loadingText="Saving..." :disabled="isSubmitting" />
         </div>
       </template>
 

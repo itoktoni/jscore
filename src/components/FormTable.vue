@@ -11,8 +11,8 @@
             :handleSearch="handleSearch"></slot>
 
           <div class="form-actions">
-            <Button button-type="button" variant="secondary" text="Reset" @click="handleReset" />
-            <Button button-type="submit" variant="primary" :text="isSubmitting ? 'Searching...' : 'Search'"
+            <Button type="button" variant="secondary" text="Reset" @click="handleReset" />
+            <Button type="submit" variant="primary" :text="isSubmitting ? 'Searching...' : 'Search'"
               :disabled="isSubmitting" />
           </div>
         </form>
