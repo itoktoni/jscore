@@ -32,7 +32,6 @@ thead, tbody, tfoot, tr, td, th {
 }
 
 .action-table {
-    display: inline-block;
     margin: 0px auto;
     text-align: center;
 }

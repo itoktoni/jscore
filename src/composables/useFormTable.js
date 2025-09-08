@@ -23,9 +23,10 @@ export function useFormTable(options = {}) {
   const isSubmitting = ref(false)
   const tableData = ref([])
   const pagination = ref(null)
+  const hasPerformedSearch = ref(false)
 
   // Handle search function
-  const handleSearch = async () => {
+  const handleSearch = async (updateUrl = true) => {
     isSubmitting.value = true
     fieldErrors.value = {}
 
@@ -57,8 +58,13 @@ export function useFormTable(options = {}) {
         pagination.value = null
       }
 
-      // Update URL parameters
-      updateUrlParams()
+      // Mark that a search has been performed
+      hasPerformedSearch.value = true
+
+      // Update URL parameters only if requested (for search button clicks)
+      if (updateUrl) {
+        updateUrlParams()
+      }
 
       return response
     } catch (error) {
@@ -70,7 +76,7 @@ export function useFormTable(options = {}) {
   }
 
   // Handle reset function
-  const handleReset = () => {
+  const handleReset = (updateUrl = true) => {
     // Reset form data to initial values
     Object.keys(formData).forEach(key => {
       formData[key] = initialData[key] || ''
@@ -82,33 +88,41 @@ export function useFormTable(options = {}) {
     // Reset field errors
     fieldErrors.value = {}
 
-    // Update URL parameters
-    updateUrlParams()
+    // Update URL parameters if requested
+    if (updateUrl) {
+      updateUrlParams()
+    }
 
     // Perform search with reset data
-    return handleSearch()
+    return handleSearch(updateUrl)
   }
 
   // Change page function
-  const changePage = (page) => {
+  const changePage = (page, updateUrl = true) => {
     // Update form data with new page
     formData.page = page
 
-    // Update URL parameters
-    updateUrlParams()
+    // Update URL parameters if requested
+    if (updateUrl) {
+      updateUrlParams()
+    }
 
     // Perform search with new page
-    return handleSearch()
+    return handleSearch(updateUrl)
   }
 
   // Update URL parameters
   const updateUrlParams = () => {
     const query = {}
 
-    // Add form data to query, but only include non-empty values
-    // Also exclude page=1 to keep URLs clean
+    // Add form data to query
     Object.keys(formData).forEach(key => {
-      if (formData[key] && (key !== 'page' || formData[key] !== 1)) {
+      // Only include filter and search if a search has been performed
+      if ((key === 'filter' || key === 'search') && hasPerformedSearch.value) {
+        query[key] = formData[key] || ''
+      }
+      // For other fields, only include non-empty values and exclude page=1
+      else if (formData[key] && (key !== 'page' || formData[key] !== 1)) {
         query[key] = formData[key]
       }
     })
@@ -124,6 +138,7 @@ export function useFormTable(options = {}) {
       () => {
         // Check if we're on the base route with no query parameters
         const isBaseRoute = Object.keys(route.query).length === 0;
+        const hasQueryParams = !isBaseRoute;
 
         if (isBaseRoute) {
           // Reset form data to initial values when on base route
@@ -132,8 +147,10 @@ export function useFormTable(options = {}) {
           })
           // Ensure page is reset to 1
           formData.page = 1
+          // Reset search flag
+          hasPerformedSearch.value = false
         } else {
-          // Update form data from query parameters
+          // Update form data from query parameters (existing search)
           Object.keys(initialData).forEach(key => {
             if (route.query[key] !== undefined) {
               formData[key] = route.query[key]
@@ -143,15 +160,22 @@ export function useFormTable(options = {}) {
           })
 
           // Only reset page to 1 when navigating to the route if no page is specified in query
-          // This ensures that when users navigate to /users, they start on page 1
-          // but preserves page parameter when it's explicitly set
           if (route.query.page === undefined && !formData.page) {
             formData.page = 1
           }
+
+          // Mark that a search has been performed since there are query parameters
+          hasPerformedSearch.value = true
         }
 
         // Perform search when route changes
-        handleSearch()
+        // - If there are query params (existing search), perform search with URL update
+        // - If it's the base route, perform initial search without URL update
+        if (hasQueryParams) {
+          handleSearch(true) // Update URL for existing search params
+        } else if (isBaseRoute) {
+          handleSearch(false) // Don't update URL for initial load
+        }
       },
       { immediate: true }
     )
@@ -163,7 +187,7 @@ export function useFormTable(options = {}) {
   }
 
   // Refresh method (alias for handleSearch)
-  const refresh = handleSearch
+  const refresh = (updateUrl = true) => handleSearch(updateUrl)
 
   // Delete item function
   const deleteItem = async (deleteUrl) => {
@@ -171,7 +195,7 @@ export function useFormTable(options = {}) {
       // Perform GET request for deletion (as per project requirements)
       await http.get(deleteUrl)
       // Refresh the table after successful deletion
-      await refresh()
+      await refresh(true)
       return { success: true }
     } catch (error) {
       throw error
@@ -188,7 +212,7 @@ export function useFormTable(options = {}) {
       // Perform the deletion for selected items
       await http.post(deleteEndpoint, { code: selectedItems })
       // Refresh the table after successful deletion
-      await refresh()
+      await refresh(true)
       return { success: true }
     } catch (error) {
       throw error

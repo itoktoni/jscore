@@ -6,24 +6,21 @@
 
     <div class="card-table">
       <div class="form-table-container">
-        <form @submit.prevent="handleSearch" class="form-table-filter">
+        <form @submit.prevent="handleSearch(true)" class="form-table-filter">
           <slot name="filterForm" :formData="formData" :fieldErrors="fieldErrors" :isSubmitting="isSubmitting"
             :handleSearch="handleSearch">
           </slot>
 
             <div class="row">
-              <FormSelect name="filter" label="Role" :options="[
-                { label: 'All Roles', value: '' },
-                { label: 'Admin', value: 'admin' },
-                { label: 'User', value: 'user' }
-              ]" col="4" />
-              <FormInput col="4" name="search" label="Search" placeholder="Search by email" />
-              <Button type="button" class="button-filter" col="col-6 col-3-md col-2-lg" variant="secondary" text="Reset" @click="handleReset" />
-              <Button type="submit" class="button-filter" col="col-6 col-3-md col-2-lg" variant="primary" :text="isSubmitting ? 'Searching...' : 'Search'"
-              :disabled="isSubmitting" />
-
+              <FormSelect name="filter" label="Filter" :options="filterOptions" col="6" />
+              <FormInput col="6" name="search" label="Search" placeholder="Enter search term" />
             </div>
 
+          <div class="form-actions">
+            <Button type="button" variant="secondary" text="Reset" @click="handleReset(true)" />
+            <Button type="submit" variant="primary" :text="isSubmitting ? 'Searching...' : 'Search'"
+              :disabled="isSubmitting" />
+          </div>
         </form>
 
         <div class="form-table-content">
@@ -96,6 +93,11 @@ const props = defineProps({
   hasFooterActions: {
     type: Boolean,
     default: false
+  },
+  // Dynamic filter options
+  optionsFilter: {
+    type: Array,
+    default: () => []
   }
 })
 
@@ -110,17 +112,28 @@ const computedHeader = computed(() => {
   return 'Current Configuration'
 })
 
+// Default filter options
+const defaultFilterOptions = [
+  { label: 'All Fields', value: '' },
+  { label: 'Username', value: 'username' },
+  { label: 'Name', value: 'name' },
+  { label: 'Email', value: 'email' }
+]
+
+// Use dynamic options if provided, otherwise use defaults
+const filterOptions = computed(() => {
+  return props.optionsFilter.length > 0 ? props.optionsFilter : defaultFilterOptions
+})
+
 
 // Define emits
 const emit = defineEmits(['search', 'error'])
 
-// Set initial data with defaults for user fields
+// Set initial data with defaults for filter and search only
 const initialDataWithDefaults = {
   ...props.initialData,
-  username: props.initialData.username || '',
-  name: props.initialData.name || '',
-  email: props.initialData.email || '',
-  role: props.initialData.role || ''
+  filter: props.initialData.filter || '',
+  search: props.initialData.search || ''
 }
 
 // Use the form table composable

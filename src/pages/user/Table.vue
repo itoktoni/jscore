@@ -31,7 +31,7 @@
                 <FormCheck :data-array="data || []" select-all :selected-items="selectedItems"
                   :on-selection-change="updateSelectedItems" />
               </th>
-              <th class="text-center">Actions</th>
+              <th class="text-center action-table">Actions</th>
               <th>ID</th>
               <th>Username</th>
               <th>Name</th>
