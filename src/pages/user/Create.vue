@@ -22,14 +22,13 @@
         option-label="name"
         option-value="id"
         col="6"
-        multiple
         label="Role"
       />
 
       <template #footer="{ isSubmitting }">
         <div class="form-actions">
-          <Button button-type="button" variant="secondary" @click="handleCancel" text="← Back" />
-          <Button button-type="submit" variant="primary" :text="isSubmitting ? 'Saving...' : 'Create'" :disabled="isSubmitting" />
+          <Button button-type="button" variant="secondary" @click="handleCancel" text="Button.back" />
+          <Button button-type="submit" variant="primary" text="Button.create" loadingText="Saving..." :disabled="isSubmitting" />
         </div>
       </template>
 

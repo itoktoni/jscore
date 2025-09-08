@@ -5,5 +5,8 @@ export const BUTTON_ICONS = {
   CANCEL: 'bi bi-x',
   ADD: 'bi bi-plus',
   VIEW: 'bi bi-eye',
-  SEARCH: 'bi bi-search'
+  SEARCH: 'bi bi-search',
+  CREATE: 'bi bi-plus',
+  UPDATE: 'bi bi-check',
+  BACK: 'bi bi-arrow-left'
 }

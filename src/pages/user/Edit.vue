@@ -27,8 +27,8 @@
 
       <template #footer="{ isSubmitting }">
         <div class="form-actions">
-          <Button button-type="button" variant="secondary" @click="handleCancel" text="← Back" />
-          <Button button-type="submit" variant="success" :text="isSubmitting ? 'Saving...' : 'Update'" :disabled="isSubmitting" />
+          <Button button-type="button" variant="secondary" @click="handleCancel" text="Button.back" />
+          <Button button-type="submit" variant="primary" text="Button.update" loadingText="Saving..." :disabled="isSubmitting" />
         </div>
       </template>
     </FormContainer>
@@ -73,7 +73,6 @@ onMounted(async () => {
         initialFormData.value.password_confirmation = ''
       }
     } catch (error) {
-      console.error('Error loading user:', error)
       // Error loading user
       router.push({ name: USER_ROUTES.USER_LIST })
     }

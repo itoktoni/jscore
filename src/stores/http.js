@@ -74,7 +74,6 @@ class Http {
       this.api.defaults.baseURL = this.baseURL
     }
 
-    console.log('HTTP Service baseURL updated to:', this.baseURL)
   }
 
   // Setup response interceptor to handle authentication errors
@@ -91,7 +90,6 @@ class Http {
           const message = error.response.data?.message || ''
           if (message.toLowerCase().includes('unauthenticated')) {
             // Handle auth error - this will be caught by the calling function
-            console.log('Authentication error detected')
           }
         }
 

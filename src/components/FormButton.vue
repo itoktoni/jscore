@@ -93,7 +93,6 @@ const computedLoading = computed(() => {
 
 // Handle click event - don't prevent default for submit buttons
 const handleClick = (event) => {
-  console.log('FormButton clicked, type:', props.type)
   // For submit buttons, let the form handle the submission
   if (props.type !== 'submit') {
     event.preventDefault()
@@ -101,7 +100,6 @@ const handleClick = (event) => {
     // For submit buttons, we want the form to handle the submission
     // Don't prevent default, let the form's submit event handle it
   }
-  console.log('Emitting click event')
   emit('click', event)
 }
 </script>

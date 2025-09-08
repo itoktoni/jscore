@@ -142,11 +142,9 @@ async function initAuth() {
 
       // Load user profile data
       try {
-        console.log('Initializing auth with token, loading profile...')
         await loadProfile()
         return responseSuccess({ message: 'Authentication initialized' })
       } catch (error) {
-        console.error('Error loading profile during init:', error)
         // If profile loading fails, logout
         await logout()
         return responseError(error)
@@ -156,7 +154,6 @@ async function initAuth() {
     return responseSuccess({ message: 'No authentication token found' })
 
   } catch (error) {
-    console.error('Error initializing auth:', error)
     return responseError(error)
   }
 }
@@ -165,7 +162,6 @@ async function initAuth() {
 async function handleAuthError() {
   await logout()
   // The actual redirect will be handled by the router guard or component
-  console.log('Authentication error - user logged out')
 }
 
 // Compatibility export for existing imports

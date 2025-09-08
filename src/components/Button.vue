@@ -2,7 +2,7 @@
   <!-- Submit/Button type -->
   <button
     v-if="buttonType === 'submit' || buttonType === 'button'"
-    :type="type"
+    :type="buttonTypeAttr"
     :disabled="disabled || loading || computedLoading"
     :class="buttonClasses"
     @click="handleClick"
@@ -10,14 +10,14 @@
     <span v-if="computedLoading" class="loading-spinner"></span>
     <i v-if="iconClass" :class="iconClass"></i>
     <span :class="{ 'with-spinner': computedLoading }">
-      <slot>{{ text }}</slot>
+      <slot>{{ displayText }}</slot>
     </span>
   </button>
 
   <!-- Link type -->
   <button
     v-else-if="buttonType === 'link'"
-    :type="type"
+    :type="buttonTypeAttr"
     :disabled="disabled || loading || computedLoading"
     :class="buttonClasses"
     @click="handleClick"
@@ -25,7 +25,7 @@
     <span v-if="computedLoading" class="loading-spinner"></span>
     <i v-if="iconClass" :class="iconClass"></i>
     <span :class="{ 'with-spinner': computedLoading }">
-      <slot>{{ text }}</slot>
+      <slot>{{ displayText }}</slot>
     </span>
   </button>
 
@@ -40,7 +40,7 @@
     <i v-if="iconClass" :class="iconClass"></i>
     <span :class="{ 'with-spinner': deleteLoading || computedLoading }">
       <span v-if="deleteLoading">{{ deleteLoadingText }}</span>
-      <span v-else>{{ text }}</span>
+      <span v-else>{{ displayText }}</span>
     </span>
   </button>
 </template>
@@ -64,7 +64,7 @@ const props = defineProps({
     type: String,
     default: ''
   },
-  iconType: {
+  loadingText: {
     type: String,
     default: ''
   },
@@ -80,17 +80,13 @@ const props = defineProps({
   // Button/Submit specific props
   type: {
     type: String,
-    default: 'button'
+    default: 'button',
+    validator: (value) => ['button', 'submit', 'reset'].includes(value)
   },
   variant: {
     type: String,
     default: 'primary',
     validator: (value) => ['primary', 'secondary', 'success', 'danger', 'warning', 'info'].includes(value)
-  },
-  size: {
-    type: String,
-    default: 'medium',
-    validator: (value) => ['small', 'medium', 'large'].includes(value)
   },
   block: {
     type: Boolean,
@@ -150,15 +146,49 @@ const { alertConfirm, alertSuccess, alertError } = useAlert()
 
 // Icon class computation
 const iconClass = computed(() => {
-  if (props.iconType) {
-    const upper = props.iconType.toUpperCase()
-    return BUTTON_ICONS[upper] || props.iconType
+  if (props.text && props.text.startsWith('Button.')) {
+    const parts = props.text.split('.')
+    const action = parts[1].split(':')[0].toUpperCase() // Handle "Button.edit:icon" format
+    return BUTTON_ICONS[action] || ''
   }
   return ''
 })
 
+// Display text computation
+const displayText = computed(() => {
+  // Use loading text if provided and button is loading
+  if (props.loadingText && (computedLoading.value || deleteLoading.value)) {
+    return props.loadingText
+  }
+
+  if (props.text && props.text.startsWith('Button.')) {
+    const parts = props.text.split('.')
+    const actionWithModifier = parts[1]
+    const action = actionWithModifier.split(':')[0]
+    const modifier = actionWithModifier.split(':')[1]
+
+    // If modifier is "icon", return empty string for icon-only button
+    if (modifier === 'icon') {
+      return ''
+    }
+
+    return action.charAt(0).toUpperCase() + action.slice(1).toLowerCase()
+  }
+  return props.text
+})
+
 // Try to inject form validation context for auto-loading state
 const isSubmitting = inject('isSubmitting', null)
+
+// Computed button type for HTML type attribute
+const buttonTypeAttr = computed(() => {
+  if (props.buttonType === 'submit') {
+    return 'submit'
+  } else if (props.buttonType === 'reset') {
+    return 'reset'
+  }
+  return 'button'
+})
 
 // Button/Submit functionality
 const buttonClasses = computed(() => {
@@ -172,13 +202,6 @@ const buttonClasses = computed(() => {
     'info': 'button info'
   }
 
-  // Map sizes to CSS classes
-  const sizeClasses = {
-    'small': 'small',
-    'medium': 'medium',
-    'large': 'large'
-  }
-
   const classes = []
 
   // Add base button class
@@ -189,11 +212,6 @@ const buttonClasses = computed(() => {
     classes.push(variantClasses[props.variant])
   } else {
     classes.push('primary')
-  }
-
-  // Add size class
-  if (sizeClasses[props.size]) {
-    classes.push(sizeClasses[props.size])
   }
 
   // Add block class if needed
@@ -232,7 +250,7 @@ const computedLoading = computed(() => {
 // Handle click event - don't prevent default for submit buttons
 const handleClick = (event) => {
   // For submit buttons, let the form handle the submission
-  if (props.type !== 'submit') {
+  if (buttonTypeAttr.value !== 'submit') {
     event.preventDefault()
   }
 
@@ -304,6 +322,11 @@ const handleDelete = async () => {
         if (props.onSuccess) {
           props.onSuccess(props.url)
         }
+
+        // Refresh the table after successful deletion
+        if (props.formTableRef && props.formTableRef.refresh) {
+          props.formTableRef.refresh()
+        }
       } else if (props.buttonType === 'remove') {
         // If formTableRef is provided, handle batch deletion manually
         if (props.formTableRef) {
@@ -323,7 +346,6 @@ const handleDelete = async () => {
         emit('success', props.url)
       }
     } catch (error) {
-      console.error('Delete error:', error)
 
       // Show error message
       alertError('Error', `Failed to delete ${props.buttonType === 'delete' ? 'item' : 'selected items'}`)

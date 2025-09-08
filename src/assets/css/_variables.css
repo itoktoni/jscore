@@ -39,9 +39,9 @@
 
   /* Status Colors */
   --color-error: #d43939;
-  --color-success: #28bd14;
+  --color-success: #14854f;
   --danger-color: #ef4444;
-  --success-color: #22c55e;
+  --success-color: #14854f;
   --color-error-bootstrap: #dc3545;
   --color-primary-bootstrap: #007bff;
 
@@ -111,9 +111,9 @@
 
   /* Status Colors */
   --color-error: #ef4444;
-  --color-success: #22c55e;
+  --color-success: #14854f;
   --danger-color: #ef4444;
-  --success-color: #22c55e;
+  --success-color: #14854f;
   --color-error-bootstrap: #ef4444;
   --color-primary-bootstrap: #3b82f6;
 

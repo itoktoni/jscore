@@ -62,7 +62,6 @@ export function useFormTable(options = {}) {
 
       return response
     } catch (error) {
-      console.error('FormTable search error:', error)
       fieldErrors.value = error.response?.data?.errors || {}
       throw error
     } finally {
@@ -160,7 +159,6 @@ export function useFormTable(options = {}) {
 
   // Initialize component
   const initialize = () => {
-    console.log('FormTable composable initialized')
     watchRouteChanges()
   }
 
@@ -176,7 +174,6 @@ export function useFormTable(options = {}) {
       await refresh()
       return { success: true }
     } catch (error) {
-      console.error('Delete error:', error)
       throw error
     }
   }
@@ -194,7 +191,6 @@ export function useFormTable(options = {}) {
       await refresh()
       return { success: true }
     } catch (error) {
-      console.error('Batch delete error:', error)
       throw error
     }
   }

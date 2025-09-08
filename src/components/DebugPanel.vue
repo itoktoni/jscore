@@ -155,8 +155,6 @@ const testApiEndpoint = async () => {
       ? 'https://newcore.nexeratech.co.id/api'
       : '/api'
 
-    console.log('[Debug] Testing API endpoint:', baseUrl)
-
     const response = await fetch(`${baseUrl}/ping`, {
       method: 'GET',
       headers: {
@@ -189,8 +187,6 @@ const testLoginEndpoint = async () => {
       ? 'https://newcore.nexeratech.co.id/api'
       : '/api'
 
-    console.log('[Debug] Testing login endpoint:', `${baseUrl}/login`)
-
     // Test with admin credentials to check if endpoint is reachable
     const response = await fetch(`${baseUrl}/login`, {
       method: 'POST',
@@ -207,10 +203,8 @@ const testLoginEndpoint = async () => {
 
     const text = await response.text()
     networkTestResult.value = `Login Test: ${response.status} - Endpoint reachable`
-    console.log('[Debug] Login endpoint response:', text.substring(0, 200))
 
   } catch (error) {
-    console.error('[Debug] Login test error:', error)
     networkTestResult.value = `Login Error: ${error.message}`
   } finally {
     testing.value = false
@@ -295,8 +289,6 @@ const testDetailedConnection = async () => {
           ? 'https://newcore.nexeratech.co.id/api'
           : '/api'
 
-        console.log('[Debug] Testing login with headers:', `${baseUrl}/login`)
-
         const response = await fetch(`${baseUrl}/login`, {
           method: 'POST',
           headers: {
@@ -321,10 +313,8 @@ const testDetailedConnection = async () => {
         }
 
         networkTestResult.value = `Headers Test: ${response.status} - ${response.statusText}\nResponse: ${JSON.stringify(responseData).substring(0, 200)}`
-        console.log('[Debug] Login headers test response:', responseData)
 
       } catch (error) {
-        console.error('[Debug] Login headers test error:', error)
         networkTestResult.value = `Headers Test Error: ${error.message}`
       } finally {
         testing.value = false
@@ -686,10 +676,8 @@ const testDetailedConnection = async () => {
 
         networkTestResult.value = `Server Simulation Success:\nMode: Offline\nToken: ${mockResponse.data.api_token}\nUser: ${mockResponse.data.username}\nEmail: ${mockResponse.data.email}`
 
-        console.log('[DebugPanel] Server simulation completed:', mockResponse)
 
       } catch (error) {
-        console.error('[DebugPanel] Server simulation error:', error)
         networkTestResult.value = `Server Simulation Error: ${error.message}`
       } finally {
         testing.value = false

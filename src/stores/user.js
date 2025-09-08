@@ -28,13 +28,10 @@ function canManageUsers() {
 // Action functions
 async function loadProfile() {
   try {
-    console.log('Loading user profile...')
     const response = await http.get('/profile')
     state.user = response.data.data || response.data
-    console.log('Profile loaded successfully:', state.user)
     return responseSuccess(state.user)
   } catch (error) {
-    console.error('Error loading profile:', error)
     // Handle authentication errors
     if (error.response?.status === 401) {
       const message = error.response.data?.message || ''
@@ -93,7 +90,6 @@ async function updateProfile(profileData) {
 async function handleAuthError() {
   state.user = null
   // The actual logout will be handled by the auth store
-  console.log('Authentication error - user data cleared')
 }
 
 // useUser composable

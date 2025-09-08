@@ -310,11 +310,6 @@ button:active:not(:disabled) {
   min-width: 100px;
 }
 
-.form-button--primary {
-  background-color: var(--color-primary);
-  color: var(--text-light);
-}
-
 .form-button--secondary {
   background-color: var(--color-grey);
   color: var(--text-light);

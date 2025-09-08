@@ -50,11 +50,11 @@
 
                   <td data-label="Actions">
                     <div class="action-table">
-                      <Button button-type="link" variant="primary" size="small"
-                      :to="{ name: USER_ROUTES.EDIT_USER, params: { id: user.id } }" iconType="edit" />
+                      <Button button-type="link" variant="primary"
+                      :to="{ name: USER_ROUTES.EDIT_USER, params: { id: user.id } }" text="Button.edit:icon" />
 
-                      <Button button-type="delete" variant="danger" size="small" :url="USER_API_ROUTES.delete(user.id)"
-                      :form-table-ref="TableRef" iconType="delete" />
+                      <Button button-type="delete" variant="danger" :url="USER_API_ROUTES.delete(user.id)"
+                      :form-table-ref="TableRef" text="Button.delete:icon" />
                     </div>
                   </td>
 
@@ -77,10 +77,10 @@
 
       <footer class="content-footer safe-area-bottom">
         <div class="form-actions">
-          <Button button-type="remove" variant="error" size="medium" :url="USER_API_ROUTES.remove" :selected-items="selectedItems"
-            :form-table-ref="TableRef" text="Delete Selected" />
+          <Button button-type="remove" variant="danger" :url="USER_API_ROUTES.remove" :selected-items="selectedItems"
+            :form-table-ref="TableRef" text="Delete" />
 
-          <Button button-type="link" variant="primary" size="medium" :to="{ name: USER_ROUTES.CREATE_USER }" text="Create New User" />
+          <Button button-type="link" variant="success" :to="{ name: USER_ROUTES.CREATE_USER }" text="Button.create" />
         </div>
       </footer>
 
