@@ -1,50 +1,55 @@
 <template>
   <div class="settings-page">
-    <div class="card">
-      <h2>Website Settings</h2>
+    <FormContainer
+      title="Website Settings"
+      :initial-data="initialFormData"
+      :submit-handler="saveSettings"
+      @success="handleSuccess"
+      @error="handleError"
+    >
+      <FormInput 
+        name="websiteName" 
+        label="Website Name"
+        placeholder="Enter website name"
+        hint="If not provided, the system will use the value from .env file"
+        col="12"
+      />
+      
+      <FormInput 
+        name="websiteUrl" 
+        label="Website URL"
+        type="url"
+        placeholder="https://example.com"
+        hint="API requests will be sent to this URL. If not provided, the system will use the value from .env file"
+        col="12"
+      />
+      
+      <FormToggle 
+        name="darkMode" 
+        label="Dark Mode"
+        on-text="Enabled"
+        off-text="Disabled"
+        show-text
+        col="12"
+      />
 
-      <form @submit.prevent="saveSettings">
-        <div class="form-group">
-          <label for="websiteName">Website Name</label>
-          <input
-            id="websiteName"
-            v-model="form.websiteName"
-            type="text"
-            placeholder="Enter website name"
-            class="form-input"
-          >
-          <p class="help-text">If not provided, the system will use the value from .env file</p>
+      <template #footer="{ isSubmitting }">
+        <div class="footer-actions">
+          <FormButton 
+            type="button" 
+            variant="secondary" 
+            @click="resetToDefaults" 
+            text="Reset to Defaults" 
+          />
+          <FormButton 
+            type="submit" 
+            variant="success" 
+            :text="isSubmitting ? 'Saving...' : 'Save Settings'" 
+            :disabled="isSubmitting" 
+          />
         </div>
-
-        <div class="form-group">
-          <label for="websiteUrl">Website URL</label>
-          <input
-            id="websiteUrl"
-            v-model="form.websiteUrl"
-            type="url"
-            placeholder="https://example.com"
-            class="form-input"
-          >
-          <p class="help-text">API requests will be sent to this URL. If not provided, the system will use the value from .env file</p>
-        </div>
-
-        <div class="form-group">
-          <label class="checkbox-label">
-            <input
-              v-model="form.darkMode"
-              type="checkbox"
-              class="form-checkbox"
-            >
-            <span>Enable Dark Mode</span>
-          </label>
-        </div>
-
-        <div class="form-actions">
-          <button type="submit" class="button primary">Save Settings</button>
-          <button type="button" class="button secondary" @click="resetToDefaults">Reset to Defaults</button>
-        </div>
-      </form>
-    </div>
+      </template>
+    </FormContainer>
 
     <div class="card">
       <h3>Current Configuration</h3>
@@ -75,12 +80,15 @@ import { ref, computed, onMounted } from 'vue'
 import { useSettingsStore } from '../stores/settings'
 import { useAlert } from '../composables/useAlert'
 import { http } from '../stores/http'
+import FormContainer from '../components/FormContainer.vue'
+import FormInput from '../components/FormInput.vue'
+import FormToggle from '../components/FormToggle.vue'
+import FormButton from '../components/FormButton.vue'
 
 const settingsStore = useSettingsStore()
 const { alertSuccess, alertError } = useAlert()
 
-// Form data
-const form = ref({
+const initialFormData = ref({
   websiteName: '',
   websiteUrl: '',
   darkMode: false
@@ -100,39 +108,47 @@ const currentWebsiteUrl = computed(() => {
 
 // Load settings on component mount
 onMounted(() => {
-  form.value.websiteName = settingsStore.websiteName || ''
-  form.value.websiteUrl = settingsStore.websiteUrl || ''
-  form.value.darkMode = settingsStore.darkMode
+  initialFormData.value.websiteName = settingsStore.websiteName || ''
+  initialFormData.value.websiteUrl = settingsStore.websiteUrl || ''
+  initialFormData.value.darkMode = settingsStore.darkMode
 })
 
 // Save settings
-const saveSettings = async () => {
+const saveSettings = async (formData) => {
   try {
     // Update settings in store
-    if (form.value.websiteName) {
-      await settingsStore.setWebsiteName(form.value.websiteName)
+    if (formData.websiteName) {
+      await settingsStore.setWebsiteName(formData.websiteName)
     } else {
       await settingsStore.setWebsiteName(null)
     }
 
-    if (form.value.websiteUrl) {
-      await settingsStore.setWebsiteUrl(form.value.websiteUrl)
+    if (formData.websiteUrl) {
+      await settingsStore.setWebsiteUrl(formData.websiteUrl)
     } else {
       await settingsStore.setWebsiteUrl(null)
     }
 
-    await settingsStore.setDarkMode(form.value.darkMode)
+    await settingsStore.setDarkMode(formData.darkMode)
 
     // Update HTTP service baseURL
     http.updateBaseURL()
 
     console.log('Settings saved. Current HTTP baseURL:', http.baseURL)
 
-    alertSuccess('Settings saved successfully')
+    return { success: true, data: formData }
   } catch (error) {
     console.error('Error saving settings:', error)
-    alertError('Error', 'Failed to save settings: ' + (error.message || 'Unknown error'))
+    return { success: false, error: error.message || 'Failed to save settings' }
   }
+}
+
+function handleSuccess(response) {
+  alertSuccess('Settings saved successfully')
+}
+
+function handleError(error) {
+  alertError('Error', 'Failed to save settings: ' + (error.error || 'Unknown error'))
 }
 
 // Reset to defaults
@@ -140,9 +156,9 @@ const resetToDefaults = async () => {
   if (confirm('Are you sure you want to reset all settings to defaults?')) {
     try {
       await settingsStore.resetToDefaults()
-      form.value.websiteName = ''
-      form.value.websiteUrl = ''
-      form.value.darkMode = false
+      initialFormData.value.websiteName = ''
+      initialFormData.value.websiteUrl = ''
+      initialFormData.value.darkMode = false
 
       // Update HTTP service baseURL
       http.updateBaseURL()
@@ -181,83 +197,6 @@ const resetToDefaults = async () => {
 .card h3 {
   margin-top: 0;
   color: #333;
-}
-
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: 500;
-  color: #333;
-}
-
-.form-input {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 16px;
-  box-sizing: border-box;
-}
-
-.form-input:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
-}
-
-.help-text {
-  margin-top: 5px;
-  font-size: 14px;
-  color: #666;
-}
-
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-}
-
-.form-checkbox {
-  margin-right: 10px;
-  width: 18px;
-  height: 18px;
-}
-
-.form-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 30px;
-}
-
-.button {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.button.primary {
-  background-color: #007bff;
-  color: white;
-}
-
-.button.primary:hover {
-  background-color: #0069d9;
-}
-
-.button.secondary {
-  background-color: #6c757d;
-  color: white;
-}
-
-.button.secondary:hover {
-  background-color: #5a6268;
 }
 
 .config-info {
@@ -310,5 +249,12 @@ const resetToDefaults = async () => {
 
 .dark .config-info {
   background: #4a5568;
+}
+
+.footer-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 30px;
 }
 </style>
