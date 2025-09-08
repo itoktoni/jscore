@@ -307,6 +307,23 @@ if (typeof window !== 'undefined' && document) {
   color: #666;
 }
 
+/* Dark mode styles */
+.dark .toggle-label {
+  color: var(--text-dark);
+}
+
+.dark .toggle-switch .toggle-slider {
+  background-color: var(--color-lightGrey);
+}
+
+.dark .form-toggle:checked + .toggle-switch .toggle-slider {
+  background-color: var(--color-primary);
+}
+
+.dark .toggle-text {
+  color: var(--text-muted);
+}
+
 /* Mobile optimizations */
 @media (max-width: 768px) {
   .toggle-label {

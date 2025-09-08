@@ -33,9 +33,17 @@ export const useSettingsStore = defineStore('settings', {
         const { value: websiteUrl } = await Preferences.get({ key: 'website_url' })
         const { value: darkMode } = await Preferences.get({ key: 'dark_mode' })
 
-        if (websiteName) this.websiteName = websiteName
-        if (websiteUrl) this.websiteUrl = websiteUrl
-        if (darkMode) this.darkMode = darkMode === 'true'
+        console.log('Loaded settings from storage:', { websiteName, websiteUrl, darkMode });
+
+        if (websiteName !== null) this.websiteName = websiteName
+        if (websiteUrl !== null) this.websiteUrl = websiteUrl
+        if (darkMode !== null) this.darkMode = darkMode === 'true'
+
+        console.log('Settings store updated:', {
+          websiteName: this.websiteName,
+          websiteUrl: this.websiteUrl,
+          darkMode: this.darkMode
+        });
       } catch (error) {
         console.error('Error loading settings:', error)
       }
@@ -44,6 +52,12 @@ export const useSettingsStore = defineStore('settings', {
     // Save settings to storage
     async saveSettings() {
       try {
+        console.log('Saving settings to storage:', {
+          websiteName: this.websiteName,
+          websiteUrl: this.websiteUrl,
+          darkMode: this.darkMode
+        });
+
         if (this.websiteName !== null && this.websiteName !== undefined) {
           await Preferences.set({ key: 'website_name', value: this.websiteName })
         } else {
@@ -57,6 +71,7 @@ export const useSettingsStore = defineStore('settings', {
         }
 
         await Preferences.set({ key: 'dark_mode', value: this.darkMode.toString() })
+        console.log('Settings saved successfully');
       } catch (error) {
         console.error('Error saving settings:', error)
         throw error // Re-throw the error so it can be handled by the caller
@@ -96,6 +111,7 @@ export const useSettingsStore = defineStore('settings', {
       } else {
         document.documentElement.classList.remove('dark')
       }
+      console.log('Dark mode applied to document. Dark mode enabled:', this.darkMode);
     },
 
     // Reset to defaults (use .env values)

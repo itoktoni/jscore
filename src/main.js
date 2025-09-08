@@ -29,8 +29,15 @@ app.use(router)
 // Initialize settings
 const settingsStore = useSettingsStore()
 settingsStore.loadSettings().then(() => {
+  console.log('Settings loaded:', {
+    websiteName: settingsStore.websiteName,
+    websiteUrl: settingsStore.websiteUrl,
+    darkMode: settingsStore.darkMode
+  });
+
   // Apply dark mode settings
   settingsStore.applyDarkMode()
+  console.log('Dark mode applied. Document has dark class:', document.documentElement.classList.contains('dark'));
 
   // Update HTTP service baseURL after settings are loaded
   http.updateBaseURL()

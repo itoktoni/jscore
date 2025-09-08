@@ -358,4 +358,20 @@ onUnmounted(() => {
   border-color: #007bff;
   box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
 }
+
+/* Dark mode styles */
+.dark .form-input {
+  background-color: var(--bg-white);
+  border-color: var(--color-border-light);
+  color: var(--text-dark);
+}
+
+.dark .form-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.dark .form-input::placeholder {
+  color: var(--text-placeholder);
+}
 </style>

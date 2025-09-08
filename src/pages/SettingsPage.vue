@@ -1,82 +1,43 @@
 <template>
-  <div class="settings-page">
-    <FormContainer
-      title="Website Settings"
-      :initial-data="initialFormData"
-      :submit-handler="saveSettings"
-      @success="handleSuccess"
-      @error="handleError"
-    >
-      <FormInput 
-        name="websiteName" 
-        label="Website Name"
-        placeholder="Enter website name"
-        hint="If not provided, the system will use the value from .env file"
-        col="12"
-      />
-      
-      <FormInput 
-        name="websiteUrl" 
-        label="Website URL"
-        type="url"
-        placeholder="https://example.com"
+  <div class="card">
+    <FormContainer title="Website Settings" :initial-data="initialFormData" :submit-handler="saveSettings" @success="handleSuccess" @error="handleError">
+      <FormInput name="websiteName" label="Website Name" placeholder="Enter website name"
+        hint="If not provided, the system will use the value from .env file" col="12" />
+
+      <FormInput name="websiteUrl" label="Website URL" type="url" placeholder="https://example.com"
         hint="API requests will be sent to this URL. If not provided, the system will use the value from .env file"
-        col="12"
-      />
-      
-      <FormToggle 
-        name="darkMode" 
-        label="Dark Mode"
-        on-text="Enabled"
-        off-text="Disabled"
-        show-text
-        col="12"
-      />
+        col="12" />
+
+      <FormToggle name="darkMode" label="Dark Mode" on-text="Enabled" off-text="Disabled" show-text col="12" />
 
       <template #footer="{ isSubmitting }">
         <div class="footer-actions">
-          <FormButton 
-            type="button" 
-            variant="secondary" 
-            @click="resetToDefaults" 
-            text="Reset to Defaults" 
-          />
-          <FormButton 
-            type="submit" 
-            variant="success" 
-            :text="isSubmitting ? 'Saving...' : 'Save Settings'" 
-            :disabled="isSubmitting" 
-          />
+          <FormButton type="button" variant="secondary" @click="resetToDefaults" text="Reset to Defaults" />
+          <FormButton type="submit" variant="success" :text="isSubmitting ? 'Saving...' : 'Save Settings'"
+            :disabled="isSubmitting" />
         </div>
       </template>
     </FormContainer>
+  </div>
 
-    <div class="card">
-      <h3>Current Configuration</h3>
-      <div class="config-info">
-        <div class="config-item">
-          <strong>Website Name:</strong>
-          <span>{{ currentWebsiteName }}</span>
-        </div>
-        <div class="config-item">
-          <strong>Website URL:</strong>
-          <span>{{ currentWebsiteUrl }}</span>
-        </div>
-        <div class="config-item">
-          <strong>Dark Mode:</strong>
-          <span>{{ settingsStore.isDarkMode ? 'Enabled' : 'Disabled' }}</span>
-        </div>
-        <div class="config-item">
-          <strong>Environment:</strong>
-          <span>{{ environment }}</span>
-        </div>
-      </div>
+  <div class="card">
+
+    <div class="page-header">
+      <h2>Current Configuration</h2>
+    </div>
+
+    <div class="form-container">
+      <FormLabel name="websiteName" label="Website Name" :value="currentWebsiteName" col="12" />
+      <FormLabel name="websiteUrl" label="Website URL" :value="currentWebsiteUrl" col="12" />
+      <FormLabel name="darkMode" label="Dark Mode" :value="settingsStore.isDarkMode ? 'Enabled' : 'Disabled'" col="12" />
+      <FormLabel name="environment" label="Environment" :value="environment" col="12" />
     </div>
   </div>
+
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useSettingsStore } from '../stores/settings'
 import { useAlert } from '../composables/useAlert'
 import { http } from '../stores/http'
@@ -84,6 +45,7 @@ import FormContainer from '../components/FormContainer.vue'
 import FormInput from '../components/FormInput.vue'
 import FormToggle from '../components/FormToggle.vue'
 import FormButton from '../components/FormButton.vue'
+import FormLabel from '../components/FormLabel.vue'
 
 const settingsStore = useSettingsStore()
 const { alertSuccess, alertError } = useAlert()
@@ -106,8 +68,34 @@ const currentWebsiteUrl = computed(() => {
   return settingsStore.getWebsiteUrl
 })
 
+// Watch for changes in settings store and update form data
+watch(
+  () => settingsStore.websiteName,
+  (newVal) => {
+    initialFormData.value.websiteName = newVal || ''
+  }
+)
+
+watch(
+  () => settingsStore.websiteUrl,
+  (newVal) => {
+    initialFormData.value.websiteUrl = newVal || ''
+  }
+)
+
+watch(
+  () => settingsStore.darkMode,
+  (newVal) => {
+    initialFormData.value.darkMode = newVal
+  }
+)
+
 // Load settings on component mount
-onMounted(() => {
+onMounted(async () => {
+  // Ensure settings are loaded from storage
+  await settingsStore.loadSettings()
+
+  // Update form data with current settings
   initialFormData.value.websiteName = settingsStore.websiteName || ''
   initialFormData.value.websiteUrl = settingsStore.websiteUrl || ''
   initialFormData.value.darkMode = settingsStore.darkMode
@@ -115,6 +103,8 @@ onMounted(() => {
 
 // Save settings
 const saveSettings = async (formData) => {
+  console.log('saveSettings called with:', formData)
+
   try {
     // Update settings in store
     if (formData.websiteName) {
@@ -136,19 +126,40 @@ const saveSettings = async (formData) => {
 
     console.log('Settings saved. Current HTTP baseURL:', http.baseURL)
 
-    return { success: true, data: formData }
+    // Show success message
+    alertSuccess('Settings saved successfully')
+
+    // Return success response that FormContainer expects
+    return {
+      success: true,
+      data: formData,
+      message: 'Settings saved successfully'
+    }
   } catch (error) {
     console.error('Error saving settings:', error)
-    return { success: false, error: error.message || 'Failed to save settings' }
+
+    // Show error message
+    alertError('Error', 'Failed to save settings: ' + (error.message || 'Unknown error'))
+
+    // Return error response that FormContainer expects
+    return {
+      success: false,
+      error: error.message || 'Failed to save settings',
+      data: formData
+    }
   }
 }
 
+// Handle successful form submission
 function handleSuccess(response) {
-  alertSuccess('Settings saved successfully')
+  // This might be called if FormContainer handles the response from saveSettings
+  console.log('handleSuccess called with:', response)
 }
 
+// Handle form submission error
 function handleError(error) {
-  alertError('Error', 'Failed to save settings: ' + (error.error || 'Unknown error'))
+  // This might be called if saveSettings throws an error
+  console.log('handleError called with:', error)
 }
 
 // Reset to defaults
@@ -173,88 +184,3 @@ const resetToDefaults = async () => {
   }
 }
 </script>
-
-<style scoped>
-.settings-page {
-  padding: 20px;
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.card {
-  background: white;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  margin-bottom: 20px;
-}
-
-.card h2 {
-  margin-top: 0;
-  color: #333;
-}
-
-.card h3 {
-  margin-top: 0;
-  color: #333;
-}
-
-.config-info {
-  background-color: #f8f9fa;
-  padding: 15px;
-  border-radius: 4px;
-}
-
-.config-item {
-  display: flex;
-  justify-content: space-between;
-  padding: 8px 0;
-  border-bottom: 1px solid #eee;
-}
-
-.config-item:last-child {
-  border-bottom: none;
-}
-
-.config-item strong {
-  color: #333;
-}
-
-.config-item span {
-  color: #666;
-  text-align: right;
-}
-
-/* Dark mode styles */
-.dark .settings-page .card {
-  background: #2d3748;
-  color: #e2e8f0;
-}
-
-.dark .form-input {
-  background: #4a5568;
-  border-color: #718096;
-  color: #e2e8f0;
-}
-
-.dark .form-group label,
-.dark .config-item strong {
-  color: #e2e8f0;
-}
-
-.dark .help-text,
-.dark .config-item span {
-  color: #a0aec0;
-}
-
-.dark .config-info {
-  background: #4a5568;
-}
-
-.footer-actions {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  margin-top: 30px;
-}
-</style>
