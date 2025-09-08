@@ -8,13 +8,22 @@
       <div class="form-table-container">
         <form @submit.prevent="handleSearch" class="form-table-filter">
           <slot name="filterForm" :formData="formData" :fieldErrors="fieldErrors" :isSubmitting="isSubmitting"
-            :handleSearch="handleSearch"></slot>
+            :handleSearch="handleSearch">
+          </slot>
 
-          <div class="form-actions">
-            <Button type="button" variant="secondary" text="Reset" @click="handleReset" />
-            <Button type="submit" variant="primary" :text="isSubmitting ? 'Searching...' : 'Search'"
+            <div class="row">
+              <FormSelect name="filter" label="Role" :options="[
+                { label: 'All Roles', value: '' },
+                { label: 'Admin', value: 'admin' },
+                { label: 'User', value: 'user' }
+              ]" col="4" />
+              <FormInput col="4" name="search" label="Search" placeholder="Search by email" />
+              <Button type="button" class="button-filter" col="col-6 col-3-md col-2-lg" variant="secondary" text="Reset" @click="handleReset" />
+              <Button type="submit" class="button-filter" col="col-6 col-3-md col-2-lg" variant="primary" :text="isSubmitting ? 'Searching...' : 'Search'"
               :disabled="isSubmitting" />
-          </div>
+
+            </div>
+
         </form>
 
         <div class="form-table-content">
@@ -55,6 +64,8 @@
 import { ref, reactive, onMounted, watch, provide, computed } from 'vue'
 import { useFormTable } from '../composables/useFormTable'
 import Button from './Button.vue'
+import FormSelect from './FormSelect.vue'
+import FormInput from './FormInput.vue'
 
 // Define props
 const props = defineProps({
@@ -99,8 +110,18 @@ const computedHeader = computed(() => {
   return 'Current Configuration'
 })
 
+
 // Define emits
 const emit = defineEmits(['search', 'error'])
+
+// Set initial data with defaults for user fields
+const initialDataWithDefaults = {
+  ...props.initialData,
+  username: props.initialData.username || '',
+  name: props.initialData.name || '',
+  email: props.initialData.email || '',
+  role: props.initialData.role || ''
+}
 
 // Use the form table composable
 const {
@@ -119,7 +140,7 @@ const {
   initialize
 } = useFormTable({
   endpoint: props.endpoint,
-  initialData: props.initialData,
+  initialData: initialDataWithDefaults,
   deleteEndpoint: props.delete
 })
 

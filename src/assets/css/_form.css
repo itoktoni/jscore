@@ -57,7 +57,7 @@ button {
   transform: scale(1);
   display: inline-block;
   cursor: pointer;
-  height: 3.5rem;
+  height: 3.8rem;
 }
 
 .button.primary,
@@ -285,6 +285,10 @@ button:active:not(:disabled) {
 
 .grouped .button {
   margin-left: -20px !important;
+}
+
+.button-filter{
+  margin-top: 2rem;
 }
 
 /* Form Media Queries */

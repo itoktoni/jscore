@@ -229,12 +229,21 @@ const buttonClasses = computed(() => {
     classes.push('disabled')
   }
 
-  // Only add column class if col prop is provided
-  if (props.col !== null && props.col !== undefined) {
+  // Handle column classes
+  // If col prop is a string with multiple classes (e.g., "col-6 col-3-md col-2-lg")
+  if (props.col && typeof props.col === 'string') {
+    // Split the string by spaces and add each class
+    const colClasses = props.col.split(' ').filter(cls => cls.trim() !== '')
+    classes.push(...colClasses)
+  }
+  // If col prop is a number or single string class
+  else if (props.col !== null && props.col !== undefined) {
     classes.push(`col-${props.col}`)
-  } else {
-    // Add flexible width class when no column is specified
-    classes.push('flexible')
+  }
+
+  // Add custom button class if provided
+  if (props.buttonClass) {
+    classes.push(props.buttonClass)
   }
 
   return classes.join(' ')
@@ -363,3 +372,22 @@ const handleDelete = async () => {
   }
 }
 </script>
+
+<style scoped>
+/* Button responsive behavior to work with grid system */
+
+/* Override mobile behavior for col-6 to show 2 buttons per row */
+@media screen and (max-width: 599px) {
+  .button.col-6 {
+    flex: 0 0 calc(50% - var(--grid-gutter)) !important;
+    max-width: calc(50% - var(--grid-gutter)) !important;
+  }
+}
+
+/* Mobile responsiveness for button filter */
+@media (max-width: 768px) {
+  .button-filter {
+    margin-top: 1rem;
+  }
+}
+</style>
