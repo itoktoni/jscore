@@ -1,15 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
-import SystemSettingsPage from '../pages/SystemSettingsPage.vue'
-import SettingsPage from '../pages/SettingsPage.vue'
-import TestSafeArea from '../components/TestSafeArea.vue'
-import TestSafeAreaPage from '../pages/TestSafeAreaPage.vue'
+import SettingsPage from '../pages/system/SettingsPage.vue'
 import CapacitorPluginsTest from '../pages/test/CapacitorPluginsTest.vue'
 import PluginTestsNavigation from '../pages/test/PluginTestsNavigation.vue'
 import PluginsByPackage from '../pages/test/PluginsByPackage.vue' // Added import for plugins by package page
 import { userRoutes } from './userRoutes'
 import { authRoutes } from './authRoutes'
-import { roleRoutes } from './roleRoutes'
 import { pluginTestRoutes } from '../pages/test/plugins/index.js'
 
 const routes = [
@@ -22,36 +18,10 @@ const routes = [
   // User routes
   ...userRoutes,
   // Role routes
-  ...roleRoutes,
   {
     path: '/settings',
     name: 'Settings',
     component: SettingsPage,
-    meta: {
-      requiresAuth: true // Only accessible when authenticated
-    }
-  },
-  {
-    path: '/system/settings',
-    name: 'SystemSettings',
-    component: SystemSettingsPage,
-    meta: {
-      requiresAuth: true, // Only accessible when authenticated
-      requiresAdmin: true // Only accessible for admin users
-    }
-  },
-  {
-    path: '/test-safe-area',
-    name: 'TestSafeArea',
-    component: TestSafeArea,
-    meta: {
-      requiresAuth: true // Only accessible when authenticated
-    }
-  },
-  {
-    path: '/test-safe-area-page',
-    name: 'TestSafeAreaPage',
-    component: TestSafeAreaPage,
     meta: {
       requiresAuth: true // Only accessible when authenticated
     }

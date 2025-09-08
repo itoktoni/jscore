@@ -38,14 +38,14 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import { useSettingsStore } from '../stores/settings'
-import { useAlert } from '../composables/useAlert'
-import { http } from '../stores/http'
-import FormContainer from '../components/FormContainer.vue'
-import FormInput from '../components/FormInput.vue'
-import FormToggle from '../components/FormToggle.vue'
-import Button from '../components/Button.vue'
-import FormLabel from '../components/FormLabel.vue'
+import { useSettingsStore } from '../../stores/settings'
+import { useAlert } from '../../composables/useAlert'
+import { http } from '../../stores/http'
+import FormContainer from '../../components/FormContainer.vue'
+import FormInput from '../../components/FormInput.vue'
+import FormToggle from '../../components/FormToggle.vue'
+import Button from '../../components/Button.vue'
+import FormLabel from '../../components/FormLabel.vue'
 
 const settingsStore = useSettingsStore()
 const { alertSuccess, alertError } = useAlert()

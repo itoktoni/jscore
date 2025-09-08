@@ -2,7 +2,7 @@
   <div class="card">
     <FormContainer
       ref="formRef"
-      title="Create New User"
+      title="Create Form"
       :endpoint="USER_API_ROUTES.create"
       @success="handleSuccess"
       @error="handleError">

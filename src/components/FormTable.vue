@@ -4,18 +4,21 @@
       <slot name="filterForm" :formData="formData" :fieldErrors="fieldErrors" :isSubmitting="isSubmitting" :handleSearch="handleSearch"></slot>
 
       <div class="form-actions">
-        <Button
-          button-type="submit"
-          variant="primary"
-          :text="isSubmitting ? 'Searching...' : 'Search'"
-          :disabled="isSubmitting"
-        />
+
         <Button
           button-type="button"
           variant="secondary"
           text="Reset"
           @click="handleReset"
         />
+
+        <Button
+          button-type="submit"
+          variant="primary"
+          :text="isSubmitting ? 'Searching...' : 'Search'"
+          :disabled="isSubmitting"
+        />
+
       </div>
     </form>
 
@@ -29,9 +32,9 @@
           <button
             :disabled="pagination.current_page <= 1"
             @click="changePage(pagination.current_page - 1)"
-            class="pagination-btn"
+            class="button secondary"
           >
-            Previous
+            <i class="bi bi-arrow-left"></i>
           </button>
 
           <span class="pagination-info">
@@ -41,9 +44,9 @@
           <button
             :disabled="pagination.current_page >= pagination.last_page"
             @click="changePage(pagination.current_page + 1)"
-            class="pagination-btn"
+            class="button secondary"
           >
-            Next
+              <i class="bi bi-arrow-right"></i>
           </button>
         </nav>
       </slot>

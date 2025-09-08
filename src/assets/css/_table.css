@@ -49,6 +49,16 @@ thead, tbody, tfoot, tr, td, th {
     width: 100%;
 }
 
+.form-table-pagination{
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+.pagination{
+    display: flex;
+    justify-content: space-between;
+}
+
 @media (max-width: 768px) {
     /* Responsive Table-to-Card */
     .data-table thead {
