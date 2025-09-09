@@ -326,4 +326,8 @@ button:active:not(:disabled) {
     padding: 0.5rem;
   }
 
+  [type="checkbox"], [type="radio"]{
+     height: 2.5rem;
+  }
+
 }
