@@ -5,6 +5,7 @@
     :delete="API.REMOVE"
     :module="MODULE"
     :has-footer-actions="true"
+    :optionsFilter="userType"
   >
     <!-- Filter Form -->
     <template #filterForm="{ formData, fieldErrors }">
@@ -13,11 +14,7 @@
           :model-value="formData.username || ''" @update:model-value="val => formData.username = val" />
         <FormInput name="email" label="Email" placeholder="Search by email" col="4" :model-value="formData.email || ''"
           @update:model-value="val => formData.email = val" />
-        <FormSelect name="role" label="Role" :options="[
-          { label: 'All Roles', value: '' },
-          { label: 'Admin', value: 'admin' },
-          { label: 'User', value: 'user' }
-        ]" col="4" :model-value="formData.role || ''" @update:model-value="val => formData.role = val" />
+        <FormSelect name="role" label="Role" :options="options" col="4" :model-value="formData.role || ''" @update:model-value="val => formData.role = val" />
       </div>
     </template>
 
@@ -96,4 +93,17 @@ const TableRef = ref(null)
 
 // Use the selection state composable
 const { selectedItems, updateSelectedItems } = useSelectionState()
+
+const options = [
+  { label: 'All Roles', value: '' },
+  { label: 'Admin', value: 'admin' },
+  { label: 'User', value: 'user' }
+];
+
+const userType = [
+  { label: 'All Filter', value: '' },
+  { label: 'Username', value: 'username' },
+  { label: 'Role', value: 'role' }
+];
+
 </script>

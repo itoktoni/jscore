@@ -116,9 +116,7 @@ const computedHeader = computed(() => {
 // Default filter options
 const defaultFilterOptions = [
   { label: 'All Fields', value: '' },
-  { label: 'Username', value: 'username' },
   { label: 'Name', value: 'name' },
-  { label: 'Email', value: 'email' }
 ]
 
 // Use dynamic options if provided, otherwise use defaults
