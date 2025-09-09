@@ -37,6 +37,12 @@
             </tr>
           </thead>
           <tbody>
+            <tr class="hide-lg">
+             <td data-label="Check All Data">
+                <FormCheck :data-array="data || []" select-all :selected-items="selectedItems"
+                  :on-selection-change="updateSelectedItems" />
+              </td>
+            </tr>
             <tr v-for="user in (data || [])" :key="user.id">
               <td>
                 <FormCheck :value="user.id" :selected-items="selectedItems"
