@@ -86,7 +86,7 @@ body {
 .content-body {
     padding: 1.5rem;
     /* Add padding to the bottom to avoid content being hidden by the fixed footer */
-    padding-bottom: 30rem;
+    padding-bottom: 10rem;
 }
 
 .card {
