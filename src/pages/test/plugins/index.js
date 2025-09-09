@@ -111,6 +111,14 @@ export const pluginTestRoutes = [
     meta: {
       requiresAuth: true
     }
+  },
+  {
+    path: '/test/plugins/kduma-bluetooth-printer',
+    name: 'KdumaBluetoothPrinterPluginTest',
+    component: () => import('../../../components/plugin-tests/KdumaBluetoothPrinterTest.vue'),
+    meta: {
+      requiresAuth: true
+    }
   }
   // Thermal printer route removed
 ]

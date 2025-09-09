@@ -33,6 +33,7 @@
     "@capacitor/network": "^7.0.2",
     "@capacitor/preferences": "latest",
     "@capacitor/splash-screen": "latest",
+    "@kduma-autoid/capacitor-bluetooth-printer": "^0.2.1",
     "@vueform/vueform": "^1.13.2",
     "axios": "^1.6.0",
     "chart.js": "^4.5.0",

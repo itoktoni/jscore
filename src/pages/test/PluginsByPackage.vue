@@ -107,8 +107,8 @@
 
           <div class="plugin-item">
             <h3>@kduma-autoid/capacitor-bluetooth-printer</h3>
-            <p>Connect and print to Bluetooth printers</p>
-            <router-link to="/test/plugins/bluetooth-printer" class="button primary">Test Bluetooth Printer Plugin</router-link>
+            <p>Connect and print to Bluetooth printers using Kduma's plugin</p>
+            <router-link to="/test/plugins/kduma-bluetooth-printer" class="button primary">Test Kduma Bluetooth Printer</router-link>
           </div>
 
           <div class="plugin-item">

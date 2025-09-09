@@ -93,6 +93,12 @@
           <router-link to="/test/plugins/bluetooth-direct-printer" class="button primary">Test Bluetooth Direct Printer</router-link>
         </div>
 
+        <div class="plugin-item">
+          <h3>Kduma Bluetooth Printer</h3>
+          <p>Connect and print to Bluetooth printers using Kduma's plugin</p>
+          <router-link to="/test/plugins/kduma-bluetooth-printer" class="button primary">Test Kduma Bluetooth Printer</router-link>
+        </div>
+
         <!-- Thermal Printer section removed -->
 
         <div class="plugin-item">
