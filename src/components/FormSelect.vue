@@ -166,6 +166,9 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue', 'blur', 'focus', 'change', 'refresh'])
 
+// Track if field has been touched by user
+const isTouched = ref(false)
+
 // Try to inject form validation context
 const formData = inject('formData', null)
 const fieldErrors = inject('fieldErrors', null)
@@ -218,14 +221,37 @@ const computedValue = computed(() => {
   return props.modelValue
 })
 
-// Auto-resolve error from fieldErrors
+// Auto-resolve error from fieldErrors or validate using rules
 const computedError = computed(() => {
   if (props.error) return props.error
+
+  // Check injected fieldErrors first (from form submission)
   if (fieldErrors && props.name && fieldErrors.value[props.name]) {
     const error = fieldErrors.value[props.name]
     // Ensure we return a string, not an array or object
     return typeof error === 'string' ? error : (Array.isArray(error) ? error[0] : String(error))
   }
+
+  // Perform reactive validation if field has been touched and has rules
+  if (isTouched.value && props.rules && formData && props.name) {
+    if (props.rules.includes('required')) {
+      let isEmpty
+      if (props.multiple) {
+        // For multiple selection, check if array is empty
+        isEmpty = !Array.isArray(computedValue.value) || computedValue.value.length === 0
+      } else {
+        // For single selection, check if value is empty
+        isEmpty = computedValue.value === null ||
+                  computedValue.value === undefined ||
+                  computedValue.value === ''
+      }
+
+      if (isEmpty) {
+        return `${computedLabel.value} is required`
+      }
+    }
+  }
+
   return ''
 })
 
@@ -321,6 +347,8 @@ const isOptionSelected = (option) => {
 
 const toggleSelect = () => {
   if (props.disabled) return
+  // Mark field as touched when user interacts
+  isTouched.value = true
   isOpen.value = !isOpen.value
   if (!isOpen.value) {
     searchQuery.value = ''
@@ -347,6 +375,9 @@ const closeSelect = (shouldFocus = true) => {
 }
 
 const selectOption = (option) => {
+  // Mark field as touched when user makes selection
+  isTouched.value = true
+
   const value = getOptionValue(option)
 
   if (props.multiple) {
@@ -432,6 +463,9 @@ const scrollToOption = (index) => {
 }
 
 const handleBlur = (event) => {
+  // Mark field as touched when user blurs (focuses out)
+  isTouched.value = true
+
   // Delay blur handling to allow for option selection
   setTimeout(() => {
     if (!selectContainer.value?.contains(document.activeElement)) {
@@ -580,7 +614,6 @@ const fetchData = async () => {
     }
   } catch (err) {
     error.value = err.message
-    console.error('Error fetching select options:', err)
     apiOptions.value = []
   } finally {
     loading.value = false
@@ -650,6 +683,16 @@ defineExpose({
   outline: none;
   border-color: #007bff;
   box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.form-select.error {
+  border-color: var(--color-error);
+  background-color: var(--bg-error-light, #fff5f5);
+}
+
+.form-select.error:focus {
+  border-color: var(--color-error);
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
 }
 
 .select-wrapper {

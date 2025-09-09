@@ -263,14 +263,22 @@ const computedValue = computed(() => {
 const computedError = computed(() => {
   if (props.error) return props.error
 
-  // Check injected fieldErrors first
+  // Check injected fieldErrors first (from form submission)
   if (fieldErrors && props.name && fieldErrors.value[props.name]) {
     const error = fieldErrors.value[props.name]
     // Ensure we return a string, not an array or object
     return typeof error === 'string' ? error : (Array.isArray(error) ? error[0] : String(error))
   }
 
-  // Remove reactive validation - only show errors from fieldErrors (set during submission)
+  // Perform reactive validation if field has been touched and has rules
+  if (isTouched.value && props.rules && formData && props.name) {
+    const value = formData.value[props.name]
+    const validationError = validateField(value, props.rules, computedLabel.value)
+    if (validationError) {
+      return validationError
+    }
+  }
+
   return ''
 })
 
@@ -283,6 +291,9 @@ const isRequired = computed(() => {
 
 const handleInput = (event) => {
   const value = event.target.value
+
+  // Mark field as touched when user starts typing
+  isTouched.value = true
 
   // Emit v-model update
   emit('update:modelValue', value)
@@ -303,6 +314,8 @@ const handleFocus = (event) => {
 }
 
 const handleBlur = (event) => {
+  // Mark field as touched when user blurs (focuses out)
+  isTouched.value = true
   emit('blur', event)
 }
 
@@ -357,5 +370,31 @@ onUnmounted(() => {
   outline: none;
   border-color: #007bff;
   box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.form-input.error {
+  border-color: var(--color-error);
+  background-color: var(--bg-error-light, #fff5f5);
+}
+
+.form-input.error:focus {
+  border-color: var(--color-error);
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+}
+
+/* Dark mode styles */
+.dark .form-input {
+  background-color: var(--bg-white);
+  border-color: var(--color-border-light);
+  color: var(--text-dark);
+}
+
+.dark .form-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.dark .form-input::placeholder {
+  color: var(--text-placeholder);
 }
 </style>

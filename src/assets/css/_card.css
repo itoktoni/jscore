@@ -2,6 +2,7 @@
   border-radius: 4px;
   background: var(--bg-color);
   box-shadow: 0 1px 3px var(--color-grey);
+  margin-bottom: 2rem;
 }
 
 .card p:last-child {
@@ -16,4 +17,10 @@
 .card-table{
   padding: 0 2rem;
   margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+  .card-table{
+    padding: 0 1.5rem;
+  }
 }

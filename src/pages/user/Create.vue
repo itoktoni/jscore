@@ -2,8 +2,8 @@
   <div class="card">
     <FormContainer
       ref="formRef"
-      title="Create New User"
-      :endpoint="USER_API_ROUTES.create"
+      title="Create Form"
+      :endpoint="API.CREATE"
       @success="handleSuccess"
       @error="handleError">
 
@@ -22,14 +22,13 @@
         option-label="name"
         option-value="id"
         col="6"
-        multiple
         label="Role"
       />
 
       <template #footer="{ isSubmitting }">
-        <div class="footer-actions">
-          <FormButton type="button" variant="secondary" @click="handleCancel" text="← Back" />
-          <FormButton type="submit" variant="primary" :text="isSubmitting ? 'Saving...' : 'Create'" :disabled="isSubmitting" />
+        <div class="form-actions">
+          <Button type="button" variant="secondary" @click="handleCancel" text="Button.back" />
+          <Button type="submit" variant="primary" text="Button.create" loadingText="Saving..." :disabled="isSubmitting" />
         </div>
       </template>
 
@@ -41,13 +40,13 @@
 import { ref } from 'vue'
 
 import { useRouter } from 'vue-router'
-import { USER_ROUTES, USER_API_ROUTES } from '../../router/userRoutes'
+import { ROUTES, API } from '../../router/userRoutes'
 
 import { useAlert } from '../../composables/useAlert'
 
 import FormContainer from '../../components/FormContainer.vue'
 import FormInput from '../../components/FormInput.vue'
-import FormButton from '../../components/FormButton.vue'
+import Button from '../../components/Button.vue'
 import FormSelect from '../../components/FormSelect.vue'
 
 const { alertSuccess, alertError } = useAlert()
@@ -57,7 +56,7 @@ const formRef = ref(null)
 
 function handleSuccess(response) {
   alertSuccess('Success', 'User created successfully!')
-  router.push({ name: USER_ROUTES.USER_LIST })
+  router.push({ name: ROUTES.LIST })
 }
 
 function handleError(error) {
@@ -65,6 +64,6 @@ function handleError(error) {
 }
 
 function handleCancel() {
-  router.push({ name: USER_ROUTES.USER_LIST })
+  router.push({ name: ROUTES.LIST })
 }
 </script>

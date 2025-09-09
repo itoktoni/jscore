@@ -1,37 +1,47 @@
 <template>
   <!-- Submit/Button type -->
   <button
-    v-if="buttonType === 'submit' || buttonType === 'button'"
-    :type="type"
+    v-if="type === 'submit' || type === 'button'"
+    :type="buttonTypeAttr"
     :disabled="disabled || loading || computedLoading"
     :class="buttonClasses"
     @click="handleClick"
   >
     <span v-if="computedLoading" class="loading-spinner"></span>
+    <i v-if="iconClass" :class="iconClass"></i>
     <span :class="{ 'with-spinner': computedLoading }">
-      <slot>{{ text }}</slot>
+      <slot>{{ displayText }}</slot>
     </span>
   </button>
 
   <!-- Link type -->
-  <div v-else-if="buttonType === 'link'" class="form-link">
-    <p>
-      {{ text }}
-      <router-link :to="to" class="link">
-        {{ linkText }}
-      </router-link>
-    </p>
-  </div>
+  <button
+    v-else-if="type === 'link'"
+    :type="buttonTypeAttr"
+    :disabled="disabled || loading || computedLoading"
+    :class="buttonClasses"
+    @click="handleClick"
+  >
+    <span v-if="computedLoading" class="loading-spinner"></span>
+    <i v-if="iconClass" :class="iconClass"></i>
+    <span :class="{ 'with-spinner': computedLoading }">
+      <slot>{{ displayText }}</slot>
+    </span>
+  </button>
 
   <!-- Delete/Remove type -->
   <button
-    v-else-if="buttonType === 'delete' || buttonType === 'remove'"
+    v-else-if="type === 'delete' || type === 'remove'"
     @click="handleDelete"
-    :class="buttonClass"
+    :class="buttonClasses"
     :disabled="isDeleteDisabled"
   >
-    <span v-if="deleteLoading">{{ deleteLoadingText }}</span>
-    <span v-else>{{ text }}</span>
+    <span v-if="deleteLoading || computedLoading" class="loading-spinner"></span>
+    <i v-if="iconClass" :class="iconClass"></i>
+    <span :class="{ 'with-spinner': deleteLoading || computedLoading }">
+      <span v-if="deleteLoading">{{ deleteLoadingText }}</span>
+      <span v-else>{{ displayText }}</span>
+    </span>
   </button>
 </template>
 
@@ -40,16 +50,21 @@ import { ref, computed, inject } from 'vue'
 import { useRouter } from 'vue-router'
 import { http } from '../stores/http'
 import { useAlert } from '../composables/useAlert'
+import { BUTTON_ICONS } from '../models/ButtonIcons'
 
 // Define props
 const props = defineProps({
   // Common props
-  buttonType: {
+  type: {
     type: String,
     default: 'button',
     validator: (value) => ['button', 'submit', 'link', 'delete', 'remove'].includes(value)
   },
   text: {
+    type: String,
+    default: ''
+  },
+  loadingText: {
     type: String,
     default: ''
   },
@@ -63,19 +78,15 @@ const props = defineProps({
   },
 
   // Button/Submit specific props
-  type: {
+  buttonType: {
     type: String,
-    default: 'button'
+    default: 'button',
+    validator: (value) => ['button', 'submit', 'reset'].includes(value)
   },
   variant: {
     type: String,
     default: 'primary',
     validator: (value) => ['primary', 'secondary', 'success', 'danger', 'warning', 'info'].includes(value)
-  },
-  size: {
-    type: String,
-    default: 'medium',
-    validator: (value) => ['small', 'medium', 'large'].includes(value)
   },
   block: {
     type: Boolean,
@@ -107,7 +118,7 @@ const props = defineProps({
   },
   buttonClass: {
     type: String,
-    default: 'btn btn-sm btn-outline-danger'
+    default: ''
   },
   selectedItems: {
     type: Array,
@@ -133,34 +144,109 @@ const emit = defineEmits(['click', 'success', 'error'])
 const router = useRouter()
 const { alertConfirm, alertSuccess, alertError } = useAlert()
 
+// Icon class computation
+const iconClass = computed(() => {
+  if (props.text && props.text.startsWith('Button.')) {
+    const parts = props.text.split('.')
+    const action = parts[1].split(':')[0].toUpperCase() // Handle "Button.edit:icon" format
+    return BUTTON_ICONS[action] || ''
+  }
+  return ''
+})
+
+// Display text computation
+const displayText = computed(() => {
+  // Use loading text if provided and button is loading
+  if (props.loadingText && (computedLoading.value || deleteLoading.value)) {
+    return props.loadingText
+  }
+
+  if (props.text && props.text.startsWith('Button.')) {
+    const parts = props.text.split('.')
+    const actionWithModifier = parts[1]
+    const action = actionWithModifier.split(':')[0]
+    const modifier = actionWithModifier.split(':')[1]
+
+    // If modifier is "icon", return empty string for icon-only button
+    if (modifier === 'icon') {
+      return ''
+    }
+
+    return action.charAt(0).toUpperCase() + action.slice(1).toLowerCase()
+  }
+  return props.text
+})
+
 // Try to inject form validation context for auto-loading state
 const isSubmitting = inject('isSubmitting', null)
 
+// Computed button type for HTML type attribute
+const buttonTypeAttr = computed(() => {
+  if (props.type === 'submit') {
+    return 'submit'
+  } else if (props.type === 'reset') {
+    return 'reset'
+  }
+  return 'button'
+})
+
 // Button/Submit functionality
 const buttonClasses = computed(() => {
-  // If this is a delete button, use the provided buttonClass
-  if (props.buttonType === 'delete' || props.buttonType === 'remove') {
-    return props.buttonClass
+  // Map variants to CSS classes that match the role create page
+  const variantClasses = {
+    'primary': 'button primary',
+    'secondary': 'button secondary',
+    'success': 'button success',
+    'danger': 'button danger',
+    'warning': 'button warning',
+    'info': 'button info'
   }
 
-  const classes = {
-    'button': true,
-    [`button ${props.variant}`]: true,
-    [`button ${props.size}`]: true,
-    'button block': props.block,
-    'button loading': computedLoading.value,
-    'button disabled': props.disabled
-  }
+  const classes = []
 
-  // Only add column class if col prop is provided
-  if (props.col !== null && props.col !== undefined) {
-    classes[`col-${props.col}`] = true
+  // Add base button class
+  classes.push('button')
+
+  // Add variant class
+  if (variantClasses[props.variant]) {
+    classes.push(variantClasses[props.variant])
   } else {
-    // Add flexible width class when no column is specified
-    classes['form-button--flexible'] = true
+    classes.push('primary')
   }
 
-  return classes
+  // Add block class if needed
+  if (props.block) {
+    classes.push('block')
+  }
+
+  // Add loading class
+  if (computedLoading.value || deleteLoading.value) {
+    classes.push('loading')
+  }
+
+  // Add disabled class
+  if (props.disabled || isDeleteDisabled.value) {
+    classes.push('disabled')
+  }
+
+  // Handle column classes
+  // If col prop is a string with multiple classes (e.g., "col-6 col-3-md col-2-lg")
+  if (props.col && typeof props.col === 'string') {
+    // Split the string by spaces and add each class
+    const colClasses = props.col.split(' ').filter(cls => cls.trim() !== '')
+    classes.push(...colClasses)
+  }
+  // If col prop is a number or single string class
+  else if (props.col !== null && props.col !== undefined) {
+    classes.push(`col-${props.col}`)
+  }
+
+  // Add custom button class if provided
+  if (props.buttonClass) {
+    classes.push(props.buttonClass)
+  }
+
+  return classes.join(' ')
 })
 
 // Auto-detect loading state from form context if submit button
@@ -173,9 +259,15 @@ const computedLoading = computed(() => {
 // Handle click event - don't prevent default for submit buttons
 const handleClick = (event) => {
   // For submit buttons, let the form handle the submission
-  if (props.type !== 'submit') {
+  if (buttonTypeAttr.value !== 'submit') {
     event.preventDefault()
   }
+
+  // Handle navigation for link type
+  if (props.type === 'link' && props.to) {
+    router.push(props.to)
+  }
+
   emit('click', event)
 }
 
@@ -183,23 +275,23 @@ const handleClick = (event) => {
 const deleteLoading = ref(false)
 
 const isDeleteDisabled = computed(() => {
-  if (props.buttonType === 'delete') {
+  if (props.type === 'delete') {
     return props.disabled || deleteLoading.value
-  } else if (props.buttonType === 'remove') {
+  } else if (props.type === 'remove') {
     return props.disabled || deleteLoading.value || !props.selectedItems || props.selectedItems.length === 0
   }
   return props.disabled || deleteLoading.value
 })
 
 const deleteLoadingText = computed(() => {
-  return props.buttonType === 'delete' ? 'Deleting...' : 'Deleting...'
+  return props.type === 'delete' ? 'Deleting...' : 'Deleting...'
 })
 
 const defaultConfirmMessage = computed(() => {
   if (props.confirmMessage) return props.confirmMessage
-  if (props.buttonType === 'delete') {
+  if (props.type === 'delete') {
     return 'Are you sure you want to delete this item?'
-  } else if (props.buttonType === 'remove') {
+  } else if (props.type === 'remove') {
     if (!props.selectedItems || props.selectedItems.length === 0) {
       return 'You must select items first before deleting'
     }
@@ -211,7 +303,7 @@ const defaultConfirmMessage = computed(() => {
 // Handle delete operation
 const handleDelete = async () => {
   // Check if any items are selected for remove type
-  if (props.buttonType === 'remove' && (!props.selectedItems || props.selectedItems.length === 0)) {
+  if (props.type === 'remove' && (!props.selectedItems || props.selectedItems.length === 0)) {
     alertError('Error', 'You must select items first before deleting')
     return
   }
@@ -228,7 +320,7 @@ const handleDelete = async () => {
     try {
       deleteLoading.value = true
 
-      if (props.buttonType === 'delete') {
+      if (props.type === 'delete') {
         // Perform GET request for deletion (as per project requirements)
         await http.get(props.url)
 
@@ -239,7 +331,12 @@ const handleDelete = async () => {
         if (props.onSuccess) {
           props.onSuccess(props.url)
         }
-      } else if (props.buttonType === 'remove') {
+
+        // Refresh the table after successful deletion
+        if (props.formTableRef && props.formTableRef.refresh) {
+          props.formTableRef.refresh()
+        }
+      } else if (props.type === 'remove') {
         // If formTableRef is provided, handle batch deletion manually
         if (props.formTableRef) {
           // Perform the deletion for selected items using the FormTable's delete endpoint
@@ -258,10 +355,9 @@ const handleDelete = async () => {
         emit('success', props.url)
       }
     } catch (error) {
-      console.error('Delete error:', error)
 
       // Show error message
-      alertError('Error', `Failed to delete ${props.buttonType === 'delete' ? 'item' : 'selected items'}`)
+      alertError('Error', `Failed to delete ${props.type === 'delete' ? 'item' : 'selected items'}`)
 
       // Emit error event
       emit('error', error)
@@ -278,79 +374,20 @@ const handleDelete = async () => {
 </script>
 
 <style scoped>
-/* Button styles from FormButton */
-.form-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  -webkit-appearance: none;
-  appearance: none;
-  touch-action: manipulation;
-  text-decoration: none;
-  position: relative;
-  padding: 10px 20px;
-  min-width: fit-content;
-}
+/* Button responsive behavior to work with grid system */
 
-/* Loading spinner */
-.loading-spinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid transparent;
-  border-top: 2px solid currentColor;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-.with-spinner {
-  opacity: 0.7;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
+/* Override mobile behavior for col-6 to show 2 buttons per row */
+@media screen and (max-width: 599px) {
+  .button.col-6 {
+    flex: 0 0 calc(50% - var(--grid-gutter)) !important;
+    max-width: calc(50% - var(--grid-gutter)) !important;
   }
 }
 
-/* Link styles from FormLink */
-.form-link {
-  text-align: center;
-  margin-top: 20px;
-  padding-top: 15px;
-  border-top: 1px solid #eee;
-}
-
-.form-link p {
-  margin: 0;
-  color: #666;
-  font-size: 14px;
-}
-
-.link {
-  color: #007bff;
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.link:hover {
-  text-decoration: underline;
-}
-
-/* Mobile optimizations for link */
-@media (max-width: 480px) {
-  .form-link {
-    margin-top: 15px;
-    padding-top: 12px;
-  }
-
-  .form-link p {
-    font-size: 13px;
+/* Mobile responsiveness for button filter */
+@media (max-width: 768px) {
+  .button-filter {
+    margin-top: 1rem;
   }
 }
 </style>
