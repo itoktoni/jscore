@@ -50,8 +50,8 @@
       </div>
     </div>
 
-    <footer class="content-footer safe-area-bottom" v-if="hasFooterActions">
-      <div class="form-actions">
+    <footer class="content-footer" v-if="hasFooterActions">
+      <div class="form-actions safe-area-bottom">
         <slot name="footerActions"></slot>
       </div>
     </footer>
