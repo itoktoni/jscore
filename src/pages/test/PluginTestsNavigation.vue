@@ -88,6 +88,14 @@
         </div>
 
         <div class="plugin-item">
+          <h3>Bluetooth Direct Printer</h3>
+          <p>Connect and print to Bluetooth printers using direct printing method</p>
+          <router-link to="/test/plugins/bluetooth-direct-printer" class="button primary">Test Bluetooth Direct Printer</router-link>
+        </div>
+
+        <!-- Thermal Printer section removed -->
+
+        <div class="plugin-item">
           <h3>InAppBrowser Plugin</h3>
           <p>Open URLs in in-app browser</p>
           <router-link to="/test/plugins/inappbrowser" class="button primary">Test InAppBrowser Plugin</router-link>

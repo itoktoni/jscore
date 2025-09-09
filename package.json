@@ -36,6 +36,8 @@
     "@vueform/vueform": "^1.13.2",
     "axios": "^1.6.0",
     "chart.js": "^4.5.0",
+    "html2canvas": "^1.4.1",
+    "lidta-capacitor-bl-printer": "^0.0.3",
     "pinia": "^2.1.0",
     "sweetalert2": "^11.22.5",
     "vue": "^3.4.0",

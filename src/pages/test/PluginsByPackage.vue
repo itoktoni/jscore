@@ -112,6 +112,14 @@
           </div>
 
           <div class="plugin-item">
+            <h3>lidta-capacitor-bl-printer</h3>
+            <p>Connect and print to Bluetooth printers using direct printing method</p>
+            <router-link to="/test/plugins/bluetooth-direct-printer" class="button primary">Test Bluetooth Direct Printer</router-link>
+          </div>
+
+          <!-- Thermal printer section removed -->
+
+          <div class="plugin-item">
             <h3>@capacitor/barcode-scanner</h3>
             <p>Official barcode scanner (alternative version)</p>
             <div class="note">Note: This is an alternative to the community version</div>

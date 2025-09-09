@@ -103,5 +103,14 @@ export const pluginTestRoutes = [
     meta: {
       requiresAuth: true
     }
+  },
+  {
+    path: '/test/plugins/bluetooth-direct-printer',
+    name: 'BluetoothDirectPrinterPluginTest',
+    component: () => import('../../../components/plugin-tests/BluetoothDirectPrinterTest.vue'),
+    meta: {
+      requiresAuth: true
+    }
   }
+  // Thermal printer route removed
 ]

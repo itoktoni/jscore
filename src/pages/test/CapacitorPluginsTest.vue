@@ -49,6 +49,9 @@
       <!-- Bluetooth Printer Plugin -->
       <!-- <BluetoothPrinterTest /> -->
 
+      <!-- Bluetooth Direct Printer Plugin -->
+      <BluetoothDirectPrinterTest />
+
       <!-- InAppBrowser Plugin -->
       <InAppBrowserTest />
     </div>
@@ -68,6 +71,7 @@ import LocalNotificationsTest from '../../components/plugin-tests/LocalNotificat
 import FilesystemTest from '../../components/plugin-tests/FilesystemTest.vue'
 import BrowserTest from '../../components/plugin-tests/BrowserTest.vue'
 // import BluetoothPrinterTest from '../../components/plugin-tests/BluetoothPrinterTest.vue'
+import BluetoothDirectPrinterTest from '../../components/plugin-tests/BluetoothDirectPrinterTest.vue'
 import InAppBrowserTest from '../../components/plugin-tests/InAppBrowserTest.vue'
 </script>
 
