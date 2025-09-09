@@ -11,10 +11,11 @@
             :handleSearch="handleSearch">
           </slot>
 
-            <div class="row">
-              <FormSelect name="filter" label="Filter" :options="filterOptions" col="6" />
-              <FormInput col="6" name="search" label="Search" placeholder="Enter search term" />
-            </div>
+          <div class="row">
+            <FormSelect name="perpage" label="Per Page" :options="perpageOptions" col="2" />
+            <FormSelect name="filter" label="Filter" :options="filterOptions" col="4" />
+            <FormInput col="6" name="search" label="Search" placeholder="Enter search term" />
+          </div>
 
           <div class="form-actions">
             <Button type="button" variant="secondary" text="Reset" @click="handleReset(true)" />
@@ -125,15 +126,24 @@ const filterOptions = computed(() => {
   return props.optionsFilter.length > 0 ? props.optionsFilter : defaultFilterOptions
 })
 
+// Per page options
+const perpageOptions = [
+  { label: '10', value: 10 },
+  { label: '20', value: 20 },
+  { label: '50', value: 50 },
+  { label: '100', value: 100 }
+]
+
 
 // Define emits
 const emit = defineEmits(['search', 'error'])
 
-// Set initial data with defaults for filter and search only
+// Set initial data with defaults for filter, search, and perpage
 const initialDataWithDefaults = {
   ...props.initialData,
   filter: props.initialData.filter || '',
-  search: props.initialData.search || ''
+  search: props.initialData.search || '',
+  perpage: props.initialData.perpage || 10
 }
 
 // Use the form table composable
