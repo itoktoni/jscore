@@ -335,7 +335,6 @@ const updateCharts = async () => {
     const activities = await fetchRecentActivities()
     recentActivities.value = activities
   } catch (error) {
-    console.error('Error updating charts:', error)
     // In a real app, you would show an error message to the user
   }
 }
@@ -343,9 +342,8 @@ const updateCharts = async () => {
 onMounted(() => {
   // Initialize charts
   updateCharts()
-  
+
   // Log user data after mount
-  console.log('Dashboard mounted - User data:', authStore.user)
 })
 </script>
 

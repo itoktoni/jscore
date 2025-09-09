@@ -3,7 +3,7 @@
     <FormContainer
       title="Edit User"
       :initial-data="initialFormData"
-      :endpoint="USER_API_ROUTES.update(userId)"
+      :endpoint="API.UPDATE(userId)"
       @success="handleSuccess"
       @error="handleError"
     >
@@ -26,9 +26,9 @@
       />
 
       <template #footer="{ isSubmitting }">
-        <div class="footer-actions">
-          <FormButton type="button" variant="secondary" @click="handleCancel" text="← Back" />
-          <FormButton type="submit" variant="success" :text="isSubmitting ? 'Saving...' : 'Update'" :disabled="isSubmitting" />
+        <div class="form-actions">
+          <Button type="button" variant="secondary" @click="handleCancel" text="Button.back" />
+          <Button type="submit" variant="primary" text="Button.update" loadingText="Saving..." :disabled="isSubmitting" />
         </div>
       </template>
     </FormContainer>
@@ -40,11 +40,11 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAlert } from '../../composables/useAlert'
 import { UserModel } from '../../models'
-import { USER_ROUTES, USER_API_ROUTES } from '../../router/userRoutes'
+import { ROUTES, API } from '../../router/userRoutes'
 import { http } from '../../stores/http'
 import FormContainer from '../../components/FormContainer.vue'
 import FormInput from '../../components/FormInput.vue'
-import FormButton from '../../components/FormButton.vue'
+import Button from '../../components/Button.vue'
 import FormSelect from '../../components/FormSelect.vue'
 
 const route = useRoute()
@@ -59,7 +59,7 @@ onMounted(async () => {
   if (userId) {
     try {
       // Directly fetch user data using http client
-      const response = await http.get(USER_API_ROUTES.show(userId))
+      const response = await http.get(API.SHOW(userId))
 
       // Handle the response structure properly
       // API returns data in response.data.data or response.data
@@ -73,16 +73,15 @@ onMounted(async () => {
         initialFormData.value.password_confirmation = ''
       }
     } catch (error) {
-      console.error('Error loading user:', error)
       // Error loading user
-      router.push({ name: USER_ROUTES.USER_LIST })
+      router.push({ name: ROUTES.LIST })
     }
   }
 })
 
 function handleSuccess(response) {
   alertSuccess('Success', 'User updated successfully!')
-  router.push({ name: USER_ROUTES.USER_LIST })
+  router.push({ name: ROUTES.LIST })
 }
 
 function handleError(error) {
@@ -90,6 +89,6 @@ function handleError(error) {
 }
 
 function handleCancel() {
-  router.push({ name: USER_ROUTES.USER_LIST })
+  router.push({ name: ROUTES.LIST })
 }
 </script>

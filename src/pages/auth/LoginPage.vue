@@ -32,25 +32,21 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
 import FormContainer from '../../components/FormContainer.vue'
 import FormInput from '../../components/FormInput.vue'
-import FormButton from '../../components/FormButton.vue'
 import Button from '../../components/Button.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
 
 const handleLogin = async (data) => {
-  console.log('Login attempt with:', data)
 
   try {
     const result = await authStore.login(data.username, data.password)
 
     if (result.success) {
-      console.log('Login successful')
       // Redirect to dashboard on successful login
       router.push('/dashboard')
       return { success: true }
     } else {
-      console.log('Login failed:', result)
       // Return error for FormContainer to handle
       return {
         success: false,
@@ -59,7 +55,6 @@ const handleLogin = async (data) => {
       }
     }
   } catch (error) {
-    console.log('Login error:', error)
     return {
       success: false,
       error: error.message || 'An unexpected error occurred',

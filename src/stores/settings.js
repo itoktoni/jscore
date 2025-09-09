@@ -33,17 +33,18 @@ export const useSettingsStore = defineStore('settings', {
         const { value: websiteUrl } = await Preferences.get({ key: 'website_url' })
         const { value: darkMode } = await Preferences.get({ key: 'dark_mode' })
 
-        if (websiteName) this.websiteName = websiteName
-        if (websiteUrl) this.websiteUrl = websiteUrl
-        if (darkMode) this.darkMode = darkMode === 'true'
+        if (websiteName !== null) this.websiteName = websiteName
+        if (websiteUrl !== null) this.websiteUrl = websiteUrl
+        if (darkMode !== null) this.darkMode = darkMode === 'true'
+
       } catch (error) {
-        console.error('Error loading settings:', error)
       }
     },
 
     // Save settings to storage
     async saveSettings() {
       try {
+
         if (this.websiteName !== null && this.websiteName !== undefined) {
           await Preferences.set({ key: 'website_name', value: this.websiteName })
         } else {
@@ -110,7 +111,6 @@ export const useSettingsStore = defineStore('settings', {
         await Preferences.remove({ key: 'website_url' })
         await Preferences.remove({ key: 'dark_mode' })
       } catch (error) {
-        console.error('Error clearing settings:', error)
         throw error // Re-throw the error so it can be handled by the caller
       }
     }

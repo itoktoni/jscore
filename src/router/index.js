@@ -1,15 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
-import SystemSettingsPage from '../pages/SystemSettingsPage.vue'
-import SettingsPage from '../pages/SettingsPage.vue'
-import TestSafeArea from '../components/TestSafeArea.vue'
-import TestSafeAreaPage from '../pages/TestSafeAreaPage.vue'
+import SettingsPage from '../pages/system/SettingsPage.vue'
 import CapacitorPluginsTest from '../pages/test/CapacitorPluginsTest.vue'
 import PluginTestsNavigation from '../pages/test/PluginTestsNavigation.vue'
 import PluginsByPackage from '../pages/test/PluginsByPackage.vue' // Added import for plugins by package page
 import { userRoutes } from './userRoutes'
 import { authRoutes } from './authRoutes'
-import { roleRoutes } from './roleRoutes'
 import { pluginTestRoutes } from '../pages/test/plugins/index.js'
 
 const routes = [
@@ -22,36 +18,10 @@ const routes = [
   // User routes
   ...userRoutes,
   // Role routes
-  ...roleRoutes,
   {
     path: '/settings',
     name: 'Settings',
     component: SettingsPage,
-    meta: {
-      requiresAuth: true // Only accessible when authenticated
-    }
-  },
-  {
-    path: '/system/settings',
-    name: 'SystemSettings',
-    component: SystemSettingsPage,
-    meta: {
-      requiresAuth: true, // Only accessible when authenticated
-      requiresAdmin: true // Only accessible for admin users
-    }
-  },
-  {
-    path: '/test-safe-area',
-    name: 'TestSafeArea',
-    component: TestSafeArea,
-    meta: {
-      requiresAuth: true // Only accessible when authenticated
-    }
-  },
-  {
-    path: '/test-safe-area-page',
-    name: 'TestSafeAreaPage',
-    component: TestSafeAreaPage,
     meta: {
       requiresAuth: true // Only accessible when authenticated
     }
@@ -95,13 +65,14 @@ const router = createRouter({
 
 // Navigation guards
 router.beforeEach(async (to, from, next) => {
-  const authStore = useAuthStore()
+  let authStore = useAuthStore()
 
   // Initialize auth if not already done
-  if (!authStore.isAuthenticated && !authStore.token) {
-    console.log('Initializing auth...')
+  if (!authStore.isAuthenticated) {
     const result = await authStore.initAuth()
-    console.log('Auth init result:', result)
+
+    // Re-get the auth store to get updated values
+    authStore = useAuthStore()
   }
 
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
@@ -110,23 +81,19 @@ router.beforeEach(async (to, from, next) => {
   const isAuthenticated = authStore.isAuthenticated
   const isAdmin = authStore.user && (authStore.user.role === 'admin' || authStore.user.role === 'administrator')
 
-  console.log('Route guard - requiresAuth:', requiresAuth, 'isAuthenticated:', isAuthenticated)
+  // Route guard logic
 
   if (requiresAuth && !isAuthenticated) {
     // Route requires authentication but user is not authenticated
-    console.log('Redirecting to login - not authenticated')
     next('/login')
   } else if (requiresGuest && isAuthenticated) {
     // Route requires guest (not authenticated) but user is authenticated
-    console.log('Redirecting to dashboard - already authenticated')
     next('/dashboard')
   } else if (requiresAdmin && (!isAuthenticated || !isAdmin)) {
     // Route requires admin access but user is not admin
-    console.log('Redirecting to dashboard - not admin')
     next('/dashboard')
   } else {
     // Route is accessible
-    console.log('Allowing navigation to:', to.path)
     next()
   }
 })

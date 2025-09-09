@@ -22,7 +22,6 @@ class SafeAreaUtil {
       }
 
       this.isInitialized = true
-      console.log('SafeAreaUtil initialized')
     } catch (error) {
       console.warn('SafeAreaUtil initialization error:', error)
       this.applyWebSafeArea()
@@ -43,7 +42,6 @@ class SafeAreaUtil {
     root.style.setProperty('--safe-area-bottom', '5.5rem')
     root.style.setProperty('--safe-area-left', '2rem')
     root.style.setProperty('--safe-area-right', '2rem')
-    console.log('Applied mobile safe area with 3rem top padding')
   }
 
   applyWebSafeArea() {
@@ -53,7 +51,6 @@ class SafeAreaUtil {
     root.style.setProperty('--safe-area-left', '2rem')
     root.style.setProperty('--safe-area-right', '1rem')
     root.style.setProperty('--safe-area-bottom', '1rem')
-    console.log('Applied web safe area with 0px top padding')
   }
 
   // Get current safe area insets (simple implementation)

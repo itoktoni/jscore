@@ -29,6 +29,7 @@ app.use(router)
 // Initialize settings
 const settingsStore = useSettingsStore()
 settingsStore.loadSettings().then(() => {
+
   // Apply dark mode settings
   settingsStore.applyDarkMode()
 
@@ -38,27 +39,20 @@ settingsStore.loadSettings().then(() => {
   // Initialize auth store after settings are loaded
   const authStore = useAuthStore()
   authStore.initAuth().then((result) => {
-    console.log('Auth initialized:', result)
   }).catch((error) => {
-    console.error('Error initializing auth:', error)
   })
 })
 
 // Initialize safe area only on mobile platforms
 const platform = Capacitor.getPlatform()
-console.log('Capacitor platform:', platform)
 
 const root = document.documentElement
 
 if (platform === 'ios' || platform === 'android') {
-  console.log('Initializing safe area for mobile platform')
   safeAreaUtil.initialize().then(() => {
-    console.log('Safe area initialized successfully')
   }).catch((error) => {
-    console.error('Error initializing safe area:', error)
   })
 } else {
-  console.log('Not a mobile platform, applying CSS fallback')
   safeAreaUtil.applyWebSafeArea()
 }
 
@@ -73,7 +67,6 @@ if (Capacitor.isNativePlatform()) {
 
 // Global error handler
 app.config.errorHandler = (error, instance, info) => {
-  console.error('Global error:', error, info)
   // Show alert for global errors
   const { alertError } = useAlert()
   alertError('Error', error.message || 'An unexpected error occurred')
