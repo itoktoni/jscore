@@ -24,9 +24,9 @@
 
       <template #footer="{ isSubmitting }">
         <div class="form-actions">
-          <Button type="button" variant="secondary" @click="resetToDefaults" text="Reset to Defaults" />
-          <Button type="button" variant="secondary" @click="refreshPrinters" text="Refresh Printers" :disabled="loadingPrinters" />
-          <Button type="submit" variant="success" :text="isSubmitting ? 'Saving...' : 'Save Settings'"
+          <Button type="button" variant="secondary" @click="resetToDefaults" text="Reset" />
+          <Button type="button" variant="secondary" @click="refreshPrinters" text="List Printer" :disabled="loadingPrinters" />
+          <Button type="submit" variant="success" :text="isSubmitting ? 'Saving...' : 'Save'"
             :disabled="isSubmitting" />
         </div>
       </template>
@@ -43,7 +43,7 @@
       <FormLabel name="websiteName" label="Website Name" :value="currentWebsiteName" col="12" />
       <FormLabel name="websiteUrl" label="Website URL" :value="currentWebsiteUrl" col="12" />
       <FormLabel name="darkMode" label="Dark Mode" :value="settingsStore.isDarkMode ? 'Enabled' : 'Disabled'" col="12" />
-      <FormLabel name="defaultPrinter" label="Default Printer" :value="currentDefaultPrinterName || 'Not set'" col="12" />
+      <FormLabel name="defaultPrinter"native="true" label="Default Printer" :value="currentDefaultPrinterName || 'Not set'" col="12" />
       <FormLabel name="environment" label="Environment" :value="environment" col="12" />
     </div>
   </div>
@@ -64,7 +64,7 @@ import Button from '../../components/Button.vue'
 import FormLabel from '../../components/FormLabel.vue'
 
 // Dynamically import printer plugins
-let LidtaCapacitorBlPrinter, BluetoothPrinter
+let LidtaCapacitorBlPrinter
 
 const settingsStore = useSettingsStore()
 const { alertSuccess, alertError } = useAlert()
@@ -159,7 +159,7 @@ const loadAvailablePrinters = async () => {
         const result = await LidtaCapacitorBlPrinter.getPairedDevices()
         const devices = result.devices || []
         printerOptions.value = [...printerOptions.value, ...devices.map(device => ({
-          name: `${device.name} (Lidta)`,
+          name: `${device.name}`,
           address: device.address
         }))]
       } catch (error) {
@@ -167,19 +167,7 @@ const loadAvailablePrinters = async () => {
       }
     }
 
-    // Get printers from Kduma BluetoothPrinter if available
-    if (BluetoothPrinter) {
-      try {
-        const result = await BluetoothPrinter.list()
-        const devices = result.devices || []
-        printerOptions.value = [...printerOptions.value, ...devices.map(device => ({
-          name: `${device.name} (Kduma)`,
-          address: device.address
-        }))]
-      } catch (error) {
-        console.warn('Error loading Kduma printers:', error)
-      }
-    }
+    // Kduma BluetoothPrinter removed since we're not using that package anymore
   } catch (error) {
     console.error('Error loading printers:', error)
   } finally {
@@ -199,13 +187,7 @@ const loadPrinterPlugins = async () => {
         console.warn('LidtaCapacitorBlPrinter plugin not available:', error)
       }
 
-      // Try to load Kduma BluetoothPrinter
-      try {
-        const kdumaModule = await import('@kduma-autoid/capacitor-bluetooth-printer')
-        BluetoothPrinter = kdumaModule.BluetoothPrinter
-      } catch (error) {
-        console.warn('Kduma BluetoothPrinter plugin not available:', error)
-      }
+      // Kduma BluetoothPrinter removed since we're not using that package anymore
     }
   } catch (error) {
     console.warn('Error loading printer plugins:', error)

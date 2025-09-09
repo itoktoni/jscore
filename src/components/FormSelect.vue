@@ -4,7 +4,26 @@
       {{ computedLabel }}
       <span v-if="isRequired" class="required-asterisk">*</span>
     </label>
-    <div v-if="loading" class="select-loading">
+
+    <!-- Native Select Implementation -->
+    <select
+      v-if="native"
+      :id="computedId"
+      :class="selectClasses"
+      :value="computedValue"
+      :disabled="disabled"
+      :required="isRequired"
+      @change="handleNativeChange"
+      @blur="handleNativeBlur"
+    >
+      <option v-if="placeholder" value="" disabled selected>{{ placeholder }}</option>
+      <option v-for="option in selectOptions" :key="getOptionValue(option)" :value="getOptionValue(option)">
+        {{ getOptionLabel(option) }}
+      </option>
+    </select>
+
+    <!-- Custom Select Implementation -->
+    <div v-else-if="loading" class="select-loading">
       {{ loadingText }}
     </div>
     <div v-else-if="error" class="select-error">
@@ -59,6 +78,7 @@
         </div>
       </div>
     </div>
+
     <div v-if="computedError" class="field-error">
       {{ computedError }}
     </div>
@@ -161,6 +181,11 @@ const props = defineProps({
   errorText: {
     type: String,
     default: 'Error loading data'
+  },
+  // Native select support
+  native: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -273,6 +298,7 @@ const formGroupClasses = computed(() => {
 
 const selectClasses = computed(() => ({
   'form-select': true,
+  'form-select-native': props.native,
   'error': !!computedError.value,
   'disabled': props.disabled,
   'select-searchable': props.searchable,
@@ -292,6 +318,11 @@ const filteredOptions = computed(() => {
   }
 
   return options
+})
+
+// Combined options for both native and custom select
+const selectOptions = computed(() => {
+  return props.options.length > 0 ? props.options : apiOptions.value
 })
 
 // Computed property for display value
@@ -345,6 +376,32 @@ const isOptionSelected = (option) => {
   }
 }
 
+// Native select event handlers
+const handleNativeChange = (event) => {
+  isTouched.value = true
+  const value = event.target.value
+
+  // Emit v-model update
+  emit('update:modelValue', value)
+  emit('change', value)
+
+  // Also update formData if available
+  if (formData && props.name) {
+    formData.value[props.name] = value
+  }
+
+  // Clear field error when user makes selection
+  if (fieldErrors && props.name && fieldErrors.value[props.name]) {
+    delete fieldErrors.value[props.name]
+  }
+}
+
+const handleNativeBlur = (event) => {
+  isTouched.value = true
+  emit('blur', event)
+}
+
+// Custom select methods (unchanged)
 const toggleSelect = () => {
   if (props.disabled) return
   // Mark field as touched when user interacts
@@ -695,6 +752,15 @@ defineExpose({
   box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
 }
 
+.form-select-native {
+  padding: 0.5rem 1rem;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1rem;
+}
+
 .select-wrapper {
   position: relative;
 }
@@ -845,6 +911,11 @@ defineExpose({
   .select-error {
     padding: 1rem;
     font-size: 13px;
+  }
+
+  .form-select-native {
+    padding: 1rem;
+    font-size: 16px; /* Prevents zoom on iOS */
   }
 }
 </style>

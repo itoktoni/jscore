@@ -38,8 +38,5 @@ project(':capacitor-preferences').projectDir = new File('../node_modules/@capaci
 include ':capacitor-splash-screen'
 project(':capacitor-splash-screen').projectDir = new File('../node_modules/@capacitor/splash-screen/android')
 
-include ':kduma-autoid-capacitor-bluetooth-printer'
-project(':kduma-autoid-capacitor-bluetooth-printer').projectDir = new File('../node_modules/@kduma-autoid/capacitor-bluetooth-printer/android')
-
 include ':lidta-capacitor-bl-printer'
 project(':lidta-capacitor-bl-printer').projectDir = new File('../node_modules/lidta-capacitor-bl-printer/android')
