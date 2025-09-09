@@ -5,7 +5,8 @@ export const useSettingsStore = defineStore('settings', {
   state: () => ({
     websiteName: null,
     websiteUrl: null,
-    darkMode: false
+    darkMode: false,
+    defaultPrinter: null
   }),
 
   getters: {
@@ -22,6 +23,11 @@ export const useSettingsStore = defineStore('settings', {
     // Get dark mode preference
     isDarkMode: (state) => {
       return state.darkMode
+    },
+
+    // Get default printer
+    getDefaultPrinter: (state) => {
+      return state.defaultPrinter
     }
   },
 
@@ -32,10 +38,12 @@ export const useSettingsStore = defineStore('settings', {
         const { value: websiteName } = await Preferences.get({ key: 'website_name' })
         const { value: websiteUrl } = await Preferences.get({ key: 'website_url' })
         const { value: darkMode } = await Preferences.get({ key: 'dark_mode' })
+        const { value: defaultPrinter } = await Preferences.get({ key: 'default_printer' })
 
         if (websiteName !== null) this.websiteName = websiteName
         if (websiteUrl !== null) this.websiteUrl = websiteUrl
         if (darkMode !== null) this.darkMode = darkMode === 'true'
+        if (defaultPrinter !== null) this.defaultPrinter = defaultPrinter
 
       } catch (error) {
       }
@@ -58,6 +66,12 @@ export const useSettingsStore = defineStore('settings', {
         }
 
         await Preferences.set({ key: 'dark_mode', value: this.darkMode.toString() })
+
+        if (this.defaultPrinter !== null && this.defaultPrinter !== undefined) {
+          await Preferences.set({ key: 'default_printer', value: this.defaultPrinter })
+        } else {
+          await Preferences.remove({ key: 'default_printer' })
+        }
       } catch (error) {
         console.error('Error saving settings:', error)
         throw error // Re-throw the error so it can be handled by the caller
@@ -90,6 +104,12 @@ export const useSettingsStore = defineStore('settings', {
       this.applyDarkMode()
     },
 
+    // Set default printer
+    async setDefaultPrinter(printerAddress) {
+      this.defaultPrinter = printerAddress
+      await this.saveSettings()
+    },
+
     // Apply dark mode to the document
     applyDarkMode() {
       if (this.darkMode) {
@@ -104,12 +124,14 @@ export const useSettingsStore = defineStore('settings', {
       this.websiteName = null
       this.websiteUrl = null
       this.darkMode = false
+      this.defaultPrinter = null
       this.applyDarkMode()
       // Clear stored preferences
       try {
         await Preferences.remove({ key: 'website_name' })
         await Preferences.remove({ key: 'website_url' })
         await Preferences.remove({ key: 'dark_mode' })
+        await Preferences.remove({ key: 'default_printer' })
       } catch (error) {
         throw error // Re-throw the error so it can be handled by the caller
       }

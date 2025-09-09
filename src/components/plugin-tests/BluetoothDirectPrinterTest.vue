@@ -151,10 +151,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import html2canvas from 'html2canvas'
 import { LidtaCapacitorBlPrinter } from 'lidta-capacitor-bl-printer'
 import { Capacitor } from '@capacitor/core'
+import { useSettingsStore } from '../../stores/settings'
 
 // Reactive data
 const devices = ref([])
@@ -162,6 +163,14 @@ const connectedPrinter = ref({})
 const content = ref(null)
 const printerResult = ref('')
 const printerError = ref('')
+
+// Use settings store
+const settingsStore = useSettingsStore()
+
+// Computed property to get default printer
+const defaultPrinter = computed(() => {
+  return settingsStore.getDefaultPrinter
+})
 
 // Transaction data with default values
 const transactionData = ref({
@@ -246,16 +255,31 @@ const printSampleReceipt = async () => {
       ]
     }
 
-    // Find first available device
-    if (devices.value.length === 0) {
-      await listDevices()
+    // Use default printer if set, otherwise find first available device
+    let deviceToUse = null
+    if (defaultPrinter.value) {
+      // Find the default printer in the devices list
+      deviceToUse = devices.value.find(device => device.address === defaultPrinter.value)
+      if (!deviceToUse) {
+        // If not found, try to get it directly
+        deviceToUse = { address: defaultPrinter.value }
+      }
+      printerResult.value = `Using default printer`
+    } else {
+      // Find first available device
+      if (devices.value.length === 0) {
+        await listDevices()
+      }
+
+      if (devices.value.length > 0) {
+        deviceToUse = devices.value[0]
+      } else {
+        printerError.value = 'No Bluetooth devices found. Please pair a printer first.'
+        return
+      }
     }
 
-    if (devices.value.length > 0) {
-      await printReceipt(devices.value[0])
-    } else {
-      printerError.value = 'No Bluetooth devices found. Please pair a printer first.'
-    }
+    await printReceipt(deviceToUse)
   } catch (error) {
     console.error('Error printing sample receipt:', error)
     printerError.value = error.message || 'Failed to print sample receipt'
@@ -293,7 +317,7 @@ const printReceipt = async (device) => {
     // Disconnect from the printer
     await LidtaCapacitorBlPrinter.disconnect()
 
-    printerResult.value = `Successfully printed on ${device.name}`
+    printerResult.value = `Successfully printed on ${device.name || device.address}`
   } catch (error) {
     console.error('Error printing receipt:', error)
     printerError.value = error.message || 'Failed to print receipt'
